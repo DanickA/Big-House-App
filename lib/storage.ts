@@ -72,3 +72,45 @@ export async function uploadImage(file: File): Promise<string> {
 
   return `/uploads/${nombreArchivo}`;
 }
+
+/**
+ * Sube un comprobante (recibo, factura, soporte de pago en imagen o PDF)
+ * a Cloudinary (producción/Vercel) o a public/uploads/comprobantes (desarrollo local).
+ * Retorna la URL pública accesible.
+ */
+export async function uploadComprobante(file: File): Promise<string> {
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+
+  // Si Cloudinary está configurado en el entorno (Vercel / producción)
+  if (configureCloudinary()) {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'hogar-app/comprobantes',
+          resource_type: 'auto', // Soporta imágenes (PNG, JPG) y documentos (PDF)
+        },
+        (error, result) => {
+          if (error || !result) {
+            console.error('Error al subir comprobante a Cloudinary:', error);
+            reject(new Error(error?.message || 'Error en subida de comprobante a Cloudinary'));
+          } else {
+            resolve(result.secure_url);
+          }
+        }
+      );
+
+      uploadStream.end(buffer);
+    });
+  }
+
+  // Fallback para desarrollo local (guardar en /public/uploads/comprobantes)
+  const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const nombreArchivo = `${Date.now()}-${safeName}`;
+  const carpetaComprobantes = path.join(process.cwd(), 'public', 'uploads', 'comprobantes');
+  await mkdir(carpetaComprobantes, { recursive: true });
+  const rutaDestino = path.join(carpetaComprobantes, nombreArchivo);
+  await writeFile(rutaDestino, buffer);
+
+  return `/uploads/comprobantes/${nombreArchivo}`;
+}

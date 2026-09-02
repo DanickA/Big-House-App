@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { logout } from '@/actions/auth';
 import { SessionPayload } from '@/lib/session';
-import { Home, Sprout, Users, RefreshCw, LogOut, LogIn } from 'lucide-react';
+import { Home, Sprout, Users, RefreshCw, LogOut, LogIn, Receipt } from 'lucide-react';
 
 interface HeaderNavProps {
   user: SessionPayload | null;
@@ -60,6 +60,18 @@ export default function HeaderNav({ user }: HeaderNavProps) {
             >
               <Sprout size={13} strokeWidth={2.2} />
               <span>Jardín</span>
+            </Link>
+
+            <Link
+              href="/finanzas"
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
+                pathname.startsWith('/finanzas') || pathname.startsWith('/servicios')
+                  ? 'bg-[#EEF2EA] text-[#3A4630] shadow-2xs'
+                  : 'text-[#736F68] hover:text-[#3A4630] hover:bg-white/50'
+              }`}
+            >
+              <Receipt size={13} strokeWidth={2.2} />
+              <span>Cuentas</span>
             </Link>
 
             <Link

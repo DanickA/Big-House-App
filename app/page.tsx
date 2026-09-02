@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { getResumenPlantasLobby } from '@/actions/plantas';
+import { getServicios } from '@/actions/pagos';
 import { getSession } from '@/lib/session';
-import { Leaf, DollarSign, Users, ArrowRight, Droplets, CheckCircle2, Clock } from 'lucide-react';
+import { Leaf, DollarSign, Users, ArrowRight, Droplets, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import WaterProgressRing from '@/components/ui/WaterProgressRing';
 
 export default async function HomeLobby() {
-  const [resumen, session] = await Promise.all([
+  const [resumen, session, resServicios] = await Promise.all([
     getResumenPlantasLobby(),
     getSession(),
+    getServicios(),
   ]);
 
   const fechaHoy = new Date().toLocaleDateString('es-ES', {
@@ -125,26 +127,52 @@ export default async function HomeLobby() {
                   </div>
                 </div>
 
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-[#FDF2EC] text-[#C86242] border border-[#F2BAA5]">
-                  <Clock size={11} />
-                  <span>Pendiente</span>
-                </span>
+                {/* Badge Dinámico de Estado Financiero */}
+                {resServicios.resumen.cuentasVencidas > 0 ? (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-[#FAE2D8] text-[#B84626] border border-[#F2BAA5] animate-pulse shadow-2xs">
+                    <AlertCircle size={12} />
+                    <span>
+                      {resServicios.resumen.cuentasVencidas}{' '}
+                      {resServicios.resumen.cuentasVencidas === 1 ? 'vencida' : 'vencidas'}
+                    </span>
+                  </span>
+                ) : resServicios.resumen.cuentasPorVencer > 0 ? (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-[#FEF9E7] text-[#975A16] border border-[#FEEBC8] shadow-2xs">
+                    <Clock size={12} />
+                    <span>{resServicios.resumen.cuentasPorVencer} por vencer</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EEF2EA] text-[#5F6F52] border border-[#DCE7D3]">
+                    <CheckCircle2 size={12} />
+                    <span>Al día</span>
+                  </span>
+                )}
               </div>
 
               <div className="p-4 bg-white/60 rounded-2xl border border-white/80 space-y-1 shadow-2xs">
                 <p className="text-xs text-[#736F68] font-semibold">Total estimado mensual</p>
-                <p className="text-3xl font-extrabold text-[#C86242] tracking-tight">$0.00</p>
+                <p className="text-3xl font-extrabold text-[#C86242] tracking-tight">
+                  {new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    maximumFractionDigits: 0,
+                  }).format(resServicios.resumen.totalPresupuestoMensual)}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-[#F0EAE1]">
-              <span className="text-xs font-semibold text-[#A39E95]">Módulo Financiero</span>
-              <button 
-                disabled 
-                className="text-xs font-bold px-4 py-2.5 bg-[#F4EFE6] text-[#A39E95] rounded-xl cursor-not-allowed border border-[#E8E0D2]"
+              <span className="text-xs font-semibold text-[#736F68]">
+                {resServicios.resumen.totalServicios}{' '}
+                {resServicios.resumen.totalServicios === 1 ? 'cuenta activa' : 'cuentas activas'}
+              </span>
+              <Link
+                href="/finanzas"
+                className="text-xs font-bold px-4 py-2.5 bg-[#C86242] hover:bg-[#B84626] text-white rounded-xl transition shadow-sm shadow-[#C86242]/20 flex items-center gap-1.5 cursor-pointer active:scale-95"
               >
-                Próximamente
-              </button>
+                <span>Gestionar cuentas</span>
+                <ArrowRight size={13} strokeWidth={2.5} />
+              </Link>
             </div>
           </div>
 

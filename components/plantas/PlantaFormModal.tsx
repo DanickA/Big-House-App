@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Planta } from './PlantaCard';
 import { createPlanta, updatePlanta } from '@/actions/plantas';
+import { compressImage } from '@/lib/image-compression';
 import { X, Check, Sprout, MapPin, Tag, Droplets, Camera, Minus, Plus, RefreshCw } from 'lucide-react';
 import WaterProgressRing from '@/components/ui/WaterProgressRing';
 
@@ -101,20 +102,34 @@ export default function PlantaFormModal({
     setErrorMsg(null);
     setProcesando(true);
 
-    const formData = new FormData(e.currentTarget);
-    formData.set('frecuencia_riego', frecuenciaDias.toString());
+    try {
+      const formData = new FormData(e.currentTarget);
+      formData.set('frecuencia_riego', frecuenciaDias.toString());
 
-    const res = plantaAEditar
-      ? await updatePlanta(plantaAEditar.id, formData)
-      : await createPlanta(formData);
+      // Optimizar y comprimir la foto en el cliente si existe (evita errores 413 de 1MB/4.5MB)
+      const rawFoto = formData.get('foto') as File | null;
+      if (rawFoto && rawFoto.size > 0) {
+        const fotoOptimizada = await compressImage(rawFoto);
+        formData.set('foto', fotoOptimizada);
+      }
 
-    setProcesando(false);
+      const res = plantaAEditar
+        ? await updatePlanta(plantaAEditar.id, formData)
+        : await createPlanta(formData);
 
-    if (res.success) {
-      onSuccess(plantaAEditar ? '¡Planta actualizada con éxito!' : '¡Planta registrada con éxito!');
-      onClose();
-    } else {
-      setErrorMsg(res.error || 'Ocurrió un error al guardar');
+      if (res.success) {
+        onSuccess(plantaAEditar ? '¡Planta actualizada con éxito!' : '¡Planta registrada con éxito!');
+        onClose();
+      } else {
+        setErrorMsg(res.error || 'Ocurrió un error al guardar');
+      }
+    } catch (err: any) {
+      console.error('Error al enviar formulario de planta:', err);
+      setErrorMsg(
+        err?.message || 'Error de conexión al guardar los datos. Intenta nuevamente.'
+      );
+    } finally {
+      setProcesando(false);
     }
   }
 

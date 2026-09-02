@@ -73,8 +73,12 @@ export async function createPlanta(formData: FormData) {
     if (foto && foto.size > 0) {
       try {
         foto_url = await uploadImage(foto);
-      } catch (uploadErr) {
+      } catch (uploadErr: any) {
         console.error('Error subiendo foto de planta:', uploadErr);
+        return {
+          success: false,
+          error: `Error al subir la foto (${uploadErr?.message || 'Error en almacenamiento'}). Por favor verifica la configuración de Cloudinary en Vercel.`
+        };
       }
     }
 
@@ -180,8 +184,12 @@ export async function updatePlanta(id: string, formData: FormData) {
     if (foto && foto.size > 0) {
       try {
         datosActualizados.foto_url = await uploadImage(foto);
-      } catch (uploadErr) {
+      } catch (uploadErr: any) {
         console.error('Error actualizando foto de planta:', uploadErr);
+        return {
+          success: false,
+          error: `Error al subir la foto (${uploadErr?.message || 'Error en almacenamiento'}). Por favor verifica la configuración de Cloudinary en Vercel.`
+        };
       }
     }
 

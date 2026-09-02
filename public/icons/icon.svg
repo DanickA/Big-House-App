@@ -1,0 +1,76 @@
+
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#384C2E" />
+      <stop offset="100%" stop-color="#23311C" />
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8EA777" />
+      <stop offset="100%" stop-color="#B8CFA3" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECE3D4" />
+      <stop offset="100%" stop-color="#DDD1BD" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0F180C" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Fondo base con esquinas suavemente redondeadas -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)" />
+
+  <!-- Sutil textura de anillo o halo exterior decorativo -->
+  <circle cx="256" cy="256" r="220" stroke="#ECE3D4" stroke-opacity="0.07" stroke-width="2" />
+  <circle cx="256" cy="256" r="190" stroke="#ECE3D4" stroke-opacity="0.05" stroke-width="1.5" />
+
+  <!-- Grupo del Emblema Principal con Sombra -->
+  <g filter="url(#shadow)">
+    <!-- Silueta del Techo del Hogar -->
+    <path 
+      d="M256 122 L132 230 C125 236 127 246 136 246 H166 V358 C166 368 174 376 184 376 H328 C338 376 346 368 346 358 V246 H376 C385 246 387 236 380 230 L256 122 Z" 
+      fill="none" 
+      stroke="url(#accentGrad)" 
+      stroke-width="20" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+    />
+
+    <!-- Chimenea estilizada -->
+    <path
+      d="M312 170 V140 C312 136 316 132 320 132 H336 C340 132 344 136 344 140 V198"
+      stroke="url(#accentGrad)"
+      stroke-width="16"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Suelo / Base del Hogar interior -->
+    <rect x="200" y="348" width="112" height="12" rx="6" fill="url(#accentGrad)" />
+
+    <!-- Planta / Brote botánico central naciendo dentro de la casa -->
+    <!-- Tallo curvado -->
+    <path 
+      d="M256 346 C256 300 256 250 256 216" 
+      stroke="url(#leafGrad)" 
+      stroke-width="14" 
+      stroke-linecap="round" 
+    />
+    
+    <!-- Hoja izquierda curvada -->
+    <path 
+      d="M256 280 C228 276 200 248 206 218 C232 214 254 242 256 280 Z" 
+      fill="url(#leafGrad)" 
+    />
+
+    <!-- Hoja derecha principal extendiéndose hacia la luz -->
+    <path 
+      d="M256 250 C286 244 316 212 308 182 C280 178 258 210 256 250 Z" 
+      fill="url(#leafGrad)" 
+    />
+
+    <!-- Pequeño brote superior central -->
+    <ellipse cx="256" cy="208" rx="7" ry="12" fill="#ECE3D4" />
+  </g>
+</svg>

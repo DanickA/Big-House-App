@@ -1,26 +1,232 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   SISTEMA DE COLOR APPLE HIG CON ADN BIGHOUSE
+   Tokens semánticos duales (Claro / Oscuro), capas en 3 niveles y accesibilidad
+   ========================================================================== */
+
 :root {
-  --background: #F4EFE6;
-  --foreground: #2E2B27;
+  /* Nivel 1: Lienzo Base */
+  --bg-system: #F4EFE6;
+  --bg-system-rgb: 244, 239, 230;
+
+  /* Nivel 2: Tarjetas y Contenedores Elevados */
+  --bg-secondary: rgba(255, 255, 255, 0.82);
+  --bg-secondary-solid: #FDFBF7;
+
+  /* Nivel 3: Controles, Inputs, Chips */
+  --bg-tertiary: #EFEAE0;
+  --bg-tertiary-hover: #E8E0D2;
+
+  /* Tipografía Semántica Apple HIG (4 Niveles) */
+  --label-primary: #2E2B27;
+  --label-secondary: #6E6A62;
+  --label-tertiary: #9E988D;
+  --label-quaternary: #C2BCAE;
+
+  /* Separadores y Hairlines */
+  --separator: rgba(115, 111, 104, 0.22);
+  --separator-opaque: #D9CEBC;
+
+  /* Colores Semánticos Funcionales (Modo Claro) */
+  --color-olive: #5F6F52;
+  --color-olive-hover: #4E5D43;
+  --color-olive-tint: rgba(95, 111, 82, 0.12);
+
+  --color-terracotta: #C86242;
+  --color-terracotta-hover: #B05336;
+  --color-terracotta-tint: rgba(200, 98, 66, 0.10);
+
+  --color-amber: #D97706;
+  --color-amber-hover: #B45309;
+  --color-amber-tint: rgba(217, 119, 6, 0.12);
+
+  --color-blue: #0284C7;
+  --color-blue-hover: #0369A1;
+  --color-blue-tint: rgba(2, 132, 199, 0.12);
+
+  /* Glassmorphism Dinámico */
+  --glass-card-bg: rgba(255, 255, 255, 0.78);
+  --glass-card-border: rgba(255, 255, 255, 0.85);
+  --glass-card-shadow: 0 10px 30px -10px rgba(58, 70, 48, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+
+  --glass-modal-bg: rgba(253, 251, 247, 0.94);
+  --glass-modal-border: rgba(255, 255, 255, 0.90);
+
+  /* Luces Ambientales Adaptativas */
+  --ambient-glow-olive-opacity: 0.12;
+  --ambient-glow-terracotta-opacity: 0.10;
 }
 
+/* Modo Oscuro Dinámico: Preferencia del Sistema Operativo */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Nivel 1: Lienzo Base (OLED Charcoal Cálido) */
+    --bg-system: #121411;
+    --bg-system-rgb: 18, 20, 17;
+
+    /* Nivel 2: Tarjetas y Contenedores Elevados */
+    --bg-secondary: rgba(28, 31, 26, 0.85);
+    --bg-secondary-solid: #1C1F1A;
+
+    /* Nivel 3: Controles, Inputs, Chips */
+    --bg-tertiary: #282C25;
+    --bg-tertiary-hover: #33382F;
+
+    /* Tipografía Semántica Apple HIG (Modo Oscuro) */
+    --label-primary: #F5F2EB;
+    --label-secondary: #ABA69B;
+    --label-tertiary: #78756D;
+    --label-quaternary: #45433E;
+
+    /* Separadores */
+    --separator: rgba(255, 255, 255, 0.14);
+    --separator-opaque: #2E332B;
+
+    /* Colores Semánticos Duales (Mayor luminosidad y menor saturación) */
+    --color-olive: #8FA37E;
+    --color-olive-hover: #A2B591;
+    --color-olive-tint: rgba(143, 163, 126, 0.18);
+
+    --color-terracotta: #E07D63;
+    --color-terracotta-hover: #E8917A;
+    --color-terracotta-tint: rgba(224, 125, 99, 0.18);
+
+    --color-amber: #F59E0B;
+    --color-amber-hover: #FBBF24;
+    --color-amber-tint: rgba(245, 158, 11, 0.18);
+
+    --color-blue: #38BDF8;
+    --color-blue-hover: #7DD3FC;
+    --color-blue-tint: rgba(56, 189, 248, 0.18);
+
+    /* Glassmorphism Dinámico */
+    --glass-card-bg: rgba(28, 31, 26, 0.80);
+    --glass-card-border: rgba(255, 255, 255, 0.10);
+    --glass-card-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.45);
+
+    --glass-modal-bg: rgba(24, 27, 22, 0.95);
+    --glass-modal-border: rgba(255, 255, 255, 0.12);
+
+    --ambient-glow-olive-opacity: 0.18;
+    --ambient-glow-terracotta-opacity: 0.14;
+  }
+}
+
+/* Modo Oscuro Forzado Manualmente */
+[data-theme="dark"] {
+  --bg-system: #121411;
+  --bg-system-rgb: 18, 20, 17;
+  --bg-secondary: rgba(28, 31, 26, 0.85);
+  --bg-secondary-solid: #1C1F1A;
+  --bg-tertiary: #282C25;
+  --bg-tertiary-hover: #33382F;
+
+  --label-primary: #F5F2EB;
+  --label-secondary: #ABA69B;
+  --label-tertiary: #78756D;
+  --label-quaternary: #45433E;
+
+  --separator: rgba(255, 255, 255, 0.14);
+  --separator-opaque: #2E332B;
+
+  --color-olive: #8FA37E;
+  --color-olive-hover: #A2B591;
+  --color-olive-tint: rgba(143, 163, 126, 0.18);
+
+  --color-terracotta: #E07D63;
+  --color-terracotta-hover: #E8917A;
+  --color-terracotta-tint: rgba(224, 125, 99, 0.18);
+
+  --color-amber: #F59E0B;
+  --color-amber-hover: #FBBF24;
+  --color-amber-tint: rgba(245, 158, 11, 0.18);
+
+  --color-blue: #38BDF8;
+  --color-blue-hover: #7DD3FC;
+  --color-blue-tint: rgba(56, 189, 248, 0.18);
+
+  --glass-card-bg: rgba(28, 31, 26, 0.80);
+  --glass-card-border: rgba(255, 255, 255, 0.10);
+  --glass-card-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.45);
+
+  --glass-modal-bg: rgba(24, 27, 22, 0.95);
+  --glass-modal-border: rgba(255, 255, 255, 0.12);
+
+  --ambient-glow-olive-opacity: 0.18;
+  --ambient-glow-terracotta-opacity: 0.14;
+}
+
+/* Soporte Accesibilidad: Aumentar Contraste (prefers-contrast: more) */
+@media (prefers-contrast: more) {
+  :root {
+    --label-primary: #000000;
+    --label-secondary: #1F1E1B;
+    --separator: #736F68;
+    --separator-opaque: #5F6F52;
+    --glass-card-border: rgba(58, 70, 48, 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --label-primary: #FFFFFF;
+      --label-secondary: #E8E5DD;
+      --separator: #A9A49B;
+      --separator-opaque: #8FA37E;
+      --glass-card-border: rgba(255, 255, 255, 0.35);
+    }
+  }
+  [data-theme="dark"] {
+    --label-primary: #FFFFFF;
+    --label-secondary: #E8E5DD;
+    --separator: #A9A49B;
+    --separator-opaque: #8FA37E;
+    --glass-card-border: rgba(255, 255, 255, 0.35);
+  }
+}
+
+/* Soporte Accesibilidad: Reducción de Transparencia (prefers-reduced-transparency: reduce) */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-card,
+  .glass-nav,
+  .glass-modal {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: var(--bg-secondary-solid) !important;
+  }
+}
+
+/* Mapeo de Tokens a Tailwind v4 */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-system: var(--bg-system);
+  --color-secondary: var(--bg-secondary);
+  --color-tertiary: var(--bg-tertiary);
+  --color-label-primary: var(--label-primary);
+  --color-label-secondary: var(--label-secondary);
+  --color-label-tertiary: var(--label-tertiary);
+  --color-label-quaternary: var(--label-quaternary);
+  --color-separator: var(--separator);
+  --color-olive: var(--color-olive);
+  --color-olive-hover: var(--color-olive-hover);
+  --color-terracotta: var(--color-terracotta);
+  --color-terracotta-hover: var(--color-terracotta-hover);
+  --color-amber-sem: var(--color-amber);
+  --color-blue-sem: var(--color-blue);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background-color: #F4EFE6;
-  color: #2E2B27;
+  background-color: var(--bg-system);
+  color: var(--label-primary);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Barra de desplazamiento moderna y redondeada (Custom Scrollbar) */
+/* Barra de desplazamiento moderna y redondeada */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -31,27 +237,27 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(95, 111, 82, 0.25);
+  background: var(--color-olive);
+  opacity: 0.25;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(95, 111, 82, 0.5);
+  opacity: 0.5;
 }
 
-/* Soporte Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(95, 111, 82, 0.25) transparent;
+  scrollbar-color: var(--color-olive) transparent;
 }
 
-/* Glassmorphism Classes */
+/* Clases Utilitarias Glassmorphism Dinámicas */
 .glass-card {
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--glass-card-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 10px 30px -10px rgba(58, 70, 48, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--glass-card-border);
+  box-shadow: var(--glass-card-shadow);
 }
 
 .glass-card-hover {
@@ -60,32 +266,31 @@ body {
 
 .glass-card-hover:hover {
   transform: translateY(-4px);
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 20px 40px -15px rgba(58, 70, 48, 0.14), 0 0 0 1px rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.16), 0 0 0 1px var(--glass-card-border);
 }
 
 .glass-nav {
-  background: rgba(244, 239, 230, 0.82);
+  background: var(--glass-card-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(232, 224, 210, 0.6);
+  border-bottom: 1px solid var(--separator);
 }
 
 .glass-modal {
-  background: rgba(253, 251, 247, 0.92);
+  background: var(--glass-modal-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 25px 50px -12px rgba(58, 70, 48, 0.25);
+  border: 1px solid var(--glass-modal-border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
 }
 
-/* Ambient Background Lights */
+/* Luces Ambientales Adaptativas */
 .ambient-glow-olive {
   position: absolute;
   width: 380px;
   height: 380px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(95, 111, 82, 0.12) 0%, rgba(95, 111, 82, 0) 70%);
+  background: radial-gradient(circle, rgba(95, 111, 82, var(--ambient-glow-olive-opacity)) 0%, rgba(95, 111, 82, 0) 70%);
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
@@ -96,13 +301,13 @@ body {
   width: 320px;
   height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(200, 98, 66, 0.10) 0%, rgba(200, 98, 66, 0) 70%);
+  background: radial-gradient(circle, rgba(200, 98, 66, var(--ambient-glow-terracotta-opacity)) 0%, rgba(200, 98, 66, 0) 70%);
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
 }
 
-/* Smooth keyframes */
+/* Animaciones suaves */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -117,3 +322,43 @@ body {
 .animate-fade-in-up {
   animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ==========================================================================
+   Apple HIG Layout & Safe Area Utilities
+   ========================================================================== */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Touch Target mínimo 44x44pt conforme a Apple HIG */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estilo Ultra-Thin Material para Barras Flotantes (Floating Island) */
+.glass-floating-bar {
+  background: var(--bg-secondary);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--separator);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Apple HIG Switches and Controls */
+.switch-thumb-shadow {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.apple-spring {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+

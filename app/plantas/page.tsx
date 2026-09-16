@@ -6,12 +6,15 @@ import { getPlantas, deletePlanta } from '@/actions/plantas';
 import PlantaCard, { Planta } from '@/components/plantas/PlantaCard';
 import PlantaFormModal from '@/components/plantas/PlantaFormModal';
 import PlantaDetalleModal from '@/components/plantas/PlantaDetalleModal';
-import { ArrowLeft, Plus, CheckCircle2 } from 'lucide-react';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { ArrowLeft, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function PlantasPage() {
   const [plantas, setPlantas] = useState<Planta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
+  const [mensajeError, setMensajeError] = useState<string | null>(null);
+  const [plantaAEliminar, setPlantaAEliminar] = useState<Planta | null>(null);
 
   // Estados de control de modales
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -37,19 +40,30 @@ export default function PlantasPage() {
     setTimeout(() => setMensajeExito(null), 3500);
   }
 
-  async function handleEliminar(planta: Planta) {
-    if (!window.confirm(`¿Deseas eliminar a "${planta.nombre_comun}"?`)) return;
-    const res = await deletePlanta(planta.id);
+  function notificarError(mensaje: string) {
+    setMensajeError(mensaje);
+    setTimeout(() => setMensajeError(null), 4000);
+  }
+
+  function handleEliminar(planta: Planta) {
+    setPlantaAEliminar(planta);
+  }
+
+  async function confirmarEliminarPlanta() {
+    if (!plantaAEliminar) return;
+    const res = await deletePlanta(plantaAEliminar.id);
     if (res.success) {
       notificarExito('Planta eliminada correctamente');
+      setPlantaAEliminar(null);
       await cargarLista();
     } else {
-      alert(res.error || 'No se pudo eliminar la planta');
+      notificarError(res.error || 'No se pudo eliminar la planta');
+      setPlantaAEliminar(null);
     }
   }
 
   return (
-    <div className="relative min-h-screen bg-[#F4EFE6] text-[#2E2B27] p-6 md:p-10">
+    <div className="relative min-h-screen bg-system text-label-primary p-6 md:p-10">
       {/* Luces Ambientales de Fondo */}
       <div className="ambient-glow-olive top-[-50px] right-[-50px]" />
       <div className="ambient-glow-terracotta bottom-[-50px] left-[-50px]" />
@@ -58,9 +72,15 @@ export default function PlantasPage() {
         
         {/* Notificación Flotante Glassmorphic */}
         {mensajeExito && (
-          <div className="fixed top-20 right-6 z-60 glass-card bg-[#EEF2EA]/90 border border-[#B7CBA9] text-[#2D3E24] px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
-            <CheckCircle2 size={18} className="text-[#5F6F52]" />
+          <div className="fixed top-20 right-6 z-60 glass-card bg-[#EEF2EA]/90 dark:bg-[#1E261B]/95 border border-[#B7CBA9] dark:border-olive/40 text-[#2D3E24] dark:text-olive px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+            <CheckCircle2 size={18} className="text-olive" />
             <span>{mensajeExito}</span>
+          </div>
+        )}
+        {mensajeError && (
+          <div className="fixed top-20 right-6 z-60 glass-card bg-[#FBEAE5]/95 dark:bg-[#3A1F18]/95 border border-[#E8B4A2] dark:border-terracotta/40 text-terracotta px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+            <AlertCircle size={18} className="text-terracotta" />
+            <span>{mensajeError}</span>
           </div>
         )}
 
@@ -69,15 +89,15 @@ export default function PlantasPage() {
           <div className="space-y-1">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#736F68] hover:text-[#3A4630] transition uppercase tracking-wider mb-1"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-label-secondary hover:text-label-primary transition uppercase tracking-wider mb-1"
             >
               <ArrowLeft size={13} strokeWidth={2.5} />
               <span>Volver al Lobby</span>
             </Link>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-[#3A4630] tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-[#3A4630] dark:text-label-primary tracking-tight">
               Nuestras Plantas
             </h1>
-            <p className="text-[#736F68] text-xs font-medium">
+            <p className="text-label-secondary text-xs font-medium">
               {plantas.length} {plantas.length === 1 ? 'planta registrada' : 'plantas registradas'} en el hogar
             </p>
           </div>
@@ -99,7 +119,7 @@ export default function PlantasPage() {
         {cargando ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="h-72 rounded-[2rem] bg-white/40 border border-white/60 animate-pulse" />
+              <div key={n} className="h-72 rounded-[2rem] bg-white/40 dark:bg-tertiary/40 border border-white/60 dark:border-white/10 animate-pulse" />
             ))}
           </div>
         ) : (
@@ -112,13 +132,13 @@ export default function PlantasPage() {
                 setPlantaAEditar(null);
                 setIsFormOpen(true);
               }}
-              className="h-72 rounded-[2rem] border-2 border-dashed border-[#B7CBA9]/80 bg-white/40 hover:bg-white/70 backdrop-blur-xs transition-all duration-300 flex flex-col items-center justify-center p-6 text-center group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1"
+              className="h-72 rounded-[2rem] border-2 border-dashed border-[#B7CBA9]/80 dark:border-separator bg-white/40 dark:bg-tertiary/30 hover:bg-white/70 dark:hover:bg-tertiary/60 backdrop-blur-xs transition-all duration-300 flex flex-col items-center justify-center p-6 text-center group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1"
             >
-              <div className="w-14 h-14 rounded-2xl bg-[#EEF2EA] border border-[#DCE7D3] flex items-center justify-center text-[#3A4630] group-hover:scale-110 transition shadow-2xs">
+              <div className="w-14 h-14 rounded-2xl bg-[#EEF2EA] dark:bg-[#282C25] border border-[#DCE7D3] dark:border-separator flex items-center justify-center text-[#3A4630] dark:text-olive group-hover:scale-110 transition shadow-2xs">
                 <Plus size={24} strokeWidth={2.5} />
               </div>
-              <span className="mt-4 text-sm font-extrabold text-[#3A4630]">Agregar nueva planta</span>
-              <span className="text-xs text-[#736F68] mt-1 font-medium">Registrar especie y ciclo</span>
+              <span className="mt-4 text-sm font-extrabold text-[#3A4630] dark:text-label-primary">Agregar nueva planta</span>
+              <span className="text-xs text-label-secondary mt-1 font-medium">Registrar especie y ciclo</span>
             </button>
 
             {plantas.map((planta) => (
@@ -164,6 +184,16 @@ export default function PlantasPage() {
           notificarExito(msg);
           cargarLista();
         }}
+      />
+
+      <ConfirmModal
+        isOpen={!!plantaAEliminar}
+        title="¿Eliminar planta?"
+        description={`¿Estás seguro de que deseas eliminar a "${plantaAEliminar?.nombre_comun}" del jardín botánico del hogar? Esta acción borrará sus tareas y registros.`}
+        confirmText="Eliminar planta"
+        variant="danger"
+        onConfirm={confirmarEliminarPlanta}
+        onClose={() => setPlantaAEliminar(null)}
       />
     </div>
   );

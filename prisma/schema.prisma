@@ -72,16 +72,21 @@ model tareas_cuidado {
 }
 
 model usuarios {
-  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nombre            String              @db.VarChar(100)
-  email             String              @unique @db.VarChar(150)
-  password_hash     String              @db.VarChar(255)
-  fecha_registro    DateTime?           @default(now()) @db.Timestamp(6)
-  pin_hash          String?             @db.VarChar(255)
-  gastos            gastos[]
-  historial_cuidado historial_cuidado[]
-  ingresos          ingresos[]
-  pagos_servicios   pagos_servicios[]
+  id                   String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre               String               @db.VarChar(100)
+  email                String               @unique @db.VarChar(150)
+  password_hash        String               @db.VarChar(255)
+  fecha_registro       DateTime?            @default(now()) @db.Timestamp(6)
+  pin_hash             String?              @db.VarChar(255)
+  gastos               gastos[]
+  historial_cuidado    historial_cuidado[]
+  ingresos             ingresos[]
+  pagos_servicios      pagos_servicios[]
+  
+  eventos_creados      eventos[]            @relation("CreadorEvento")
+  eventos_participados eventos[]            @relation("ParticipantesEvento")
+  subtareas_asignadas  subtareas_evento[]   @relation("SubtareasAsignadas")
+  suscripciones_push   suscripciones_push[]
 }
 
 model pagos_servicios {
@@ -94,4 +99,93 @@ model pagos_servicios {
   observaciones   String?
   servicios       servicios @relation(fields: [servicio_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_servicio_pago")
   usuarios        usuarios  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_pago")
+}
+
+enum TipoPlantilla {
+  EVENTO
+  TAREA
+  MANTENIMIENTO
+  VISITAS
+  COMPRAS
+  MASCOTAS
+  CUMPLEANOS
+  CITA_MEDICA
+  MERCADO
+}
+
+enum EstadoEvento {
+  ACTIVO
+  CANCELADO
+  COMPLETADO
+}
+
+enum CanalRecordatorio {
+  PUSH
+  EMAIL
+}
+
+model eventos {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  titulo          String         @db.VarChar(200)
+  descripcion     String?
+  tipo_plantilla  TipoPlantilla
+  estado          EstadoEvento   @default(ACTIVO)
+  fecha_inicio    DateTime       @db.Timestamp(6)
+  fecha_fin       DateTime       @db.Timestamp(6)
+  todo_el_dia     Boolean        @default(false)
+  color           String         @db.VarChar(50)
+  ubicacion       String?        @db.VarChar(200)
+  recurrencia     String?        @db.VarChar(100)
+  detalles        Json?
+  creador_id      String         @db.Uuid
+  fecha_creacion  DateTime?      @default(now()) @db.Timestamp(6)
+
+  creador         usuarios       @relation("CreadorEvento", fields: [creador_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_creador_evento")
+  participantes   usuarios[]     @relation("ParticipantesEvento")
+  
+  externos        participantes_externos[]
+  subtareas       subtareas_evento[]
+  recordatorios   recordatorios_evento[]
+}
+
+model participantes_externos {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  evento_id       String         @db.Uuid
+  nombre          String         @db.VarChar(100)
+  contacto        String?        @db.VarChar(100)
+  
+  evento          eventos        @relation(fields: [evento_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_evento_externo")
+}
+
+model subtareas_evento {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  evento_id       String         @db.Uuid
+  descripcion     String         @db.VarChar(200)
+  completado      Boolean        @default(false)
+  asignado_id     String?        @db.Uuid
+  
+  evento          eventos        @relation(fields: [evento_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_evento_subtarea")
+  asignado        usuarios?      @relation("SubtareasAsignadas", fields: [asignado_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "fk_usuario_subtarea")
+}
+
+model recordatorios_evento {
+  id                  String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  evento_id           String         @db.Uuid
+  tipo_canal          CanalRecordatorio
+  minutos_anticipacion Int
+  fecha_programada    DateTime       @db.Timestamp(6)
+  enviado             Boolean        @default(false)
+  
+  evento              eventos        @relation(fields: [evento_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_evento_recordatorio")
+}
+
+model suscripciones_push {
+  id                  String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuario_id          String         @db.Uuid
+  endpoint            String
+  p256dh              String
+  auth                String
+  fecha_creacion      DateTime?      @default(now()) @db.Timestamp(6)
+
+  usuario             usuarios       @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_suscripcion")
 }

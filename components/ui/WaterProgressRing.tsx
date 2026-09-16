@@ -21,8 +21,8 @@ export default function WaterProgressRing({
 
   // Cálculo del porcentaje de avance hacia el próximo riego
   let progress = 0;
-  let strokeColor = '#5F6F52';
-  let trackColor = darkText ? 'rgba(95, 111, 82, 0.15)' : 'rgba(255, 255, 255, 0.2)';
+  let strokeColor = 'var(--color-olive)';
+  let trackColor = 'rgba(128, 128, 128, 0.18)';
   let label = '-';
   let isLate = false;
   let isToday = false;
@@ -30,18 +30,18 @@ export default function WaterProgressRing({
   if (diasRestantes === undefined || diasRestantes === null) {
     progress = 0;
     label = 'N/P';
-    strokeColor = '#A39E95';
+    strokeColor = 'var(--label-quaternary)';
   } else if (diasRestantes < 0) {
     progress = 100;
     label = `${diasRestantes}d`;
-    strokeColor = '#B84626';
-    trackColor = darkText ? 'rgba(184, 70, 38, 0.15)' : 'rgba(184, 70, 38, 0.2)';
+    strokeColor = 'var(--color-terracotta)';
+    trackColor = 'var(--color-terracotta-tint)';
     isLate = true;
   } else if (diasRestantes === 0) {
     progress = 100;
     label = 'Hoy';
-    strokeColor = '#C86242';
-    trackColor = darkText ? 'rgba(200, 98, 66, 0.15)' : 'rgba(200, 98, 66, 0.2)';
+    strokeColor = 'var(--color-terracotta)';
+    trackColor = 'var(--color-terracotta-tint)';
     isToday = true;
   } else {
     const freq = frecuenciaDias && frecuenciaDias > 0 ? frecuenciaDias : 7;
@@ -50,28 +50,26 @@ export default function WaterProgressRing({
     label = `${diasRestantes}d`;
 
     if (diasRestantes === 1) {
-      strokeColor = '#D97706';
+      strokeColor = 'var(--color-amber)';
+      trackColor = 'var(--color-amber-tint)';
     } else {
-      strokeColor = '#5F6F52';
+      strokeColor = 'var(--color-olive)';
+      trackColor = 'var(--color-olive-tint)';
     }
   }
 
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
-  const textColor = darkText
-    ? (isLate ? '#B84626' : isToday ? '#C86242' : '#2D3E24')
-    : (diasRestantes === null ? '#736F68' : '#FFFFFF');
-
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-full backdrop-blur-md ${
+      className={`relative inline-flex items-center justify-center rounded-full backdrop-blur-md transition-colors ${
         isLate || isToday ? 'animate-pulse' : ''
       }`}
       style={{
         width: size,
         height: size,
-        background: darkText ? 'rgba(238, 242, 234, 0.85)' : 'rgba(255, 255, 255, 0.35)',
-        border: darkText ? '1px solid rgba(183, 203, 169, 0.6)' : 'none',
+        background: darkText ? 'var(--bg-tertiary)' : 'rgba(255, 255, 255, 0.35)',
+        border: darkText ? '1px solid var(--separator)' : 'none',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
       }}
       title={
@@ -113,7 +111,9 @@ export default function WaterProgressRing({
       <span
         className="absolute text-[11px] font-extrabold tracking-tight"
         style={{
-          color: textColor,
+          color: darkText
+            ? (isLate || isToday ? 'var(--color-terracotta)' : 'var(--label-primary)')
+            : (diasRestantes === null ? 'var(--label-secondary)' : '#FFFFFF'),
           textShadow: darkText ? 'none' : '0 1px 2px rgba(0,0,0,0.4)',
         }}
       >

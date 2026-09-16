@@ -46,7 +46,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
           >
             <Link
               href="/"
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
+              prefetch={true}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
                 pathname === '/'
                   ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
                   : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'
@@ -58,7 +59,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
 
             <Link
               href="/calendario"
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
+              prefetch={true}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/calendario')
                   ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
                   : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'
@@ -70,7 +72,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
 
             <Link
               href="/plantas"
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
+              prefetch={true}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/plantas')
                   ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
                   : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'
@@ -82,7 +85,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
 
             <Link
               href="/finanzas"
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
+              prefetch={true}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/finanzas') || pathname.startsWith('/servicios')
                   ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
                   : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'
@@ -94,7 +98,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
 
             <Link
               href="/usuarios"
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
+              prefetch={true}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/usuarios')
                   ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
                   : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'

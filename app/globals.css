@@ -224,6 +224,13 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
+  touch-action: manipulation;
+}
+
+/* Optimización táctil móvil: eliminación de retraso de 300ms y destellos grises */
+html, body, a, button, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Barra de desplazamiento moderna y redondeada */
@@ -294,6 +301,9 @@ body {
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
+  transform: translateZ(0);
+  will-change: transform;
+  contain: strict;
 }
 
 .ambient-glow-terracotta {
@@ -305,6 +315,9 @@ body {
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
+  transform: translateZ(0);
+  will-change: transform;
+  contain: strict;
 }
 
 /* Animaciones suaves */

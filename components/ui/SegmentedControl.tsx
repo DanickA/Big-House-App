@@ -49,7 +49,7 @@ export default function SegmentedControl<T extends string | number>({
             role="radio"
             aria-checked={isSelected}
             onClick={() => onChange(option.value)}
-            className={`relative flex items-center justify-center gap-1.5 rounded-xl font-medium transition-all duration-200 cursor-pointer active:scale-95 ${
+            className={`relative flex items-center justify-center text-center gap-1.5 rounded-xl font-medium transition-all duration-200 cursor-pointer active:scale-95 ${
               fullWidth ? 'flex-1' : ''
             } ${
               isSm
@@ -65,10 +65,10 @@ export default function SegmentedControl<T extends string | number>({
               <IconComponent
                 size={isSm ? 13 : 15}
                 strokeWidth={isSelected ? 2.2 : 1.8}
-                className={isSelected ? 'text-terracotta' : 'text-label-tertiary'}
+                className={`shrink-0 ${isSelected ? 'text-terracotta' : 'text-label-tertiary'}`}
               />
             )}
-            <span className="truncate">{option.label}</span>
+            <span className="truncate text-center inline-block">{option.label}</span>
             {typeof option.count === 'number' && (
               <span
                 className={`ml-1 px-1.5 py-0.5 text-[10px] rounded-full font-semibold tabular-nums ${

@@ -143,8 +143,26 @@ export default function PlantaDetalleModal({
         <div className="p-3.5 border-b border-separator shrink-0">
           <SegmentedControl<'acciones' | 'historial'>
             options={[
-              { value: 'acciones', label: 'Acciones de cuidado', icon: Sparkles },
-              { value: 'historial', label: 'Historial de registros', icon: History },
+              {
+                value: 'acciones',
+                label: (
+                  <>
+                    <span className="sm:hidden">Cuidados</span>
+                    <span className="hidden sm:inline">Acciones de cuidado</span>
+                  </>
+                ),
+                icon: Sparkles,
+              },
+              {
+                value: 'historial',
+                label: (
+                  <>
+                    <span className="sm:hidden">Historial</span>
+                    <span className="hidden sm:inline">Historial de cuidados</span>
+                  </>
+                ),
+                icon: History,
+              },
             ]}
             value={pestanaActiva}
             onChange={(val) => setPestanaActiva(val)}

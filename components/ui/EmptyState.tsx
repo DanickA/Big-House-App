@@ -67,10 +67,10 @@ export default function EmptyState({
           <button
             type="button"
             onClick={action.onClick}
-            className="touch-target px-5 py-2.5 bg-terracotta hover:bg-terracotta-hover text-white rounded-2xl text-sm font-semibold transition-all duration-150 shadow-md shadow-terracotta/20 inline-flex items-center gap-2 cursor-pointer active:scale-95"
+            className="touch-target px-5 py-2.5 bg-terracotta hover:bg-terracotta-hover text-white rounded-2xl text-sm font-semibold transition-all duration-150 shadow-md shadow-terracotta/20 inline-flex items-center justify-center text-center gap-2 cursor-pointer active:scale-95"
           >
-            {ActionIcon && <ActionIcon size={15} strokeWidth={2.5} />}
-            <span>{action.label}</span>
+            {ActionIcon && <ActionIcon size={15} strokeWidth={2.5} className="shrink-0" />}
+            <span className="text-center">{action.label}</span>
           </button>
         </div>
       )}

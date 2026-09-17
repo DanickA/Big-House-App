@@ -219,8 +219,26 @@ export default function PagoModal({
         <div className="p-3.5 border-b border-separator shrink-0">
           <SegmentedControl<'pago' | 'historial'>
             options={[
-              { value: 'pago', label: 'Registrar pago', icon: CreditCard },
-              { value: 'historial', label: 'Historial de recibos', icon: History },
+              {
+                value: 'pago',
+                label: (
+                  <>
+                    <span className="sm:hidden">Pago</span>
+                    <span className="hidden sm:inline">Registrar pago</span>
+                  </>
+                ),
+                icon: CreditCard,
+              },
+              {
+                value: 'historial',
+                label: (
+                  <>
+                    <span className="sm:hidden">Historial</span>
+                    <span className="hidden sm:inline">Historial de recibos</span>
+                  </>
+                ),
+                icon: History,
+              },
             ]}
             value={pestanaActiva}
             onChange={(val) => setPestanaActiva(val)}

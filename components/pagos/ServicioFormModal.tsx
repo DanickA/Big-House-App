@@ -13,6 +13,7 @@ import {
   Repeat,
   Hash,
   Sparkles,
+  Loader2,
 } from 'lucide-react';
 
 interface ServicioFormModalProps {
@@ -159,16 +160,16 @@ export default function ServicioFormModal({
       <div className="relative glass-modal w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col my-auto max-h-[calc(100vh-3.5rem)] border border-white/80 dark:border-white/10 animate-fade-in-up">
         
         {/* Cabecera Fija */}
-        <div className="flex justify-between items-center px-6 sm:px-8 py-5 border-b border-[#E8E0D2]/80 dark:border-separator bg-white/85 dark:bg-[#1C1F1A]/85 backdrop-blur-md shrink-0">
+        <div className="flex justify-between items-center px-6 sm:px-8 py-5 border-b border-separator bg-secondary/85 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2EC] to-[#FAE2D8] dark:from-terracotta/20 dark:to-terracotta/10 border border-[#FADBD0] dark:border-terracotta/30 text-terracotta flex items-center justify-center shadow-2xs">
+            <div className="w-11 h-11 rounded-2xl bg-terracotta/15 border border-terracotta/30 text-terracotta flex items-center justify-center shadow-2xs">
               <Receipt size={22} strokeWidth={2.2} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-[#3A4630] dark:text-label-primary tracking-tight">
+              <h2 className="apple-title-3 font-semibold text-label-primary tracking-tight">
                 {servicioAEditar ? 'Editar Servicio' : 'Nuevo Servicio o Cuenta'}
               </h2>
-              <p className="text-xs text-label-secondary font-medium">
+              <p className="apple-subhead text-label-secondary font-normal">
                 {servicioAEditar
                   ? 'Modifica los datos del compromiso recurrente'
                   : 'Registra un servicio recurrente del hogar'}
@@ -180,7 +181,7 @@ export default function ServicioFormModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal"
-            className="w-9 h-9 rounded-full bg-[#F4EFE6] dark:bg-tertiary text-label-secondary hover:text-label-primary hover:bg-[#E8E0D2] dark:hover:bg-secondary transition flex items-center justify-center cursor-pointer border border-[#E8E0D2] dark:border-separator active:scale-90"
+            className="w-9 h-9 rounded-full bg-tertiary text-label-secondary hover:text-label-primary hover:bg-tertiary-hover transition flex items-center justify-center cursor-pointer border border-separator active:scale-90"
           >
             <X size={16} strokeWidth={2.5} />
           </button>
@@ -190,7 +191,7 @@ export default function ServicioFormModal({
         <div className="p-6 sm:p-8 overflow-y-auto space-y-4 flex-1 pr-5 sm:pr-7">
           
           {errorMsg && (
-            <div className="p-3.5 bg-[#FAE2D8] dark:bg-terracotta/20 border border-[#F2BAA5] dark:border-terracotta/40 text-[#B84626] dark:text-terracotta rounded-2xl text-xs font-bold text-center">
+            <div className="p-3.5 bg-terracotta/15 border border-terracotta/30 text-terracotta rounded-2xl text-xs font-semibold text-center">
               {errorMsg}
             </div>
           )}
@@ -199,11 +200,11 @@ export default function ServicioFormModal({
             
             {/* NOMBRE DEL SERVICIO */}
             <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
-                Nombre del Servicio o Cuenta *
+              <label className="block apple-subhead font-medium text-label-primary mb-1.5">
+                Nombre del servicio o cuenta *
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-olive">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-terracotta">
                   <Receipt size={16} strokeWidth={2.2} />
                 </div>
                 <input
@@ -213,7 +214,7 @@ export default function ServicioFormModal({
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   placeholder="Ej. Luz Enel, Agua, Fibra Óptica"
-                  className="w-full pl-10 pr-10 py-3 bg-white/80 dark:bg-tertiary/60 border border-[#D9CEBC] dark:border-separator rounded-2xl text-sm text-[#191C16] dark:text-label-primary font-medium placeholder-[#A39E95] dark:placeholder-label-tertiary focus:outline-none focus:bg-white dark:focus:bg-tertiary focus:border-[#3A4630] dark:focus:border-olive focus:ring-3 focus:ring-[#5F6F52]/15 transition shadow-2xs"
+                  className="w-full pl-10 pr-10 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                 />
                 {nombre && (
                   <button
@@ -229,7 +230,7 @@ export default function ServicioFormModal({
 
               {/* Sugerencias Rápidas */}
               <div className="flex items-center gap-1.5 flex-wrap pt-2">
-                <span className="text-[10px] font-bold text-label-secondary uppercase tracking-wider mr-1 flex items-center gap-1">
+                <span className="apple-caption-2 font-medium text-label-secondary mr-1 flex items-center gap-1">
                   <Sparkles size={11} strokeWidth={2.2} />
                   <span>Sugerencias:</span>
                 </span>
@@ -238,7 +239,7 @@ export default function ServicioFormModal({
                     key={sug}
                     type="button"
                     onClick={() => setNombre(sug)}
-                    className="px-2.5 py-1 rounded-xl text-[11px] font-semibold transition cursor-pointer active:scale-95 bg-white/70 dark:bg-tertiary/60 hover:bg-white dark:hover:bg-tertiary text-label-secondary hover:text-label-primary border border-[#E8E0D2] dark:border-separator"
+                    className="px-2.5 py-1 rounded-xl text-[11px] font-medium transition cursor-pointer active:scale-95 bg-tertiary hover:bg-tertiary-hover text-label-secondary hover:text-label-primary border border-separator"
                   >
                     {sug.split(' ')[0]}
                   </button>
@@ -248,11 +249,11 @@ export default function ServicioFormModal({
 
             {/* MONTO ESTIMADO BASE */}
             <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
-                Monto Base o Estimado ($) *
+              <label className="block apple-subhead font-medium text-label-primary mb-1.5">
+                Monto base o estimado ($) *
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-olive">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-terracotta">
                   <DollarSign size={16} strokeWidth={2.2} />
                 </div>
                 <input
@@ -265,7 +266,7 @@ export default function ServicioFormModal({
                   value={monto}
                   onChange={(e) => setMonto(e.target.value)}
                   placeholder="Ej. 75000"
-                  className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-[#D9CEBC] dark:border-separator rounded-2xl text-sm text-[#191C16] dark:text-label-primary font-semibold placeholder-[#A39E95] dark:placeholder-label-tertiary focus:outline-none focus:bg-white dark:focus:bg-tertiary focus:border-[#3A4630] dark:focus:border-olive focus:ring-3 focus:ring-[#5F6F52]/15 transition shadow-2xs"
+                  className="w-full pl-10 pr-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-semibold placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                 />
               </div>
             </div>
@@ -289,8 +290,8 @@ export default function ServicioFormModal({
               </div>
 
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
-                  Día Fijo de Corte (Opcional)
+                <label className="block apple-subhead font-medium text-label-primary mb-1.5">
+                  Día fijo de corte (opcional)
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-label-secondary">
@@ -304,19 +305,19 @@ export default function ServicioFormModal({
                     value={diaVencimiento}
                     onChange={(e) => setDiaVencimiento(e.target.value)}
                     placeholder="Ej. 10"
-                    className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-[#D9CEBC] dark:border-separator rounded-2xl text-sm text-[#191C16] dark:text-label-primary font-medium placeholder-[#A39E95] dark:placeholder-label-tertiary focus:outline-none focus:bg-white dark:focus:bg-tertiary focus:border-[#3A4630] dark:focus:border-olive focus:ring-3 focus:ring-[#5F6F52]/15 transition shadow-2xs"
+                    className="w-full pl-10 pr-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                   />
                 </div>
               </div>
             </div>
 
             {/* PERIODICIDAD / CICLO DE COBRO */}
-            <div className="p-4 bg-white/70 dark:bg-tertiary/40 rounded-2xl border border-white/90 dark:border-white/10 space-y-2.5 shadow-xs">
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#3A4630] dark:text-label-primary flex items-center gap-1.5">
-                <Repeat size={14} className="text-olive" />
-                <span>Periodicidad del Pago</span>
+            <div className="p-4 bg-secondary/70 dark:bg-tertiary/40 rounded-2xl border border-separator space-y-2.5 shadow-xs">
+              <label className="block apple-subhead font-medium text-label-primary flex items-center gap-1.5">
+                <Repeat size={14} className="text-terracotta" />
+                <span>Periodicidad del pago</span>
               </label>
-              <p className="text-[11px] text-label-secondary">
+              <p className="apple-caption-2 text-label-secondary font-normal">
                 Define cada cuántos meses se repite la factura para calcular automáticamente el próximo ciclo al pagar.
               </p>
 
@@ -326,10 +327,10 @@ export default function ServicioFormModal({
                     key={p.meses}
                     type="button"
                     onClick={() => setPeriodicidadMeses(p.meses)}
-                    className={`py-2 px-2.5 rounded-xl text-xs font-bold transition text-center cursor-pointer active:scale-95 ${
+                    className={`py-2 px-2.5 rounded-xl text-xs font-semibold transition text-center cursor-pointer active:scale-95 ${
                       periodicidadMeses === p.meses
-                        ? 'bg-[#5F6F52] text-white shadow-2xs'
-                        : 'bg-white dark:bg-tertiary/60 hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-label-secondary border border-[#E8E0D2] dark:border-separator'
+                        ? 'bg-terracotta text-white shadow-2xs'
+                        : 'bg-tertiary hover:bg-tertiary-hover text-label-secondary border border-separator'
                     }`}
                   >
                     {p.label}
@@ -341,8 +342,8 @@ export default function ServicioFormModal({
             {/* REFERENCIAS OPCIONALES (Nº DE CUENTA Y Nº DE FACTURA) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
-                  Nº de Cuenta o Contrato (Opcional)
+                <label className="block apple-subhead font-medium text-label-primary mb-1.5">
+                  Nº de cuenta o contrato (opcional)
                 </label>
                 <input
                   type="text"
@@ -350,13 +351,13 @@ export default function ServicioFormModal({
                   value={numeroCuenta}
                   onChange={(e) => setNumeroCuenta(e.target.value)}
                   placeholder="Ej. 104598234"
-                  className="w-full px-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-[#D9CEBC] dark:border-separator rounded-2xl text-sm text-[#191C16] dark:text-label-primary font-medium placeholder-[#A39E95] dark:placeholder-label-tertiary focus:outline-none focus:bg-white dark:focus:bg-tertiary focus:border-[#3A4630] dark:focus:border-olive focus:ring-3 focus:ring-[#5F6F52]/15 transition shadow-2xs"
+                  className="w-full px-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
-                  Nº de Factura o Referencia (Opcional)
+                <label className="block apple-subhead font-medium text-label-primary mb-1.5">
+                  Nº de factura o referencia (opcional)
                 </label>
                 <input
                   type="text"
@@ -364,33 +365,39 @@ export default function ServicioFormModal({
                   value={numeroFactura}
                   onChange={(e) => setNumeroFactura(e.target.value)}
                   placeholder="Ej. FAC-2026-09"
-                  className="w-full px-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-[#D9CEBC] dark:border-separator rounded-2xl text-sm text-[#191C16] dark:text-label-primary font-medium placeholder-[#A39E95] dark:placeholder-label-tertiary focus:outline-none focus:bg-white dark:focus:bg-tertiary focus:border-[#3A4630] dark:focus:border-olive focus:ring-3 focus:ring-[#5F6F52]/15 transition shadow-2xs"
+                  className="w-full px-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                 />
               </div>
             </div>
 
-            {/* BOTONES DE ACCIÓN */}
+            {/* BOTONES SIMÉTRICOS (APPLE HIG) */}
             <div className="pt-2 flex gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3.5 bg-[#F4EFE6] dark:bg-tertiary hover:bg-[#E8E0D2] dark:hover:bg-tertiary/80 text-label-secondary dark:text-label-primary font-bold text-xs rounded-2xl transition cursor-pointer"
+                disabled={procesando}
+                className="flex-1 btn-apple-gray text-sm font-semibold justify-center"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={procesando}
-                className="flex-1 py-3.5 bg-gradient-to-r from-[#5F6F52] to-[#4E5D42] hover:from-[#4E5D42] hover:to-[#3A4630] text-white font-extrabold text-xs rounded-2xl transition shadow-lg shadow-[#5F6F52]/25 disabled:opacity-50 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+                className="flex-1 btn-apple-filled text-sm font-semibold justify-center gap-2"
               >
-                <Check size={16} strokeWidth={2.5} />
-                <span>
-                  {procesando
-                    ? 'Guardando...'
-                    : servicioAEditar
-                    ? 'Guardar Cambios'
-                    : 'Registrar Servicio'}
-                </span>
+                {procesando ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin shrink-0" />
+                    <span>Guardando servicio...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} strokeWidth={2.4} className="shrink-0" />
+                    <span>
+                      {servicioAEditar ? 'Guardar cambios' : 'Registrar servicio'}
+                    </span>
+                  </>
+                )}
               </button>
             </div>
 

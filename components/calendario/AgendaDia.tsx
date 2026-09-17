@@ -7,6 +7,7 @@ import { DrawerResponsivo } from './DrawerResponsivo';
 import { toggleEstadoSubtarea, cancelarEventoLogico, eliminarEventoFisico } from '@/actions/calendario';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import EmptyState from '@/components/ui/EmptyState';
+import PullDownMenu from '@/components/ui/PullDownMenu';
 import { CheckSquare, Square, Trash2, XCircle, MapPin, Plus, User, Stethoscope, Pencil, Calendar } from 'lucide-react';
 
 interface AgendaDiaProps {
@@ -56,18 +57,19 @@ export function AgendaDia({ isOpen, onClose, fecha, eventos, onEventModified, on
   return (
     <DrawerResponsivo isOpen={isOpen} onClose={onClose} title={tituloCapitalizado}>
       <div className="flex justify-between items-center mb-3">
-        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+        <span className="apple-footnote font-semibold text-label-secondary">
           Actividades ({eventos.length})
         </span>
         {onCrearEnFecha && (
           <button
+            type="button"
             onClick={() => {
               onClose();
               onCrearEnFecha(fecha);
             }}
-            className="flex items-center gap-1 text-xs font-semibold text-[#5F6F52] hover:text-[#4E5C43] bg-[#EEF2EA] px-2.5 py-1 rounded-lg transition"
+            className="btn-apple-tinted px-3 text-xs font-semibold flex items-center gap-1.5"
           >
-            <Plus size={13} />
+            <Plus size={14} strokeWidth={2.4} />
             <span>Agregar actividad</span>
           </button>
         )}
@@ -100,45 +102,52 @@ export function AgendaDia({ isOpen, onClose, fecha, eventos, onEventModified, on
              return (
                <div key={evento.id} className={`border rounded-xl p-3.5 transition-all ${esCancelado ? 'opacity-60 bg-gray-50 dark:bg-tertiary/40 border-gray-200 dark:border-separator' : 'bg-white dark:bg-secondary border-gray-200 dark:border-separator shadow-2xs'}`}>
                  <div className="flex justify-between items-start mb-2">
-                   <div className="flex items-center gap-2">
+                   <div className="flex items-center gap-2 min-w-0 pr-2">
                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: evento.color }} />
-                     <h3 className={`text-sm font-bold ${esCancelado ? 'line-through text-label-tertiary' : 'text-label-primary'}`}>
+                     <h3 className={`apple-headline font-semibold truncate ${esCancelado ? 'line-through text-label-tertiary' : 'text-label-primary'}`}>
                        {evento.titulo}
                      </h3>
                    </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      {onEditarEvento && (
-                        <button
-                          type="button"
-                          onClick={() => onEditarEvento(evento)}
-                          className="text-[#5F6F52] dark:text-olive hover:bg-[#EEF2EA] dark:hover:bg-tertiary p-1.5 rounded-lg transition cursor-pointer active:scale-90"
-                          title="Editar Actividad"
-                          aria-label="Editar Actividad"
-                        >
-                          <Pencil size={15} strokeWidth={2.2} />
-                        </button>
-                      )}
-                      {!esCancelado && (
-                        <button
-                          type="button"
-                          onClick={() => handleCancelarClick(evento.id, evento.titulo)}
-                          className="text-amber-600 dark:text-amber hover:bg-amber-50 dark:hover:bg-amber/10 p-1.5 rounded-lg transition cursor-pointer active:scale-90"
-                          title="Cancelar Evento"
-                          aria-label="Cancelar Evento"
-                        >
-                          <XCircle size={15} strokeWidth={2.2} />
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleEliminarClick(evento.id, evento.titulo)}
-                        className="text-terracotta hover:bg-[#FAE2D8] dark:hover:bg-terracotta/20 p-1.5 rounded-lg transition cursor-pointer active:scale-90"
-                        title="Eliminar Definitivamente"
-                        aria-label="Eliminar Definitivamente"
-                      >
-                        <Trash2 size={15} strokeWidth={2.2} />
-                      </button>
-                    </div>
+                   <PullDownMenu
+                     ariaLabel={`Opciones de ${evento.titulo}`}
+                     groups={[
+                       {
+                         items: [
+                           ...(onEditarEvento
+                             ? [
+                                 {
+                                   id: 'editar',
+                                   label: 'Editar actividad...',
+                                   icon: Pencil,
+                                   onClick: () => onEditarEvento(evento),
+                                 },
+                               ]
+                             : []),
+                           ...(!esCancelado
+                             ? [
+                                 {
+                                   id: 'cancelar',
+                                   label: 'Cancelar actividad',
+                                   icon: XCircle,
+                                   onClick: () => handleCancelarClick(evento.id, evento.titulo),
+                                 },
+                               ]
+                             : []),
+                         ],
+                       },
+                       {
+                         items: [
+                           {
+                             id: 'eliminar',
+                             label: 'Eliminar definitivamente',
+                             icon: Trash2,
+                             destructive: true,
+                             onClick: () => handleEliminarClick(evento.id, evento.titulo),
+                           },
+                         ],
+                       },
+                     ]}
+                   />
                  </div>
                  
                  <div className="text-xs text-gray-600 flex flex-col gap-1 mb-2">

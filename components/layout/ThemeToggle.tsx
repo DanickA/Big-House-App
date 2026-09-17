@@ -37,7 +37,7 @@ export default function ThemeToggle() {
       title={title}
       aria-label={title}
       suppressHydrationWarning
-      className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#EFEAE0] dark:bg-[#282C25] hover:bg-[#E8E0D2] dark:hover:bg-[#33382F] text-[#6E6A62] dark:text-[#ABA69B] hover:text-[#2E2B27] dark:hover:text-[#F5F2EB] transition cursor-pointer active:scale-90 border border-[rgba(115,111,104,0.22)] dark:border-[rgba(255,255,255,0.14)] shrink-0"
+      className="w-8 h-8 rounded-xl flex items-center justify-center bg-tertiary hover:bg-tertiary-hover text-label-secondary hover:text-label-primary transition cursor-pointer active:scale-90 border border-separator shrink-0"
     >
       {!mounted || theme === 'system' ? (
         <Laptop size={15} strokeWidth={2.2} />

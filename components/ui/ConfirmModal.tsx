@@ -67,20 +67,20 @@ export default function ConfirmModal({
   const variantConfig = {
     danger: {
       icon: Trash2,
-      iconContainer: 'bg-[#C86242]/15 dark:bg-[#E07D63]/20 text-[#C86242] dark:text-[#E07D63] border border-[#C86242]/30',
-      confirmBtn: 'bg-[#C86242] dark:bg-[#E07D63] hover:bg-[#B05336] dark:hover:bg-[#E8917A] text-white dark:text-[#121411] shadow-[#C86242]/20',
+      iconContainer: 'bg-terracotta/15 dark:bg-terracotta/20 text-terracotta border border-terracotta/30',
+      confirmBtn: 'bg-terracotta hover:bg-terracotta-hover text-white shadow-terracotta/20',
       defaultConfirmText: 'Eliminar',
     },
     warning: {
       icon: AlertTriangle,
-      iconContainer: 'bg-[#D97706]/15 dark:bg-[#F59E0B]/20 text-[#D97706] dark:text-[#F59E0B] border border-[#D97706]/30',
-      confirmBtn: 'bg-[#D97706] dark:bg-[#F59E0B] hover:bg-[#B45309] dark:hover:bg-[#FBBF24] text-white dark:text-[#121411] shadow-[#D97706]/20',
+      iconContainer: 'bg-[#ce9b8c]/25 dark:bg-clay/20 text-label-primary dark:text-clay border border-[#aa4b50]/30',
+      confirmBtn: 'bg-brand-deep hover:bg-terracotta text-white shadow-brand-deep/20',
       defaultConfirmText: 'Continuar',
     },
     info: {
       icon: AlertCircle,
-      iconContainer: 'bg-[#5F6F52]/15 dark:bg-[#8FA37E]/20 text-[#5F6F52] dark:text-[#8FA37E] border border-[#5F6F52]/30',
-      confirmBtn: 'bg-[#5F6F52] dark:bg-[#8FA37E] hover:bg-[#4E5D43] dark:hover:bg-[#A2B591] text-white dark:text-[#121411] shadow-[#5F6F52]/20',
+      iconContainer: 'bg-mint/15 dark:bg-mint/20 text-mint border border-mint/30',
+      confirmBtn: 'bg-mint hover:bg-mint-hover text-white shadow-mint/20',
       defaultConfirmText: 'Aceptar',
     },
   }[variant];
@@ -104,19 +104,19 @@ export default function ConfirmModal({
 
         {/* Título y Descripción */}
         <div className="space-y-2">
-          <h3 className="text-xl font-black text-label-primary tracking-tight">{title}</h3>
-          <p className="text-sm text-label-secondary font-medium leading-relaxed px-1">
+          <h3 className="apple-title-3 font-semibold text-label-primary">{title}</h3>
+          <p className="apple-subhead text-label-secondary px-1">
             {description}
           </p>
         </div>
 
-        {/* Botones de Acción */}
+        {/* Botones de Acción Simétricos (Apple HIG Dialog / Action Sheet) */}
         <div className="flex items-center gap-3 pt-2">
           <button
             type="button"
             onClick={onClose}
             disabled={isBusy}
-            className="flex-1 py-3 px-4 rounded-2xl border border-separator bg-white/70 dark:bg-[#1C1F1A] hover:bg-[#EEF2EA] dark:hover:bg-[#282C25] text-label-secondary hover:text-label-primary font-bold text-sm transition cursor-pointer active:scale-95 shadow-2xs disabled:opacity-50"
+            className="flex-1 btn-apple-gray text-sm font-semibold justify-center"
           >
             {cancelText}
           </button>
@@ -124,12 +124,14 @@ export default function ConfirmModal({
             type="button"
             onClick={handleConfirmClick}
             disabled={isBusy}
-            className={`flex-1 py-3 px-4 rounded-2xl font-black text-sm transition cursor-pointer active:scale-95 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 ${variantConfig.confirmBtn}`}
+            className={`flex-1 ${
+              variant === 'info' ? 'btn-apple-filled-mint' : 'btn-apple-filled'
+            } text-sm font-semibold justify-center gap-2`}
           >
             {isBusy ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
-                <span>Procesando...</span>
+                <Loader2 size={16} className="animate-spin shrink-0" />
+                <span>{variant === 'danger' ? 'Eliminando...' : 'Procesando...'}</span>
               </>
             ) : (
               <span>{textoBotonConfirmar}</span>

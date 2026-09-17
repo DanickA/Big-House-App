@@ -111,19 +111,19 @@ export default function FinanzasPage() {
     <div className="relative min-h-screen bg-system text-label-primary p-6 md:p-10 overflow-hidden">
       {/* Luces Ambientales de Fondo */}
       <div className="ambient-glow-terracotta top-[-50px] right-[-50px]" />
-      <div className="ambient-glow-olive bottom-[-50px] left-[-50px]" />
+      <div className="ambient-glow-mint bottom-[-50px] left-[-50px]" />
 
       <div className="relative z-10 max-w-6xl mx-auto space-y-8 animate-fade-in-up">
         
         {/* Notificación Flotante Glassmorphic */}
         {mensajeExito && (
-          <div className="fixed top-20 right-6 z-60 glass-card bg-[#EEF2EA]/95 dark:bg-[#1E261B]/95 border border-[#B7CBA9] dark:border-olive/40 text-[#2D3E24] dark:text-olive px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
-            <CheckCircle2 size={18} className="text-olive" />
+          <div className="fixed top-20 right-6 z-60 glass-card bg-[#c7e1d7]/95 dark:bg-mint/20 border border-[#6eb5a5]/40 text-mint px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+            <CheckCircle2 size={18} className="text-mint" />
             <span>{mensajeExito}</span>
           </div>
         )}
         {mensajeError && (
-          <div className="fixed top-20 right-6 z-60 glass-card bg-[#FBEAE5]/95 dark:bg-[#3A1F18]/95 border border-[#E8B4A2] dark:border-terracotta/40 text-terracotta px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+          <div className="fixed top-20 right-6 z-60 glass-card bg-[#ce9b8c]/30 dark:bg-terracotta/20 border border-[#aa4b50]/40 text-terracotta px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
             <AlertCircle size={18} className="text-terracotta" />
             <span>{mensajeError}</span>
           </div>
@@ -134,15 +134,15 @@ export default function FinanzasPage() {
           <div className="space-y-1">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-label-secondary hover:text-label-primary transition uppercase tracking-wider mb-1"
+              className="apple-footnote font-medium text-label-secondary hover:text-label-primary transition flex items-center gap-1.5 mb-1"
             >
               <ArrowLeft size={13} strokeWidth={2.5} />
               <span>Volver al Lobby</span>
             </Link>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-[#3A4630] dark:text-label-primary tracking-tight">
+            <h1 className="apple-large-title text-label-primary tracking-tight">
               Pagos y Cuentas del Hogar
             </h1>
-            <p className="text-label-secondary text-xs font-medium">
+            <p className="apple-subhead text-label-secondary font-normal">
               Control de servicios públicos, facturas recurrentes y comprobantes compartidos
             </p>
           </div>
@@ -153,10 +153,10 @@ export default function FinanzasPage() {
               setServicioAEditar(null);
               setIsFormOpen(true);
             }}
-            className="px-5 py-3 bg-[#5F6F52] hover:bg-[#4E5D42] text-white rounded-2xl text-xs font-bold transition shadow-md shadow-[#5F6F52]/20 flex items-center gap-2 cursor-pointer active:scale-95 self-start sm:self-auto"
+            className="btn-apple-filled px-5 text-sm font-semibold flex items-center gap-2 self-start sm:self-auto"
           >
-            <Plus size={16} strokeWidth={2.5} />
-            <span>Nuevo Servicio</span>
+            <Plus size={16} strokeWidth={2.4} />
+            <span>Agregar servicio</span>
           </button>
         </header>
 
@@ -166,17 +166,17 @@ export default function FinanzasPage() {
           {/* Métrica 1: Presupuesto Mensual */}
           <div className="glass-card p-5 rounded-[2rem] border border-white/80 dark:border-white/10 space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-label-secondary">
-              <span className="text-xs font-bold uppercase tracking-wider">
+              <span className="apple-caption-1 font-medium text-label-secondary">
                 Gasto Mensual Estimado
               </span>
-              <div className="w-8 h-8 rounded-xl bg-[#EEF2EA] dark:bg-[#282C25] text-[#5F6F52] dark:text-olive flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[#ce9b8c]/25 dark:bg-terracotta/15 text-terracotta flex items-center justify-center">
                 <DollarSign size={16} />
               </div>
             </div>
-            <p className="text-2xl md:text-3xl font-black text-[#3A4630] dark:text-label-primary tracking-tight">
+            <p className="apple-title-1 font-bold text-terracotta tracking-tight tabular-nums">
               {cargando ? '...' : presupuestoFormateado}
             </p>
-            <p className="text-[11px] text-label-secondary">
+            <p className="apple-caption-2 text-label-secondary font-normal">
               Normalizado según periodicidad mensual/bimestral
             </p>
           </div>
@@ -184,42 +184,42 @@ export default function FinanzasPage() {
           {/* Métrica 2: Cuentas que requieren atención */}
           <div className="glass-card p-5 rounded-[2rem] border border-white/80 dark:border-white/10 space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-label-secondary">
-              <span className="text-xs font-bold uppercase tracking-wider">
+              <span className="apple-caption-1 font-medium text-label-secondary">
                 Por Pagar / Urgentes
               </span>
-              <div className="w-8 h-8 rounded-xl bg-[#FAE2D8] dark:bg-terracotta/20 text-[#B84626] dark:text-terracotta flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[#ce9b8c]/25 dark:bg-terracotta/20 text-terracotta flex items-center justify-center">
                 <AlertTriangle size={16} />
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <p className="text-2xl md:text-3xl font-black text-[#B84626] dark:text-terracotta tracking-tight">
+              <p className="apple-title-1 font-bold text-terracotta tracking-tight tabular-nums">
                 {cargando ? '...' : resumen.cuentasVencidas + resumen.cuentasPorVencer}
               </p>
-              <span className="text-xs font-bold text-label-secondary">
+              <span className="apple-caption-1 font-medium text-label-secondary">
                 ({resumen.cuentasVencidas} vencidas)
               </span>
             </div>
-            <p className="text-[11px] text-label-secondary">
+            <p className="apple-caption-2 text-label-secondary font-normal">
               {resumen.cuentasVencidas > 0
                 ? 'Requieren atención inmediata'
                 : 'Sin cuentas en mora'}
             </p>
           </div>
 
-          {/* Métrica 3: Cuentas al día */}
+          {/* Métrica 3: Cuentas al día (Acento Menta) */}
           <div className="glass-card p-5 rounded-[2rem] border border-white/80 dark:border-white/10 space-y-2 shadow-xs">
             <div className="flex items-center justify-between text-label-secondary">
-              <span className="text-xs font-bold uppercase tracking-wider">
+              <span className="apple-caption-1 font-medium text-label-secondary">
                 Cuentas al Día
               </span>
-              <div className="w-8 h-8 rounded-xl bg-[#EEF2EA] dark:bg-olive/20 text-[#5F6F52] dark:text-olive flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[#c7e1d7]/60 dark:bg-mint/20 text-mint flex items-center justify-center">
                 <CheckCircle2 size={16} />
               </div>
             </div>
-            <p className="text-2xl md:text-3xl font-black text-[#5F6F52] dark:text-olive tracking-tight">
+            <p className="apple-title-1 font-bold text-mint tracking-tight tabular-nums">
               {cargando ? '...' : resumen.cuentasAlDia}
             </p>
-            <p className="text-[11px] text-label-secondary">
+            <p className="apple-caption-2 text-label-secondary font-normal">
               De {resumen.totalServicios} servicios registrados
             </p>
           </div>

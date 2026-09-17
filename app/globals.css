@@ -6,157 +6,252 @@
    SISTEMA DE COLOR APPLE HIG CON ADN BIGHOUSE
    Tokens semánticos duales (Claro / Oscuro), capas en 3 niveles y accesibilidad
    ========================================================================== */
-
 :root {
-  /* Nivel 1: Lienzo Base */
-  --bg-system: #F4EFE6;
-  --bg-system-rgb: 244, 239, 230;
+  /* Nivel 1: Lienzo Base (Lino Cálido Antifatiga) */
+  --bg-system: #f9f6eb;
+  --bg-system-rgb: 249, 246, 235;
 
-  /* Nivel 2: Tarjetas y Contenedores Elevados */
-  --bg-secondary: rgba(255, 255, 255, 0.82);
-  --bg-secondary-solid: #FDFBF7;
+  /* Nivel 2: Tarjetas y Contenedores Elevados (Blanco Puro Iluminado) */
+  --bg-secondary: rgba(255, 255, 255, 0.94);
+  --bg-secondary-solid: #ffffff;
 
-  /* Nivel 3: Controles, Inputs, Chips */
-  --bg-tertiary: #EFEAE0;
-  --bg-tertiary-hover: #E8E0D2;
+  /* Nivel 3: Controles, Inputs, Chips (Arena Dorada / Vainilla Cálida) */
+  --bg-tertiary: rgba(231, 214, 172, 0.40);
+  --bg-tertiary-solid: #E7D6AC;
+  --bg-tertiary-hover: rgba(231, 214, 172, 0.65);
 
   /* Tipografía Semántica Apple HIG (4 Niveles) */
-  --label-primary: #2E2B27;
-  --label-secondary: #6E6A62;
-  --label-tertiary: #9E988D;
-  --label-quaternary: #C2BCAE;
+  --label-primary: #282321;
+  --label-secondary: #6B625E;
+  --label-tertiary: #968B86;
+  --label-quaternary: #C4BBB4;
 
   /* Separadores y Hairlines */
-  --separator: rgba(115, 111, 104, 0.22);
-  --separator-opaque: #D9CEBC;
+  --separator: rgba(107, 98, 94, 0.16);
+  --separator-opaque: #E2D7C3;
 
-  /* Colores Semánticos Funcionales (Modo Claro) */
-  --color-olive: #5F6F52;
-  --color-olive-hover: #4E5D43;
-  --color-olive-tint: rgba(95, 111, 82, 0.12);
+  /* Colores Semánticos Funcionales: Identidad Cálida BigHouse */
+  --color-terracotta: #AA4B50;
+  --color-terracotta-hover: #B25D5D;
+  --color-terracotta-tint: rgba(170, 75, 80, 0.12);
 
-  --color-terracotta: #C86242;
-  --color-terracotta-hover: #B05336;
-  --color-terracotta-tint: rgba(200, 98, 66, 0.10);
+  --color-brand-deep: #A13842;
+  --color-clay: #BD7471;
+  --color-clay-tint: rgba(206, 155, 140, 0.25);
+  --color-peach: #CE9B8C;
 
-  --color-amber: #D97706;
-  --color-amber-hover: #B45309;
-  --color-amber-tint: rgba(217, 119, 6, 0.12);
+  /* Colores Semánticos Funcionales: Botánica y Salud del Hogar */
+  --color-mint: #6EB5A5;
+  --color-mint-hover: #5DA494;
+  --color-mint-soft: #98CABA;
+  --color-mint-tint: rgba(199, 225, 215, 0.45);
 
-  --color-blue: #0284C7;
-  --color-blue-hover: #0369A1;
-  --color-blue-tint: rgba(2, 132, 199, 0.12);
+  /* Mapeo de compatibilidad con tokens existentes */
+  --color-pistachio: var(--color-mint);
+  --color-pistachio-hover: var(--color-mint-hover);
+  --color-pistachio-tint: var(--color-mint-tint);
+
+  --color-turquoise: var(--color-mint);
+  --color-turquoise-hover: var(--color-mint-hover);
+  --color-turquoise-tint: var(--color-mint-tint);
+
+  --color-champagne: #F9F3DB;
+  --color-champagne-tint: rgba(249, 243, 219, 0.50);
+
+  --color-khaki: #E7D6AC;
+  --color-khaki-tint: rgba(231, 214, 172, 0.25);
+
+  /* Reemplazo armónico de azules y ámbares chillones por tonos de la paleta */
+  --color-royalblue: #A13842;
+  --color-royalblue-hover: #AA4B50;
+  --color-royalblue-tint: rgba(161, 56, 66, 0.12);
+
+  --color-amber: #BD7471;
+  --color-amber-hover: #AA4B50;
+  --color-amber-tint: rgba(189, 116, 113, 0.15);
+
+  --color-olive: var(--color-mint);
+  --color-olive-hover: var(--color-mint-hover);
+  --color-olive-tint: var(--color-mint-tint);
+
+  --color-blue: var(--color-brand-deep);
+  --color-blue-hover: var(--color-terracotta);
+  --color-blue-tint: var(--color-royalblue-tint);
 
   /* Glassmorphism Dinámico */
-  --glass-card-bg: rgba(255, 255, 255, 0.78);
-  --glass-card-border: rgba(255, 255, 255, 0.85);
-  --glass-card-shadow: 0 10px 30px -10px rgba(58, 70, 48, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --glass-card-bg: rgba(255, 255, 255, 0.92);
+  --glass-card-border: rgba(107, 98, 94, 0.14);
+  --glass-card-shadow: 0 10px 30px -10px rgba(70, 45, 40, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03);
 
-  --glass-modal-bg: rgba(253, 251, 247, 0.94);
-  --glass-modal-border: rgba(255, 255, 255, 0.90);
+  --glass-modal-bg: rgba(255, 255, 255, 0.98);
+  --glass-modal-border: rgba(107, 98, 94, 0.18);
 
   /* Luces Ambientales Adaptativas */
+  --ambient-glow-terracotta-opacity: 0.12;
+  --ambient-glow-pistachio-opacity: 0.12;
+  --ambient-glow-turquoise-opacity: 0.10;
   --ambient-glow-olive-opacity: 0.12;
-  --ambient-glow-terracotta-opacity: 0.10;
 }
 
 /* Modo Oscuro Dinámico: Preferencia del Sistema Operativo */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    /* Nivel 1: Lienzo Base (OLED Charcoal Cálido) */
-    --bg-system: #121411;
-    --bg-system-rgb: 18, 20, 17;
+    /* Nivel 1: Lienzo Base (Carbón Cálido Profundo) */
+    --bg-system: #151413;
+    --bg-system-rgb: 21, 20, 19;
 
     /* Nivel 2: Tarjetas y Contenedores Elevados */
-    --bg-secondary: rgba(28, 31, 26, 0.85);
-    --bg-secondary-solid: #1C1F1A;
+    --bg-secondary: rgba(32, 28, 26, 0.85);
+    --bg-secondary-solid: #201C1A;
 
     /* Nivel 3: Controles, Inputs, Chips */
-    --bg-tertiary: #282C25;
-    --bg-tertiary-hover: #33382F;
+    --bg-tertiary: #2D2623;
+    --bg-tertiary-solid: #2D2623;
+    --bg-tertiary-hover: #39312D;
 
     /* Tipografía Semántica Apple HIG (Modo Oscuro) */
-    --label-primary: #F5F2EB;
-    --label-secondary: #ABA69B;
-    --label-tertiary: #78756D;
-    --label-quaternary: #45433E;
+    --label-primary: #F9F3DB;
+    --label-secondary: #B8ADA3;
+    --label-tertiary: #7E746A;
+    --label-quaternary: #4C453F;
 
     /* Separadores */
-    --separator: rgba(255, 255, 255, 0.14);
-    --separator-opaque: #2E332B;
+    --separator: rgba(255, 255, 255, 0.12);
+    --separator-opaque: #36302B;
 
-    /* Colores Semánticos Duales (Mayor luminosidad y menor saturación) */
-    --color-olive: #8FA37E;
-    --color-olive-hover: #A2B591;
-    --color-olive-tint: rgba(143, 163, 126, 0.18);
+    /* Colores Semánticos Duales */
+    --color-terracotta: #D6767B;
+    --color-terracotta-hover: #E28B90;
+    --color-terracotta-tint: rgba(214, 118, 123, 0.20);
 
-    --color-terracotta: #E07D63;
-    --color-terracotta-hover: #E8917A;
-    --color-terracotta-tint: rgba(224, 125, 99, 0.18);
+    --color-brand-deep: #E56B75;
+    --color-clay: #CE8C8A;
+    --color-clay-tint: rgba(206, 155, 140, 0.22);
+    --color-peach: #CE9B8C;
 
-    --color-amber: #F59E0B;
-    --color-amber-hover: #FBBF24;
-    --color-amber-tint: rgba(245, 158, 11, 0.18);
+    --color-mint: #8ED1C1;
+    --color-mint-hover: #A4DFD1;
+    --color-mint-soft: #98CABA;
+    --color-mint-tint: rgba(199, 225, 215, 0.22);
 
-    --color-blue: #38BDF8;
-    --color-blue-hover: #7DD3FC;
-    --color-blue-tint: rgba(56, 189, 248, 0.18);
+    --color-pistachio: var(--color-mint);
+    --color-pistachio-hover: var(--color-mint-hover);
+    --color-pistachio-tint: var(--color-mint-tint);
+
+    --color-turquoise: var(--color-mint-soft);
+    --color-turquoise-hover: var(--color-mint-hover);
+    --color-turquoise-tint: var(--color-mint-tint);
+
+    --color-champagne: #2D2623;
+    --color-champagne-tint: rgba(45, 38, 35, 0.40);
+
+    --color-khaki: #E7D6AC;
+    --color-khaki-tint: rgba(231, 214, 172, 0.18);
+
+    --color-royalblue: #E56B75;
+    --color-royalblue-hover: #D6767B;
+    --color-royalblue-tint: rgba(229, 107, 117, 0.18);
+
+    --color-amber: #CE8C8A;
+    --color-amber-hover: #D6767B;
+    --color-amber-tint: rgba(206, 140, 138, 0.18);
+
+    --color-olive: var(--color-mint);
+    --color-olive-hover: var(--color-mint-hover);
+    --color-olive-tint: var(--color-mint-tint);
+
+    --color-blue: var(--color-brand-deep);
+    --color-blue-hover: var(--color-terracotta);
+    --color-blue-tint: var(--color-royalblue-tint);
 
     /* Glassmorphism Dinámico */
-    --glass-card-bg: rgba(28, 31, 26, 0.80);
+    --glass-card-bg: rgba(32, 28, 26, 0.82);
     --glass-card-border: rgba(255, 255, 255, 0.10);
-    --glass-card-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.45);
+    --glass-card-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.48);
 
-    --glass-modal-bg: rgba(24, 27, 22, 0.95);
+    --glass-modal-bg: rgba(28, 24, 22, 0.95);
     --glass-modal-border: rgba(255, 255, 255, 0.12);
 
-    --ambient-glow-olive-opacity: 0.18;
-    --ambient-glow-terracotta-opacity: 0.14;
+    --ambient-glow-terracotta-opacity: 0.16;
+    --ambient-glow-pistachio-opacity: 0.16;
+    --ambient-glow-turquoise-opacity: 0.14;
+    --ambient-glow-olive-opacity: 0.16;
   }
 }
 
 /* Modo Oscuro Forzado Manualmente */
 [data-theme="dark"] {
-  --bg-system: #121411;
-  --bg-system-rgb: 18, 20, 17;
-  --bg-secondary: rgba(28, 31, 26, 0.85);
-  --bg-secondary-solid: #1C1F1A;
-  --bg-tertiary: #282C25;
-  --bg-tertiary-hover: #33382F;
+  --bg-system: #151413;
+  --bg-system-rgb: 21, 20, 19;
+  --bg-secondary: rgba(32, 28, 26, 0.85);
+  --bg-secondary-solid: #201C1A;
+  --bg-tertiary: #2D2623;
+  --bg-tertiary-solid: #2D2623;
+  --bg-tertiary-hover: #39312D;
 
-  --label-primary: #F5F2EB;
-  --label-secondary: #ABA69B;
-  --label-tertiary: #78756D;
-  --label-quaternary: #45433E;
+  --label-primary: #F9F3DB;
+  --label-secondary: #B8ADA3;
+  --label-tertiary: #7E746A;
+  --label-quaternary: #4C453F;
 
-  --separator: rgba(255, 255, 255, 0.14);
-  --separator-opaque: #2E332B;
+  --separator: rgba(255, 255, 255, 0.12);
+  --separator-opaque: #36302B;
 
-  --color-olive: #8FA37E;
-  --color-olive-hover: #A2B591;
-  --color-olive-tint: rgba(143, 163, 126, 0.18);
+  --color-terracotta: #D6767B;
+  --color-terracotta-hover: #E28B90;
+  --color-terracotta-tint: rgba(214, 118, 123, 0.20);
 
-  --color-terracotta: #E07D63;
-  --color-terracotta-hover: #E8917A;
-  --color-terracotta-tint: rgba(224, 125, 99, 0.18);
+  --color-brand-deep: #E56B75;
+  --color-clay: #CE8C8A;
+  --color-clay-tint: rgba(206, 155, 140, 0.22);
+  --color-peach: #CE9B8C;
 
-  --color-amber: #F59E0B;
-  --color-amber-hover: #FBBF24;
-  --color-amber-tint: rgba(245, 158, 11, 0.18);
+  --color-mint: #8ED1C1;
+  --color-mint-hover: #A4DFD1;
+  --color-mint-soft: #98CABA;
+  --color-mint-tint: rgba(199, 225, 215, 0.22);
 
-  --color-blue: #38BDF8;
-  --color-blue-hover: #7DD3FC;
-  --color-blue-tint: rgba(56, 189, 248, 0.18);
+  --color-pistachio: var(--color-mint);
+  --color-pistachio-hover: var(--color-mint-hover);
+  --color-pistachio-tint: var(--color-mint-tint);
 
-  --glass-card-bg: rgba(28, 31, 26, 0.80);
+  --color-turquoise: var(--color-mint-soft);
+  --color-turquoise-hover: var(--color-mint-hover);
+  --color-turquoise-tint: var(--color-mint-tint);
+
+  --color-champagne: #2D2623;
+  --color-champagne-tint: rgba(45, 38, 35, 0.40);
+
+  --color-khaki: #E7D6AC;
+  --color-khaki-tint: rgba(231, 214, 172, 0.18);
+
+  --color-royalblue: #E56B75;
+  --color-royalblue-hover: #D6767B;
+  --color-royalblue-tint: rgba(229, 107, 117, 0.18);
+
+  --color-amber: #CE8C8A;
+  --color-amber-hover: #D6767B;
+  --color-amber-tint: rgba(206, 140, 138, 0.18);
+
+  --color-olive: var(--color-mint);
+  --color-olive-hover: var(--color-mint-hover);
+  --color-olive-tint: var(--color-mint-tint);
+
+  --color-blue: var(--color-brand-deep);
+  --color-blue-hover: var(--color-terracotta);
+  --color-blue-tint: var(--color-royalblue-tint);
+
+  --glass-card-bg: rgba(32, 28, 26, 0.82);
   --glass-card-border: rgba(255, 255, 255, 0.10);
-  --glass-card-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.45);
+  --glass-card-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.48);
 
-  --glass-modal-bg: rgba(24, 27, 22, 0.95);
+  --glass-modal-bg: rgba(28, 24, 22, 0.95);
   --glass-modal-border: rgba(255, 255, 255, 0.12);
 
-  --ambient-glow-olive-opacity: 0.18;
-  --ambient-glow-terracotta-opacity: 0.14;
+  --ambient-glow-terracotta-opacity: 0.16;
+  --ambient-glow-pistachio-opacity: 0.16;
+  --ambient-glow-turquoise-opacity: 0.14;
+  --ambient-glow-olive-opacity: 0.16;
 }
 
 /* Soporte Accesibilidad: Aumentar Contraste (prefers-contrast: more) */
@@ -164,24 +259,24 @@
   :root {
     --label-primary: #000000;
     --label-secondary: #1F1E1B;
-    --separator: #736F68;
-    --separator-opaque: #5F6F52;
-    --glass-card-border: rgba(58, 70, 48, 0.45);
+    --separator: #6B625E;
+    --separator-opaque: #E7D6AC;
+    --glass-card-border: rgba(170, 75, 80, 0.45);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --label-primary: #FFFFFF;
       --label-secondary: #E8E5DD;
-      --separator: #A9A49B;
-      --separator-opaque: #8FA37E;
+      --separator: #B8ADA3;
+      --separator-opaque: #E7D6AC;
       --glass-card-border: rgba(255, 255, 255, 0.35);
     }
   }
   [data-theme="dark"] {
     --label-primary: #FFFFFF;
     --label-secondary: #E8E5DD;
-    --separator: #A9A49B;
-    --separator-opaque: #8FA37E;
+    --separator: #B8ADA3;
+    --separator-opaque: #E7D6AC;
     --glass-card-border: rgba(255, 255, 255, 0.35);
   }
 }
@@ -207,22 +302,41 @@
   --color-label-tertiary: var(--label-tertiary);
   --color-label-quaternary: var(--label-quaternary);
   --color-separator: var(--separator);
-  --color-olive: var(--color-olive);
-  --color-olive-hover: var(--color-olive-hover);
   --color-terracotta: var(--color-terracotta);
   --color-terracotta-hover: var(--color-terracotta-hover);
+  --color-brand-deep: var(--color-brand-deep);
+  --color-clay: var(--color-clay);
+  --color-clay-tint: var(--color-clay-tint);
+  --color-peach: var(--color-peach);
+  --color-mint: var(--color-mint);
+  --color-mint-hover: var(--color-mint-hover);
+  --color-mint-soft: var(--color-mint-soft);
+  --color-mint-tint: var(--color-mint-tint);
+  --color-pistachio: var(--color-pistachio);
+  --color-pistachio-hover: var(--color-pistachio-hover);
+  --color-turquoise: var(--color-turquoise);
+  --color-turquoise-hover: var(--color-turquoise-hover);
+  --color-champagne: var(--color-champagne);
+  --color-khaki: var(--color-khaki);
+  --color-royalblue: var(--color-royalblue);
+  --color-royalblue-hover: var(--color-royalblue-hover);
+  --color-olive: var(--color-olive);
+  --color-olive-hover: var(--color-olive-hover);
   --color-amber-sem: var(--color-amber);
-  --color-blue-sem: var(--color-blue);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-blue-sem: var(--color-royalblue);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", var(--font-geist-sans), system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", var(--font-geist-mono), ui-monospace, Menlo, Monaco, Consolas, monospace;
 }
 
 body {
   background-color: var(--bg-system);
   color: var(--label-primary);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", var(--font-geist-sans), system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   transition: background-color 0.3s ease, color 0.3s ease;
   touch-action: manipulation;
 }
@@ -244,18 +358,18 @@ html, body, a, button, input, select, textarea, [role="button"] {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-olive);
-  opacity: 0.25;
+  background: var(--color-terracotta);
+  opacity: 0.20;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-olive) transparent;
+  scrollbar-color: var(--color-terracotta) transparent;
 }
 
 /* Clases Utilitarias Glassmorphism Dinámicas */
@@ -273,7 +387,7 @@ html, body, a, button, input, select, textarea, [role="button"] {
 
 .glass-card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.16), 0 0 0 1px var(--glass-card-border);
+  box-shadow: 0 20px 40px -15px rgba(70, 50, 40, 0.14), 0 0 0 1px var(--glass-card-border);
 }
 
 .glass-nav {
@@ -292,12 +406,14 @@ html, body, a, button, input, select, textarea, [role="button"] {
 }
 
 /* Luces Ambientales Adaptativas */
+.ambient-glow-mint,
+.ambient-glow-pistachio,
 .ambient-glow-olive {
   position: absolute;
   width: 380px;
   height: 380px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(95, 111, 82, var(--ambient-glow-olive-opacity)) 0%, rgba(95, 111, 82, 0) 70%);
+  background: radial-gradient(circle, rgba(110, 181, 165, var(--ambient-glow-pistachio-opacity)) 0%, rgba(110, 181, 165, 0) 70%);
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
@@ -308,10 +424,24 @@ html, body, a, button, input, select, textarea, [role="button"] {
 
 .ambient-glow-terracotta {
   position: absolute;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(170, 75, 80, var(--ambient-glow-terracotta-opacity)) 0%, rgba(170, 75, 80, 0) 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+  transform: translateZ(0);
+  will-change: transform;
+  contain: strict;
+}
+
+.ambient-glow-turquoise {
+  position: absolute;
   width: 320px;
   height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(200, 98, 66, var(--ambient-glow-terracotta-opacity)) 0%, rgba(200, 98, 66, 0) 70%);
+  background: radial-gradient(circle, rgba(152, 202, 186, var(--ambient-glow-turquoise-opacity)) 0%, rgba(152, 202, 186, 0) 70%);
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
@@ -374,4 +504,314 @@ html, body, a, button, input, select, textarea, [role="button"] {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ==========================================================================
+   ESCALA TIPOGRÁFICA CANÓNICA APPLE HIG (Human Interface Guidelines)
+   11 estilos estándar con leading proporcional y tracking óptico adaptativo
+   ========================================================================== */
+.apple-large-title {
+  font-size: clamp(1.75rem, 4vw, 2.125rem); /* 28px - 34px */
+  line-height: 1.22; /* ~41px */
+  letter-spacing: 0.012em;
+  font-weight: 700;
+}
 
+.apple-title-1 {
+  font-size: clamp(1.5rem, 3vw, 1.75rem); /* 24px - 28px */
+  line-height: 1.22; /* ~34px */
+  letter-spacing: 0.014em;
+  font-weight: 700;
+}
+
+.apple-title-2 {
+  font-size: 1.375rem; /* 22px */
+  line-height: 1.28; /* ~28px */
+  letter-spacing: -0.012em;
+  font-weight: 700;
+}
+
+.apple-title-3 {
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.25; /* ~25px */
+  letter-spacing: -0.023em;
+  font-weight: 600;
+}
+
+.apple-headline {
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.3; /* ~22px */
+  letter-spacing: -0.026em;
+  font-weight: 600;
+}
+
+.apple-body {
+  font-size: 1rem; /* 16px - 17px */
+  line-height: 1.38; /* ~22px */
+  letter-spacing: -0.020em;
+  font-weight: 400;
+}
+
+.apple-callout {
+  font-size: 0.9375rem; /* 15px - 16px */
+  line-height: 1.32; /* ~21px */
+  letter-spacing: -0.018em;
+  font-weight: 500;
+}
+
+.apple-subhead {
+  font-size: 0.875rem; /* 14px - 15px */
+  line-height: 1.34; /* ~20px */
+  letter-spacing: -0.014em;
+  font-weight: 400;
+}
+
+.apple-footnote {
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.38; /* ~18px */
+  letter-spacing: -0.006em;
+  font-weight: 500;
+}
+
+.apple-caption-1 {
+  font-size: 0.75rem; /* 12px */
+  line-height: 1.33; /* ~16px */
+  letter-spacing: 0em;
+  font-weight: 500;
+}
+
+.apple-caption-2 {
+  font-size: 0.6875rem; /* 11px */
+  line-height: 1.2; /* ~13px */
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+/* Soporte de Cifras Tabulares para Cuentas, Totales y Fechas */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Apple HIG Button Configurations (Filled, Tinted, Gray, Plain)
+   Touch target mínimo de 44x44 pt con retroalimentación háptica (press scale)
+   ========================================================================== */
+.btn-apple-filled,
+.btn-apple-filled-mint {
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 1rem;
+  font-size: 0.875rem; /* 14px */
+  font-weight: 600;
+  line-height: 1.25rem;
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease, background-color 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-apple-filled {
+  background-color: var(--color-terracotta);
+  box-shadow: 0 1px 3px rgba(170, 75, 80, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-apple-filled:hover:not(:disabled) {
+  background-color: var(--color-terracotta-hover);
+}
+
+/* Variante Verde / Menta para Botánica (Plantas) */
+.btn-apple-filled-mint {
+  background-color: #447E72;
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(68, 126, 114, 0.25), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-apple-filled-mint:hover:not(:disabled) {
+  background-color: #38695E;
+}
+
+:root[data-theme="dark"] .btn-apple-filled-mint,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .btn-apple-filled-mint {
+    background-color: #4D8B7E;
+    color: #FFFFFF;
+  }
+}
+
+.btn-apple-filled:active:not(:disabled),
+.btn-apple-filled-mint:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-apple-filled:disabled,
+.btn-apple-filled-mint:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-apple-tinted,
+.btn-apple-tinted-mint {
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-apple-tinted {
+  background-color: var(--color-terracotta-tint);
+  color: var(--color-terracotta);
+  border: 1px solid rgba(170, 75, 80, 0.25);
+}
+
+.btn-apple-tinted:hover:not(:disabled) {
+  background-color: rgba(170, 75, 80, 0.22);
+}
+
+.btn-apple-tinted-mint {
+  background-color: var(--color-mint-tint);
+  color: #2F695D;
+  border: 1px solid rgba(110, 181, 165, 0.35);
+}
+
+:root[data-theme="dark"] .btn-apple-tinted-mint,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .btn-apple-tinted-mint {
+    color: var(--color-mint);
+  }
+}
+
+.btn-apple-tinted-mint:hover:not(:disabled) {
+  background-color: rgba(110, 181, 165, 0.28);
+}
+
+.btn-apple-tinted:active:not(:disabled),
+.btn-apple-tinted-mint:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-apple-tinted:disabled,
+.btn-apple-tinted-mint:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-apple-gray {
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  background-color: var(--bg-tertiary);
+  color: var(--label-primary);
+  border: 1px solid var(--separator);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease, background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-apple-gray:hover:not(:disabled) {
+  background-color: var(--bg-tertiary-hover);
+}
+
+.btn-apple-gray:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-apple-gray:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-apple-plain {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--label-secondary);
+  background-color: transparent;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-apple-plain:hover:not(:disabled) {
+  color: var(--label-primary);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+:root[data-theme="dark"] .btn-apple-plain:hover:not(:disabled),
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .btn-apple-plain:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.btn-apple-plain:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.btn-apple-plain:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Acción Destructiva Apple HIG */
+.btn-apple-destructive {
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  background-color: var(--color-terracotta);
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(170, 75, 80, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease, background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-apple-destructive:hover:not(:disabled) {
+  background-color: var(--color-brand-deep);
+}
+
+.btn-apple-destructive:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-apple-destructive:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}

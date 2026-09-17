@@ -206,7 +206,7 @@ export default function GlassDatePicker({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-xs font-extrabold uppercase tracking-wider text-[#3A4630] dark:text-[#8FA37E] mb-1.5"
+          className="block apple-subhead font-medium text-label-primary mb-1.5"
         >
           {label} {required && '*'}
         </label>
@@ -218,27 +218,27 @@ export default function GlassDatePicker({
       {/* Cápsula de activación Glassmorphic */}
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`flex items-center justify-between p-3 bg-white/85 dark:bg-[#1C1F1A]/85 hover:bg-white dark:hover:bg-[#1C1F1A] border rounded-2xl transition shadow-2xs cursor-pointer group ${
+        className={`flex items-center justify-between p-3 bg-white/85 dark:bg-secondary/85 hover:bg-white dark:hover:bg-secondary border rounded-2xl transition shadow-2xs cursor-pointer group ${
           isOpen
-            ? 'border-[#5F6F52] dark:border-[#8FA37E] ring-2 ring-[#5F6F52]/15'
-            : 'border-[#D9CEBC] dark:border-[rgba(255,255,255,0.14)]'
+            ? 'border-terracotta ring-2 ring-terracotta/15'
+            : 'border-separator'
         } ${disabled ? 'opacity-60 pointer-events-none' : ''}`}
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-[#EEF2EA] dark:bg-[#282C25] text-[#3A4630] dark:text-[#F5F2EB] flex items-center justify-center shrink-0 font-black text-xs border border-[#B7CBA9]/60 dark:border-[rgba(255,255,255,0.1)] group-hover:scale-105 transition">
+          <div className="w-8 h-8 rounded-xl bg-[#ce9b8c]/25 dark:bg-terracotta/20 text-terracotta flex items-center justify-center shrink-0 font-bold text-xs tabular-nums border border-[#aa4b50]/30 group-hover:scale-105 transition">
             {diaNumero}
           </div>
           <div className="min-w-0 text-left">
-            <p className="text-xs font-black text-label-primary capitalize truncate">
+            <p className="apple-footnote font-semibold text-label-primary capitalize truncate">
               {fechaFormateada || placeholder}
             </p>
-            <p className="text-[10px] text-label-secondary font-medium">
+            <p className="apple-caption-2 text-label-secondary font-medium">
               {isOpen ? 'Toca para cerrar calendario' : 'Toca para cambiar de fecha'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-[#5F6F52] dark:text-[#8FA37E] group-hover:text-[#3A4630] dark:group-hover:text-[#F5F2EB] transition shrink-0">
+        <div className="flex items-center gap-1.5 text-terracotta group-hover:text-terracotta-hover transition shrink-0">
           <CalendarIcon size={16} strokeWidth={2.2} />
           {isOpen ? (
             <ChevronUp size={14} strokeWidth={2.5} />
@@ -262,10 +262,10 @@ export default function GlassDatePicker({
                   onChange(scYmd);
                   setIsOpen(false);
                 }}
-                className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-xs font-bold transition border cursor-pointer active:scale-95 text-center truncate ${
+                className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl apple-footnote font-semibold transition border cursor-pointer active:scale-95 text-center truncate ${
                   esActivo
-                    ? 'bg-[#5F6F52] dark:bg-[#8FA37E] text-white dark:text-[#121411] border-[#5F6F52] dark:border-[#8FA37E] shadow-2xs'
-                    : 'bg-white dark:bg-[#1C1F1A] hover:bg-[#EEF2EA] dark:hover:bg-[#282C25] text-label-secondary hover:text-label-primary border-[#E8E0D2] dark:border-[rgba(255,255,255,0.14)]'
+                    ? 'bg-terracotta text-white border-terracotta shadow-2xs'
+                    : 'bg-white dark:bg-tertiary hover:bg-[#ce9b8c]/20 text-label-secondary hover:text-label-primary border-separator'
                 }`}
               >
                 {sc.label}
@@ -277,10 +277,10 @@ export default function GlassDatePicker({
 
       {/* Mini Calendario Glassmorphic Integrado (Desplegable suave) */}
       {isOpen && (
-        <div className="p-3 bg-white/95 dark:bg-[#1C1F1A]/95 backdrop-blur-md rounded-2xl border border-separator shadow-md space-y-2 animate-fade-in-up">
+        <div className="p-3 bg-white/95 dark:bg-secondary/95 backdrop-blur-md rounded-2xl border border-separator shadow-md space-y-2 animate-fade-in-up">
           {/* Navegación del Mes */}
           <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-black text-label-primary capitalize">
+            <span className="apple-subhead font-semibold text-label-primary capitalize">
               {MESES_LABELS[calMes]} {calAnio}
             </span>
             <div className="flex items-center gap-1">
@@ -288,7 +288,7 @@ export default function GlassDatePicker({
                 type="button"
                 onClick={handlePrevMes}
                 title="Mes anterior"
-                className="w-7 h-7 rounded-lg bg-[#F4EFE6] dark:bg-[#282C25] hover:bg-[#E8E0D2] dark:hover:bg-[#33382F] text-label-primary active:scale-90 flex items-center justify-center cursor-pointer transition"
+                className="w-7 h-7 rounded-lg bg-tertiary hover:bg-secondary text-label-primary active:scale-90 flex items-center justify-center cursor-pointer transition border border-separator"
               >
                 <ChevronLeft size={14} strokeWidth={2.5} />
               </button>
@@ -296,7 +296,7 @@ export default function GlassDatePicker({
                 type="button"
                 onClick={handleNextMes}
                 title="Mes siguiente"
-                className="w-7 h-7 rounded-lg bg-[#F4EFE6] dark:bg-[#282C25] hover:bg-[#E8E0D2] dark:hover:bg-[#33382F] text-label-primary active:scale-90 flex items-center justify-center cursor-pointer transition"
+                className="w-7 h-7 rounded-lg bg-tertiary hover:bg-secondary text-label-primary active:scale-90 flex items-center justify-center cursor-pointer transition border border-separator"
               >
                 <ChevronRight size={14} strokeWidth={2.5} />
               </button>
@@ -304,7 +304,7 @@ export default function GlassDatePicker({
           </div>
 
           {/* Días de la semana */}
-          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold text-label-secondary uppercase">
+          <div className="grid grid-cols-7 gap-1 text-center apple-caption-2 font-semibold text-label-secondary">
             {DIAS_MINI.map((d) => (
               <div key={d}>{d}</div>
             ))}
@@ -320,14 +320,14 @@ export default function GlassDatePicker({
                   onChange(celda.ymd);
                   setIsOpen(false);
                 }}
-                className={`h-7 rounded-lg text-xs font-bold transition flex items-center justify-center cursor-pointer active:scale-90 ${
+                className={`h-7 rounded-lg text-xs font-semibold tabular-nums transition flex items-center justify-center cursor-pointer active:scale-90 ${
                   celda.esSeleccionado
-                    ? 'bg-[#5F6F52] dark:bg-[#8FA37E] text-white dark:text-[#121411] shadow-2xs font-black scale-105'
+                    ? 'bg-terracotta text-white shadow-2xs scale-105'
                     : celda.esHoy
-                    ? 'bg-[#EEF2EA] dark:bg-[#282C25] text-[#3A4630] dark:text-[#F5F2EB] font-black border border-[#5F6F52]/40 dark:border-[#8FA37E]/40'
+                    ? 'bg-[#ce9b8c]/20 text-terracotta border border-[#aa4b50]/30'
                     : celda.esMesActual
-                    ? 'bg-[#FDFBF7] dark:bg-[#232720] hover:bg-[#EEF2EA] dark:hover:bg-[#282C25] text-label-primary'
-                    : 'text-[#BDB7AB] dark:text-[#55534D] hover:bg-[#F4EFE6]/50 dark:hover:bg-[#282C25]/50'
+                    ? 'bg-white dark:bg-tertiary hover:bg-[#ce9b8c]/20 text-label-primary'
+                    : 'text-label-quaternary hover:bg-tertiary/50'
                 }`}
               >
                 {celda.num}

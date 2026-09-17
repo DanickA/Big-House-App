@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#5F6F52",
+  themeColor: "#C86242",
   width: "device-width",
   initialScale: 1,
 };
@@ -59,7 +59,7 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-system text-label-primary transition-colors duration-300">
+      <body className="min-h-full flex flex-col bg-system text-label-primary font-sans transition-colors duration-300">
         <script
           dangerouslySetInnerHTML={{
             __html: `try{var t=localStorage.getItem('bighouse-theme'),d=document.documentElement,isDark=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(t==='dark'){d.setAttribute('data-theme','dark');}else if(t==='light'){d.setAttribute('data-theme','light');}if(isDark){d.classList.add('dark');}}catch(e){}`,

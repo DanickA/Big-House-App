@@ -14,6 +14,7 @@ import {
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import AppleSwitch from '@/components/ui/AppleSwitch';
 import SegmentedControl from '@/components/ui/SegmentedControl';
+import PullDownMenu from '@/components/ui/PullDownMenu';
 import { TipoPlantilla, CanalRecordatorio, EstadoEvento } from '@prisma/client';
 import {
   X,
@@ -46,6 +47,7 @@ import {
   ChevronUp,
   Pencil,
   XCircle,
+  Loader2,
 } from 'lucide-react';
 
 interface EventoContextModalProps {
@@ -64,47 +66,47 @@ const PLANTILLAS_CONFIG = [
     tipo: TipoPlantilla.EVENTO,
     label: 'Evento Estándar',
     icon: CalendarIcon,
-    color: '#2563EB',
+    color: '#AA4B50', // Terracota Rojizo de la paleta
     placeholder: 'Ej. Reunión familiar, cena con amigos...',
   },
   {
     tipo: TipoPlantilla.CUMPLEANOS,
     label: 'Cumpleaños',
     icon: HeartHandshake,
-    color: '#7C3AED',
+    color: '#A13842', // Carmín Profundo de la paleta
     placeholder: 'Ej. Cumpleaños de...',
   },
   {
     tipo: TipoPlantilla.TAREA,
     label: 'Tarea',
     icon: ListTodo,
-    color: '#D97706',
-    placeholder: 'Ej. Limpiar filtros, podar jardín...',
+    color: '#BD7471', // Rosa Arcilla de la paleta
+    placeholder: 'Ej. Limpiar filtros, organizar despensa...',
   },
   {
     tipo: TipoPlantilla.CITA_MEDICA,
     label: 'Cita Médica',
     icon: Stethoscope,
-    color: '#0284C7',
+    color: '#B25D5D', // Terracota Medio de la paleta
     placeholder: 'Ej. Control odontológico, pediatra...',
   },
   {
     tipo: TipoPlantilla.MERCADO,
     label: 'Mercado',
     icon: ShoppingCart,
-    color: '#059669',
+    color: '#6EB5A5', // Salvia Menta de la paleta
     placeholder: 'Ej. Mercado quincenal...',
   },
 ];
 
-// Paleta de Colores Identificadores
+// Paleta de Colores Identificadores (Tonos de la paleta armónica)
 const PALETA_COLORES = [
-  '#2563EB', // Azul
-  '#5F6F52', // Verde Oliva
-  '#C86242', // Terracota
-  '#D97706', // Ámbar
-  '#7C3AED', // Violeta
-  '#059669', // Esmeralda
+  '#AA4B50', // Terracota Primario
+  '#A13842', // Carmín Profundo
+  '#6EB5A5', // Salvia Menta
+  '#BD7471', // Rosa Arcilla
+  '#B25D5D', // Terracota Medio
+  '#98CABA', // Salvia Suave
 ];
 
 const MESES_LABELS = [
@@ -741,13 +743,13 @@ export default function EventoContextModal({
       <div className="relative glass-modal w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col my-auto max-h-[calc(100vh-3.5rem)] border border-white/80 dark:border-white/10 animate-fade-in-up">
         
         {/* Encabezado del Día */}
-        <div className="flex justify-between items-center px-6 sm:px-8 py-4.5 border-b border-[#E8E0D2]/80 dark:border-separator bg-white/85 dark:bg-[#1C1F1A]/85 backdrop-blur-md shrink-0">
+        <div className="flex justify-between items-center px-6 sm:px-8 py-4.5 border-b border-separator/80 dark:border-separator bg-white/85 dark:bg-[#1C1F1A]/85 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#EEF2EA] dark:bg-[#282C25] border border-[#B7CBA9]/60 dark:border-separator text-[#3A4630] dark:text-olive flex items-center justify-center shadow-2xs font-black text-sm">
+            <div className="w-10 h-10 rounded-2xl bg-mint/15 dark:bg-[#282C25] border border-separator/60 dark:border-separator text-label-primary dark:text-olive flex items-center justify-center shadow-2xs font-bold text-sm tabular-nums">
               {fechaActividadObj.getDate()}
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-black text-[#3A4630] dark:text-label-primary capitalize tracking-tight">
+              <h2 className="apple-title-3 font-semibold text-label-primary dark:text-label-primary capitalize tracking-tight">
                 {fechaFormateada}
               </h2>
               <p className="text-[11px] text-label-secondary font-medium">
@@ -759,7 +761,7 @@ export default function EventoContextModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#F4EFE6] dark:bg-tertiary text-label-secondary hover:text-label-primary hover:bg-[#E8E0D2] dark:hover:bg-secondary transition flex items-center justify-center cursor-pointer border border-[#E8E0D2] dark:border-separator active:scale-90"
+            className="w-8 h-8 rounded-full bg-tertiary dark:bg-tertiary text-label-secondary hover:text-label-primary hover:bg-tertiary dark:hover:bg-secondary transition flex items-center justify-center cursor-pointer border border-separator dark:border-separator active:scale-90"
           >
             <X size={15} strokeWidth={2.5} />
           </button>
@@ -772,15 +774,15 @@ export default function EventoContextModal({
           {eventosDelDia.length > 0 && !mostrarFormulario && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-[#3A4630] dark:text-label-primary uppercase tracking-wider">
+                <span className="apple-footnote font-semibold text-label-primary">
                   Actividades para este día:
                 </span>
                 <button
                   type="button"
                   onClick={() => setMostrarFormulario(true)}
-                  className="px-3 py-1.5 bg-[#5F6F52] hover:bg-[#4E5D42] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs active:scale-95"
+                  className="btn-apple-tinted px-3 text-xs font-semibold flex items-center gap-1.5"
                 >
-                  <Plus size={14} strokeWidth={2.5} />
+                  <Plus size={14} strokeWidth={2.4} />
                   <span>Agregar evento</span>
                 </button>
               </div>
@@ -804,17 +806,17 @@ export default function EventoContextModal({
                             style={{ backgroundColor: ev.color }}
                           />
                           <div className="min-w-0">
-                            <p className="text-sm font-extrabold text-[#3A4630] dark:text-label-primary truncate flex items-center gap-1.5">
+                            <p className="apple-headline font-semibold text-label-primary dark:text-label-primary truncate flex items-center gap-1.5">
                               {ev.origen === 'PLANTA' && <Sprout size={13} className="text-olive" />}
                               {ev.origen === 'SERVICIO' && <Receipt size={13} className="text-terracotta" />}
                               <span className={esCancelado ? 'line-through text-label-tertiary' : ''}>{ev.titulo}</span>
                               {esCancelado && (
-                                <span className="text-[10px] uppercase font-bold bg-[#E8E0D2] dark:bg-tertiary text-label-secondary px-1.5 py-0.5 rounded-md">
+                                <span className="text-[10px] uppercase font-bold bg-tertiary dark:bg-tertiary text-label-secondary px-1.5 py-0.5 rounded-md">
                                   Cancelado
                                 </span>
                               )}
                               {ev.recurrencia && (
-                                <span className="text-[10px] font-bold bg-[#F3E8FF] dark:bg-purple-950/40 text-[#7C3AED] dark:text-purple-300 px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                                <span className="text-[10px] font-bold bg-[#F3E8FF] dark:bg-purple-950/40 text-brand-deep dark:text-purple-300 px-1.5 py-0.5 rounded-md flex items-center gap-1">
                                   <Repeat size={10} />
                                   <span>{ev.recurrencia}</span>
                                 </span>
@@ -834,34 +836,42 @@ export default function EventoContextModal({
                         </div>
 
                         {ev.origen === 'MANUAL' && (
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => handleEditar(ev)}
-                              className="p-1.5 text-label-secondary hover:text-label-primary hover:bg-[#EEF2EA] dark:hover:bg-secondary rounded-xl transition cursor-pointer"
-                              title="Editar actividad"
-                            >
-                              <Pencil size={14} />
-                            </button>
-                            {!esCancelado && (
-                              <button
-                                type="button"
-                                onClick={() => handleCancelarClick(ev)}
-                                className="p-1.5 text-amber-sem hover:text-amber-sem hover:bg-amber-sem/15 rounded-xl transition cursor-pointer"
-                                title="Cancelar actividad (conservar en historial)"
-                              >
-                                <XCircle size={14} />
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => handleEliminar(ev.id)}
-                              className="p-1.5 text-label-tertiary hover:text-terracotta hover:bg-[#FBEBE8] dark:hover:bg-terracotta/20 rounded-xl transition cursor-pointer"
-                              title="Eliminar definitivamente"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
+                          <PullDownMenu
+                            ariaLabel={`Opciones de ${ev.titulo}`}
+                            groups={[
+                              {
+                                items: [
+                                  {
+                                    id: 'editar',
+                                    label: 'Editar actividad...',
+                                    icon: Pencil,
+                                    onClick: () => handleEditar(ev),
+                                  },
+                                  ...(!esCancelado
+                                    ? [
+                                        {
+                                          id: 'cancelar',
+                                          label: 'Cancelar actividad',
+                                          icon: XCircle,
+                                          onClick: () => handleCancelarClick(ev),
+                                        },
+                                      ]
+                                    : []),
+                                ],
+                              },
+                              {
+                                items: [
+                                  {
+                                    id: 'eliminar',
+                                    label: 'Eliminar definitivamente',
+                                    icon: Trash2,
+                                    destructive: true,
+                                    onClick: () => handleEliminar(ev.id),
+                                  },
+                                ],
+                              },
+                            ]}
+                          />
                         )}
                       </div>
 
@@ -898,7 +908,7 @@ export default function EventoContextModal({
                   <button
                     type="button"
                     onClick={cancelarEdicion}
-                    className="text-xs font-extrabold text-[#5F6F52] dark:text-olive hover:text-[#3A4630] dark:hover:text-label-primary cursor-pointer"
+                    className="text-xs font-semibold text-terracotta dark:text-olive hover:text-label-primary dark:hover:text-label-primary cursor-pointer"
                   >
                     Volver a la agenda
                   </button>
@@ -906,7 +916,7 @@ export default function EventoContextModal({
               )}
 
               {errorMsg && (
-                <div className="p-3.5 bg-[#FAE2D8] dark:bg-terracotta/20 border border-[#F2BAA5] dark:border-terracotta/40 text-[#B84626] dark:text-terracotta rounded-2xl text-xs font-bold flex items-center gap-2">
+                <div className="p-3.5 bg-terracotta/15 dark:bg-terracotta/20 border border-terracotta/30 dark:border-terracotta/40 text-terracotta dark:text-terracotta rounded-2xl text-xs font-bold flex items-center gap-2">
                   <AlertCircle size={15} />
                   <span>{errorMsg}</span>
                 </div>
@@ -914,7 +924,7 @@ export default function EventoContextModal({
 
               {/* 1. Selector de 5 Plantillas Preconfiguradas (RF-02) */}
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2.5">
+                <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2.5">
                   Selecciona una Plantilla Rápida
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -928,8 +938,8 @@ export default function EventoContextModal({
                         onClick={() => resetFormulario(p.tipo)}
                         className={`py-2.5 px-2 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5 transition cursor-pointer active:scale-95 border ${
                           isSelected
-                            ? 'bg-[#3A4630] dark:bg-olive text-white border-[#3A4630] dark:border-olive shadow-md'
-                            : 'bg-white/80 dark:bg-tertiary/60 hover:bg-white dark:hover:bg-tertiary text-label-secondary border-[#E8E0D2] dark:border-separator'
+                            ? 'bg-terracotta dark:bg-mint text-white border-terracotta dark:border-mint shadow-md'
+                            : 'bg-white/80 dark:bg-tertiary/60 hover:bg-white dark:hover:bg-tertiary text-label-secondary border-separator dark:border-separator'
                         }`}
                       >
                         <Icon size={18} strokeWidth={isSelected ? 2.5 : 2} style={{ color: isSelected ? '#FFFFFF' : p.color }} />
@@ -942,7 +952,7 @@ export default function EventoContextModal({
 
               {/* 2. Título Contextual */}
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
+                <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-1.5">
                   Título de la actividad *
                 </label>
                 <div className="relative">
@@ -956,7 +966,7 @@ export default function EventoContextModal({
                     value={titulo}
                     onChange={(e) => setTitulo(e.target.value)}
                     placeholder={plantillaActualConfig.placeholder}
-                    className="w-full pl-10 pr-4 py-3 bg-white/85 dark:bg-tertiary/60 border border-[#D9CEBC] dark:border-separator rounded-2xl text-sm text-[#191C16] dark:text-label-primary font-semibold placeholder-[#A39E95] dark:placeholder-label-tertiary focus:outline-none focus:bg-white dark:focus:bg-tertiary focus:border-[#3A4630] dark:focus:border-olive focus:ring-3 focus:ring-[#5F6F52]/15 transition shadow-2xs"
+                    className="w-full pl-10 pr-4 py-3 bg-white/85 dark:bg-tertiary/60 border border-separator dark:border-separator rounded-2xl text-sm text-label-primary dark:text-label-primary font-semibold placeholder:text-label-tertiary dark:placeholder-label-tertiary focus:outline-none focus:bg-white dark:focus:bg-tertiary focus:border-terracotta dark:focus:border-mint focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                   />
                 </div>
               </div>
@@ -964,7 +974,7 @@ export default function EventoContextModal({
               {/* 2.5 Selector de Fecha Puntual 100% Orgánico (Sin popup nativo) */}
               <div className="p-4.5 bg-white/75 dark:bg-tertiary/40 rounded-3xl border border-white/90 dark:border-white/10 space-y-3 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary flex items-center gap-1.5">
+                  <span className="apple-subhead font-medium text-label-primary dark:text-label-primary flex items-center gap-1.5">
                     <CalendarIcon size={14} className="text-olive" />
                     <span>Fecha de la Actividad *</span>
                   </span>
@@ -974,13 +984,13 @@ export default function EventoContextModal({
                 </div>
 
                 {/* Cápsula de fecha y botón para desplegar mini-calendario */}
-                <div className="flex items-center justify-between p-3 bg-white/95 dark:bg-secondary rounded-2xl border border-[#D9CEBC] dark:border-separator shadow-2xs">
+                <div className="flex items-center justify-between p-3 bg-white/95 dark:bg-secondary rounded-2xl border border-separator dark:border-separator shadow-2xs">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-[#EEF2EA] dark:bg-tertiary text-[#3A4630] dark:text-olive flex items-center justify-center shrink-0 font-black text-xs border border-[#B7CBA9]/60 dark:border-separator">
+                    <div className="w-8 h-8 rounded-xl bg-mint/15 dark:bg-tertiary text-label-primary dark:text-olive flex items-center justify-center shrink-0 font-semibold text-xs border border-separator/60 dark:border-separator">
                       {fechaActividadObj.getDate()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-black text-[#3A4630] dark:text-label-primary capitalize truncate">
+                      <p className="apple-footnote font-semibold text-label-primary dark:text-label-primary capitalize truncate">
                         {fechaFormateada}
                       </p>
                       <p className="text-[10px] text-label-secondary font-medium">Toca para cambiar de día</p>
@@ -990,7 +1000,7 @@ export default function EventoContextModal({
                   <button
                     type="button"
                     onClick={() => setMostrarMiniCal(!mostrarMiniCal)}
-                    className="px-3 py-1.5 rounded-xl bg-[#F4EFE6] dark:bg-tertiary hover:bg-[#E8E0D2] dark:hover:bg-secondary text-[#3A4630] dark:text-label-primary text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95 shrink-0 border border-[#E8E0D2] dark:border-separator"
+                    className="px-3 py-1.5 rounded-xl bg-tertiary dark:bg-tertiary hover:bg-tertiary dark:hover:bg-secondary text-label-primary dark:text-label-primary text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95 shrink-0 border border-separator dark:border-separator"
                   >
                     <span>{mostrarMiniCal ? 'Ocultar' : 'Elegir día'}</span>
                     {mostrarMiniCal ? <ChevronUp size={13} strokeWidth={2.5} /> : <ChevronDown size={13} strokeWidth={2.5} />}
@@ -1007,8 +1017,8 @@ export default function EventoContextModal({
                     }}
                     className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer active:scale-95 text-center ${
                       fechaActividad === aFechaString(new Date())
-                        ? 'bg-[#5F6F52] text-white border-[#5F6F52] shadow-2xs'
-                        : 'bg-white dark:bg-tertiary/60 hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-label-secondary border border-[#E8E0D2] dark:border-separator'
+                        ? 'bg-terracotta text-white border-terracotta shadow-2xs'
+                        : 'bg-white dark:bg-tertiary/60 hover:bg-mint/15 dark:hover:bg-tertiary text-label-secondary border border-separator dark:border-separator'
                     }`}
                   >
                     Hoy
@@ -1028,8 +1038,8 @@ export default function EventoContextModal({
                         m.setDate(m.getDate() + 1);
                         return aFechaString(m);
                       })()
-                        ? 'bg-[#5F6F52] text-white border-[#5F6F52] shadow-2xs'
-                        : 'bg-white dark:bg-tertiary/60 hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-label-secondary border border-[#E8E0D2] dark:border-separator'
+                        ? 'bg-terracotta text-white border-terracotta shadow-2xs'
+                        : 'bg-white dark:bg-tertiary/60 hover:bg-mint/15 dark:hover:bg-tertiary text-label-secondary border border-separator dark:border-separator'
                     }`}
                   >
                     Mañana
@@ -1043,7 +1053,7 @@ export default function EventoContextModal({
                       setFechaActividad(aFechaString(d));
                       setMostrarMiniCal(false);
                     }}
-                    className="flex-1 py-1.5 rounded-xl text-xs font-bold transition border bg-white dark:bg-tertiary/60 hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-label-secondary border border-[#E8E0D2] dark:border-separator cursor-pointer active:scale-95 text-center"
+                    className="flex-1 py-1.5 rounded-xl text-xs font-bold transition border bg-white dark:bg-tertiary/60 hover:bg-mint/15 dark:hover:bg-tertiary text-label-secondary border border-separator dark:border-separator cursor-pointer active:scale-95 text-center"
                   >
                     Sábado
                   </button>
@@ -1051,10 +1061,10 @@ export default function EventoContextModal({
 
                 {/* Mini Calendario Glassmorphic Integrado (Desplegable) */}
                 {mostrarMiniCal && (
-                  <div className="p-3 bg-white/95 dark:bg-secondary rounded-2xl border border-[#D9CEBC] dark:border-separator shadow-xs space-y-2 animate-fade-in-up">
+                  <div className="p-3 bg-white/95 dark:bg-secondary rounded-2xl border border-separator dark:border-separator shadow-xs space-y-2 animate-fade-in-up">
                     {/* Navegación del Mini Mes */}
                     <div className="flex items-center justify-between px-1">
-                      <span className="text-xs font-black text-[#3A4630] dark:text-label-primary capitalize">
+                      <span className="apple-footnote font-semibold text-label-primary dark:text-label-primary capitalize">
                         {MESES_LABELS[miniCalMes]} {miniCalAnio}
                       </span>
                       <div className="flex items-center gap-1">
@@ -1068,7 +1078,7 @@ export default function EventoContextModal({
                               setMiniCalMes(miniCalMes - 1);
                             }
                           }}
-                          className="w-7 h-7 rounded-lg bg-[#F4EFE6] dark:bg-tertiary hover:bg-[#E8E0D2] dark:hover:bg-secondary flex items-center justify-center text-[#3A4630] dark:text-label-primary cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-tertiary dark:bg-tertiary hover:bg-tertiary dark:hover:bg-secondary flex items-center justify-center text-label-primary dark:text-label-primary cursor-pointer"
                         >
                           <ChevronLeft size={14} strokeWidth={2.5} />
                         </button>
@@ -1082,7 +1092,7 @@ export default function EventoContextModal({
                               setMiniCalMes(miniCalMes + 1);
                             }
                           }}
-                          className="w-7 h-7 rounded-lg bg-[#F4EFE6] dark:bg-tertiary hover:bg-[#E8E0D2] dark:hover:bg-secondary flex items-center justify-center text-[#3A4630] dark:text-label-primary cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-tertiary dark:bg-tertiary hover:bg-tertiary dark:hover:bg-secondary flex items-center justify-center text-label-primary dark:text-label-primary cursor-pointer"
                         >
                           <ChevronRight size={14} strokeWidth={2.5} />
                         </button>
@@ -1090,7 +1100,7 @@ export default function EventoContextModal({
                     </div>
 
                     {/* Días de la semana */}
-                    <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold text-label-secondary uppercase">
+                    <div className="grid grid-cols-7 gap-1 text-center apple-caption-2 font-semibold text-label-secondary">
                       {DIAS_MINI.map((d) => (
                         <div key={d}>{d}</div>
                       ))}
@@ -1110,9 +1120,9 @@ export default function EventoContextModal({
                             }}
                             className={`h-7 rounded-lg text-xs font-bold transition flex items-center justify-center cursor-pointer ${
                               isSelected
-                                ? 'bg-[#5F6F52] text-white shadow-2xs font-black'
+                                ? 'bg-terracotta text-white shadow-2xs font-bold'
                                 : c.esMesActual
-                                ? 'bg-transparent hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-[#3A4630] dark:text-label-primary'
+                                ? 'bg-transparent hover:bg-mint/15 dark:hover:bg-tertiary text-label-primary dark:text-label-primary'
                                 : 'text-label-quaternary hover:bg-white/50 dark:hover:bg-tertiary/50'
                             }`}
                           >
@@ -1128,7 +1138,7 @@ export default function EventoContextModal({
               {/* 3. Temporalidad Híbrida (Con 12h AM/PM y duración inteligente) */}
               <div className="p-4.5 bg-white/75 dark:bg-tertiary/40 rounded-3xl border border-white/90 dark:border-white/10 space-y-3 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary flex items-center gap-1.5">
+                  <span className="apple-subhead font-medium text-label-primary dark:text-label-primary flex items-center gap-1.5">
                     <Clock size={14} className="text-olive" />
                     <span>Horario</span>
                   </span>
@@ -1141,7 +1151,7 @@ export default function EventoContextModal({
 
                 {/* Restricción de Cita Médica: no todo el día */}
                 {plantilla === TipoPlantilla.CITA_MEDICA ? (
-                  <div className="text-[11px] font-bold text-[#0284C7] dark:text-blue-sem bg-[#E0F2FE] dark:bg-blue-sem/20 p-2 rounded-xl border border-[#BAE6FD] dark:border-blue-sem/40 flex items-center gap-1.5">
+                  <div className="text-[11px] font-bold text-terracotta bg-terracotta/10 p-2 rounded-xl border border-terracotta/20 flex items-center gap-1.5">
                     <AlertCircle size={13} />
                     <span>La cita médica requiere obligatoriamente una hora específica.</span>
                   </div>
@@ -1153,8 +1163,8 @@ export default function EventoContextModal({
                       onClick={() => setTodoElDia(true)}
                       className={`py-2 px-2.5 rounded-xl text-xs font-bold transition cursor-pointer active:scale-95 ${
                         todoElDia
-                          ? 'bg-[#5F6F52] text-white shadow-2xs'
-                          : 'bg-white dark:bg-tertiary/60 hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-label-secondary border border-[#E8E0D2] dark:border-separator'
+                          ? 'bg-terracotta text-white shadow-2xs'
+                          : 'bg-white dark:bg-tertiary/60 hover:bg-mint/15 dark:hover:bg-tertiary text-label-secondary border border-separator dark:border-separator'
                       }`}
                     >
                       Todo el día
@@ -1169,8 +1179,8 @@ export default function EventoContextModal({
                       }}
                       className={`py-2 px-2.5 rounded-xl text-xs font-bold transition cursor-pointer active:scale-95 ${
                         !todoElDia && (parseInt(hora12, 10) === 9 || hora12 === '09') && (parseInt(minutos, 10) === 0) && periodo === 'AM'
-                          ? 'bg-[#5F6F52] text-white shadow-2xs'
-                          : 'bg-white dark:bg-tertiary/60 hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-label-secondary border border-[#E8E0D2] dark:border-separator'
+                          ? 'bg-terracotta text-white shadow-2xs'
+                          : 'bg-white dark:bg-tertiary/60 hover:bg-mint/15 dark:hover:bg-tertiary text-label-secondary border border-separator dark:border-separator'
                       }`}
                     >
                       Mañana (9:00 AM)
@@ -1185,8 +1195,8 @@ export default function EventoContextModal({
                       }}
                       className={`py-2 px-2.5 rounded-xl text-xs font-bold transition cursor-pointer active:scale-95 ${
                         !todoElDia && (parseInt(hora12, 10) === 3 || hora12 === '03') && (parseInt(minutos, 10) === 0) && periodo === 'PM'
-                          ? 'bg-[#5F6F52] text-white shadow-2xs'
-                          : 'bg-white dark:bg-tertiary/60 hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-label-secondary border border-[#E8E0D2] dark:border-separator'
+                          ? 'bg-terracotta text-white shadow-2xs'
+                          : 'bg-white dark:bg-tertiary/60 hover:bg-mint/15 dark:hover:bg-tertiary text-label-secondary border border-separator dark:border-separator'
                       }`}
                     >
                       Tarde (3:00 PM)
@@ -1201,8 +1211,8 @@ export default function EventoContextModal({
                       }}
                       className={`py-2 px-2.5 rounded-xl text-xs font-bold transition cursor-pointer active:scale-95 ${
                         !todoElDia && (parseInt(hora12, 10) === 7 || hora12 === '07') && (parseInt(minutos, 10) === 0) && periodo === 'PM'
-                          ? 'bg-[#5F6F52] text-white shadow-2xs'
-                          : 'bg-white dark:bg-tertiary/60 hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-label-secondary border border-[#E8E0D2] dark:border-separator'
+                          ? 'bg-terracotta text-white shadow-2xs'
+                          : 'bg-white dark:bg-tertiary/60 hover:bg-mint/15 dark:hover:bg-tertiary text-label-secondary border border-separator dark:border-separator'
                       }`}
                     >
                       Noche (7:00 PM)
@@ -1213,20 +1223,20 @@ export default function EventoContextModal({
                 {/* Selector Glassmorphic de Hora Exacta (Sin controles nativos del navegador) */}
                 {!todoElDia && (
                   <div className="pt-3 border-t border-[#F0EAE1] dark:border-separator space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-secondary backdrop-blur-xs p-3 rounded-2xl border border-[#E8E0D2] dark:border-separator shadow-2xs">
+                    <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-secondary backdrop-blur-xs p-3 rounded-2xl border border-separator dark:border-separator shadow-2xs">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-[#5F6F52]/10 dark:bg-olive/20 text-olive flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-xl bg-terracotta/10 dark:bg-mint/20 text-olive flex items-center justify-center">
                           <Clock size={16} strokeWidth={2.5} />
                         </div>
                         <div>
-                          <p className="text-xs font-black text-[#3A4630] dark:text-label-primary leading-none">Hora exacta</p>
+                          <p className="apple-footnote font-semibold text-label-primary dark:text-label-primary leading-none">Hora exacta</p>
                           <p className="text-[11px] text-label-secondary mt-0.5">Escribe o ajusta en tramos de 15m</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 flex-wrap">
                         {/* Entrada manual de Horas y Minutos */}
-                        <div className="flex items-center bg-[#F4EFE6] dark:bg-tertiary px-2.5 py-1 rounded-xl border border-[#D9CEBC] dark:border-separator">
+                        <div className="flex items-center bg-tertiary dark:bg-tertiary px-2.5 py-1 rounded-xl border border-separator dark:border-separator">
                           <input
                             type="text"
                             inputMode="numeric"
@@ -1251,9 +1261,9 @@ export default function EventoContextModal({
                                 setTodoElDia(false);
                               }
                             }}
-                            className="w-8 text-center text-sm font-black text-[#3A4630] dark:text-label-primary bg-transparent focus:outline-none focus:bg-white/80 dark:focus:bg-secondary rounded-lg"
+                            className="w-8 text-center text-sm font-semibold tabular-nums text-label-primary dark:text-label-primary bg-transparent focus:outline-none focus:bg-white/80 dark:focus:bg-secondary rounded-lg"
                           />
-                          <span className="text-sm font-black text-[#3A4630] dark:text-label-primary px-0.5">:</span>
+                          <span className="text-sm font-semibold text-label-primary dark:text-label-primary px-0.5">:</span>
                           <input
                             type="text"
                             inputMode="numeric"
@@ -1278,7 +1288,7 @@ export default function EventoContextModal({
                                 setTodoElDia(false);
                               }
                             }}
-                            className="w-8 text-center text-sm font-black text-[#3A4630] dark:text-label-primary bg-transparent focus:outline-none focus:bg-white/80 dark:focus:bg-secondary rounded-lg"
+                            className="w-8 text-center text-sm font-semibold tabular-nums text-label-primary dark:text-label-primary bg-transparent focus:outline-none focus:bg-white/80 dark:focus:bg-secondary rounded-lg"
                           />
                         </div>
 
@@ -1303,7 +1313,7 @@ export default function EventoContextModal({
                             onClick={() => handleAjustarMinutos(-15)}
                             title="Restar 15 minutos"
                             aria-label="Restar 15 minutos"
-                            className="w-8 h-8 rounded-xl bg-[#F4EFE6] dark:bg-tertiary hover:bg-[#E8E0D2] dark:hover:bg-secondary active:scale-90 text-[#3A4630] dark:text-label-primary flex items-center justify-center transition cursor-pointer border border-[#D9CEBC]/60 dark:border-separator"
+                            className="w-8 h-8 rounded-xl bg-tertiary dark:bg-tertiary hover:bg-tertiary dark:hover:bg-secondary active:scale-90 text-label-primary dark:text-label-primary flex items-center justify-center transition cursor-pointer border border-separator/60 dark:border-separator"
                           >
                             <Minus size={13} strokeWidth={2.5} />
                           </button>
@@ -1313,7 +1323,7 @@ export default function EventoContextModal({
                             onClick={() => handleAjustarMinutos(15)}
                             title="Sumar 15 minutos"
                             aria-label="Sumar 15 minutos"
-                            className="w-8 h-8 rounded-xl bg-[#F4EFE6] dark:bg-tertiary hover:bg-[#E8E0D2] dark:hover:bg-secondary active:scale-90 text-[#3A4630] dark:text-label-primary flex items-center justify-center transition cursor-pointer border border-[#D9CEBC]/60 dark:border-separator"
+                            className="w-8 h-8 rounded-xl bg-tertiary dark:bg-tertiary hover:bg-tertiary dark:hover:bg-secondary active:scale-90 text-label-primary dark:text-label-primary flex items-center justify-center transition cursor-pointer border border-separator/60 dark:border-separator"
                           >
                             <Plus size={13} strokeWidth={2.5} />
                           </button>
@@ -1323,7 +1333,7 @@ export default function EventoContextModal({
 
                     {/* Chips de minutos rápidos */}
                     <div className="flex items-center justify-between gap-2 px-1">
-                      <span className="text-[11px] font-bold text-[#736F68] dark:text-label-tertiary">Minutos rápidos:</span>
+                      <span className="text-[11px] font-bold text-label-secondary dark:text-label-tertiary">Minutos rápidos:</span>
                       <div className="flex items-center gap-1.5">
                         {[0, 15, 30, 45].map((m) => {
                           const isMinSelected = (parseInt(minutos, 10) || 0) === m;
@@ -1335,8 +1345,8 @@ export default function EventoContextModal({
                               onClick={() => handleSetMinutosExactos(m)}
                               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer active:scale-95 ${
                                 isMinSelected
-                                  ? 'bg-[#5F6F52] dark:bg-olive text-white shadow-2xs'
-                                  : 'bg-white dark:bg-tertiary hover:bg-[#EEF2EA] dark:hover:bg-secondary text-[#736F68] dark:text-label-secondary border border-[#E8E0D2] dark:border-separator'
+                                  ? 'bg-terracotta dark:bg-mint text-white shadow-2xs'
+                                  : 'bg-white dark:bg-tertiary hover:bg-mint/15 dark:hover:bg-secondary text-label-secondary dark:text-label-secondary border border-separator dark:border-separator'
                               }`}
                             >
                               :{m.toString().padStart(2, '0')}
@@ -1355,7 +1365,7 @@ export default function EventoContextModal({
               {plantilla === TipoPlantilla.EVENTO && (
                 <div className="p-4.5 bg-white/70 dark:bg-secondary/70 rounded-3xl border border-white/90 dark:border-separator space-y-4">
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2">
                       Organizador Principal
                     </label>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -1366,8 +1376,8 @@ export default function EventoContextModal({
                           onClick={() => setOrganizadorId(m.id)}
                           className={`px-3 py-1.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer border ${
                             organizadorId === m.id
-                              ? 'bg-[#2563EB] dark:bg-blue-600 text-white border-[#2563EB] dark:border-blue-600 shadow-2xs'
-                              : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                              ? 'bg-terracotta text-white border-terracotta shadow-2xs'
+                              : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                           }`}
                         >
                           <span className="w-5 h-5 rounded-full bg-white/20 text-[10px] font-bold flex items-center justify-center">
@@ -1380,7 +1390,7 @@ export default function EventoContextModal({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#736F68] dark:text-label-secondary mb-1">
+                    <label className="block text-xs font-bold text-label-secondary dark:text-label-secondary mb-1">
                       Correo de contacto (opcional)
                     </label>
                     <input
@@ -1388,12 +1398,12 @@ export default function EventoContextModal({
                       value={correoContacto}
                       onChange={(e) => setCorreoContacto(e.target.value)}
                       placeholder="correo@ejemplo.com"
-                      className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-[#D9CEBC] dark:border-separator rounded-xl text-xs text-[#191C16] dark:text-label-primary placeholder-[#A39E95] dark:placeholder-label-quaternary focus:outline-none focus:border-[#3A4630] dark:focus:border-olive"
+                      className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-separator dark:border-separator rounded-xl text-xs text-label-primary dark:text-label-primary placeholder:text-label-tertiary dark:placeholder-label-quaternary focus:outline-none focus:border-terracotta dark:focus:border-mint"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2">
                       Asistentes del Hogar
                     </label>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -1406,8 +1416,8 @@ export default function EventoContextModal({
                             onClick={() => toggleIdEnLista(m.id, asistentesIds, setAsistentesIds)}
                             className={`px-3 py-1.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
                               isSelected
-                                ? 'bg-[#3A4630] dark:bg-olive text-white border-[#3A4630] dark:border-olive'
-                                : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                                ? 'bg-terracotta dark:bg-mint text-white border-terracotta dark:border-mint'
+                                : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                             }`}
                           >
                             {isSelected ? <Check size={12} strokeWidth={3} /> : <Plus size={12} />}
@@ -1424,9 +1434,9 @@ export default function EventoContextModal({
               {plantilla === TipoPlantilla.CUMPLEANOS && (
                 <div className="p-4.5 bg-white/70 dark:bg-secondary/70 rounded-3xl border border-white/90 dark:border-separator space-y-4">
                   {/* Recurrencia anual Apple HIG */}
-                  <div className="flex items-center justify-between p-3.5 bg-white dark:bg-tertiary rounded-2xl border border-[#E8E0D2] dark:border-separator">
-                    <div className="flex items-center gap-2.5 text-xs font-black text-[#3A4630] dark:text-label-primary">
-                      <Repeat size={15} strokeWidth={2.2} className="text-[#7C3AED] dark:text-purple-400" />
+                  <div className="flex items-center justify-between p-3.5 bg-white dark:bg-tertiary rounded-2xl border border-separator dark:border-separator">
+                    <div className="flex items-center gap-2.5 apple-footnote font-semibold text-label-primary dark:text-label-primary">
+                      <Repeat size={15} strokeWidth={2.2} className="text-brand-deep dark:text-purple-400" />
                       <span>Repetir cada año automáticamente</span>
                     </div>
                     <AppleSwitch
@@ -1439,7 +1449,7 @@ export default function EventoContextModal({
 
                   {/* Tipo de Agasajado Segmentado Apple HIG */}
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2">
                       ¿A quién celebramos?
                     </label>
                     <SegmentedControl<'hogar' | 'externo'>
@@ -1462,8 +1472,8 @@ export default function EventoContextModal({
                             onClick={() => setAgasajadoHogarId(m.id)}
                             className={`px-3 py-1.5 rounded-2xl text-xs font-bold transition border cursor-pointer ${
                               agasajadoHogarId === m.id
-                                ? 'bg-[#7C3AED] dark:bg-purple-600 text-white border-[#7C3AED] dark:border-purple-600'
-                                : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                                ? 'bg-brand-deep dark:bg-purple-600 text-white border-brand-deep dark:border-purple-600'
+                                : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                             }`}
                           >
                             {m.nombre}
@@ -1478,14 +1488,14 @@ export default function EventoContextModal({
                           value={agasajadoExternoNombre}
                           onChange={(e) => setAgasajadoExternoNombre(e.target.value)}
                           placeholder="Nombre del agasajado *"
-                          className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-[#D9CEBC] dark:border-separator rounded-xl text-xs text-[#191C16] dark:text-label-primary placeholder-[#A39E95] dark:placeholder-label-quaternary focus:outline-none focus:border-[#3A4630] dark:focus:border-olive"
+                          className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-separator dark:border-separator rounded-xl text-xs text-label-primary dark:text-label-primary placeholder:text-label-tertiary dark:placeholder-label-quaternary focus:outline-none focus:border-terracotta dark:focus:border-mint"
                         />
                         <input
                           type="text"
                           value={agasajadoExternoContacto}
                           onChange={(e) => setAgasajadoExternoContacto(e.target.value)}
                           placeholder="Teléfono o contacto (opcional)"
-                          className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-[#D9CEBC] dark:border-separator rounded-xl text-xs text-[#191C16] dark:text-label-primary placeholder-[#A39E95] dark:placeholder-label-quaternary focus:outline-none focus:border-[#3A4630] dark:focus:border-olive"
+                          className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-separator dark:border-separator rounded-xl text-xs text-label-primary dark:text-label-primary placeholder:text-label-tertiary dark:placeholder-label-quaternary focus:outline-none focus:border-terracotta dark:focus:border-mint"
                         />
                       </div>
                     )}
@@ -1498,7 +1508,7 @@ export default function EventoContextModal({
                 <div className="p-4.5 bg-white/70 dark:bg-secondary/70 rounded-3xl border border-white/90 dark:border-separator space-y-4">
                   {/* Responsable Obligatorio */}
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2">
                       Responsable Obligatorio *
                     </label>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -1509,8 +1519,8 @@ export default function EventoContextModal({
                           onClick={() => setResponsableTareaId(m.id)}
                           className={`px-3 py-1.5 rounded-2xl text-xs font-bold transition border cursor-pointer ${
                             responsableTareaId === m.id
-                              ? 'bg-[#D97706] dark:bg-amber text-white border-[#D97706] dark:border-amber shadow-2xs'
-                              : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                              ? 'bg-clay dark:bg-clay text-white border-clay dark:border-clay shadow-2xs'
+                              : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                           }`}
                         >
                           {m.nombre}
@@ -1521,7 +1531,7 @@ export default function EventoContextModal({
 
                   {/* Estado de ejecución */}
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2">
                       Estado
                     </label>
                     <div className="grid grid-cols-3 gap-2">
@@ -1536,8 +1546,8 @@ export default function EventoContextModal({
                           onClick={() => setEstadoTarea(est.id)}
                           className={`py-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
                             estadoTarea === est.id
-                              ? 'bg-[#3A4630] dark:bg-olive text-white border-[#3A4630] dark:border-olive'
-                              : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                              ? 'bg-terracotta dark:bg-mint text-white border-terracotta dark:border-mint'
+                              : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                           }`}
                         >
                           {est.label}
@@ -1548,7 +1558,7 @@ export default function EventoContextModal({
 
                   {/* Subtareas To-Do Dinámico */}
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-1.5">
                       Subtareas (To-Do Dinámico)
                     </label>
                     <div className="flex gap-2 mb-2.5">
@@ -1563,12 +1573,12 @@ export default function EventoContextModal({
                           }
                         }}
                         placeholder="Agregar paso o subtarea..."
-                        className="flex-1 px-3.5 py-2 bg-white dark:bg-tertiary border border-[#D9CEBC] dark:border-separator rounded-xl text-xs text-[#191C16] dark:text-label-primary placeholder-[#A39E95] dark:placeholder-label-quaternary focus:outline-none focus:border-[#3A4630] dark:focus:border-olive"
+                        className="flex-1 px-3.5 py-2 bg-white dark:bg-tertiary border border-separator dark:border-separator rounded-xl text-xs text-label-primary dark:text-label-primary placeholder:text-label-tertiary dark:placeholder-label-quaternary focus:outline-none focus:border-terracotta dark:focus:border-mint"
                       />
                       <button
                         type="button"
                         onClick={handleAgregarSubtarea}
-                        className="px-3 py-2 bg-[#D97706] dark:bg-amber text-white rounded-xl text-xs font-bold cursor-pointer hover:opacity-90 active:scale-95 transition"
+                        className="px-3 py-2 bg-clay dark:bg-clay text-white rounded-xl text-xs font-bold cursor-pointer hover:opacity-90 active:scale-95 transition"
                       >
                         <Plus size={14} strokeWidth={2.5} />
                       </button>
@@ -1578,7 +1588,7 @@ export default function EventoContextModal({
                       {subtareas.map((st) => (
                         <div
                           key={st.id}
-                          className="flex items-center justify-between p-2 bg-white dark:bg-tertiary rounded-xl border border-[#E8E0D2] dark:border-separator text-xs"
+                          className="flex items-center justify-between p-2 bg-white dark:bg-tertiary rounded-xl border border-separator dark:border-separator text-xs"
                         >
                           <button
                             type="button"
@@ -1592,18 +1602,18 @@ export default function EventoContextModal({
                             className="flex items-center gap-2 text-left cursor-pointer flex-1"
                           >
                             {st.completado ? (
-                              <CheckSquare size={14} className="text-[#D97706] dark:text-amber" />
+                              <CheckSquare size={14} className="text-clay dark:text-clay" />
                             ) : (
-                              <Square size={14} className="text-[#A39E95] dark:text-label-quaternary" />
+                              <Square size={14} className="text-label-tertiary dark:text-label-quaternary" />
                             )}
-                            <span className={st.completado ? 'line-through text-[#A39E95] dark:text-label-quaternary' : 'text-[#3A4630] dark:text-label-primary font-medium'}>
+                            <span className={st.completado ? 'line-through text-label-tertiary dark:text-label-quaternary' : 'text-label-primary dark:text-label-primary font-medium'}>
                               {st.descripcion}
                             </span>
                           </button>
                           <button
                             type="button"
                             onClick={() => setSubtareas(subtareas.filter((item) => item.id !== st.id))}
-                            className="text-[#A39E95] dark:text-label-tertiary hover:text-[#B84626] dark:hover:text-terracotta p-1 cursor-pointer transition"
+                            className="text-label-tertiary dark:text-label-tertiary hover:text-terracotta dark:hover:text-terracotta p-1 cursor-pointer transition"
                           >
                             <Trash2 size={12} />
                           </button>
@@ -1619,7 +1629,7 @@ export default function EventoContextModal({
                 <div className="p-4.5 bg-white/70 dark:bg-secondary/70 rounded-3xl border border-white/90 dark:border-separator space-y-4">
                   {/* Paciente Obligatorio */}
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2">
                       Paciente del Hogar *
                     </label>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -1630,8 +1640,8 @@ export default function EventoContextModal({
                           onClick={() => setPacienteId(m.id)}
                           className={`px-3 py-1.5 rounded-2xl text-xs font-bold transition border cursor-pointer ${
                             pacienteId === m.id
-                              ? 'bg-[#0284C7] dark:bg-sky-600 text-white border-[#0284C7] dark:border-sky-600 shadow-2xs'
-                              : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                              ? 'bg-terracotta text-white border-terracotta shadow-2xs'
+                              : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                           }`}
                         >
                           {m.nombre}
@@ -1642,7 +1652,7 @@ export default function EventoContextModal({
 
                   {/* Acompañante(s) */}
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2">
                       Acompañante(s) (Opcional)
                     </label>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -1657,8 +1667,8 @@ export default function EventoContextModal({
                               onClick={() => toggleIdEnLista(m.id, acompanantesIds, setAsistentesIds)}
                               className={`px-3 py-1.5 rounded-2xl text-xs font-bold transition border cursor-pointer ${
                                 isSelected
-                                  ? 'bg-[#3A4630] dark:bg-olive text-white border-[#3A4630] dark:border-olive'
-                                  : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                                  ? 'bg-terracotta dark:bg-mint text-white border-terracotta dark:border-mint'
+                                  : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                               }`}
                             >
                               {m.nombre}
@@ -1675,14 +1685,14 @@ export default function EventoContextModal({
                       value={especialista}
                       onChange={(e) => setEspecialista(e.target.value)}
                       placeholder="Doctor / Especialista (opcional)"
-                      className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-[#D9CEBC] dark:border-separator rounded-xl text-xs text-[#191C16] dark:text-label-primary placeholder-[#A39E95] dark:placeholder-label-quaternary focus:outline-none focus:border-[#3A4630] dark:focus:border-olive"
+                      className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-separator dark:border-separator rounded-xl text-xs text-label-primary dark:text-label-primary placeholder:text-label-tertiary dark:placeholder-label-quaternary focus:outline-none focus:border-terracotta dark:focus:border-mint"
                     />
                     <input
                       type="text"
                       value={especialidad}
                       onChange={(e) => setEspecialidad(e.target.value)}
                       placeholder="Especialidad (opcional)"
-                      className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-[#D9CEBC] dark:border-separator rounded-xl text-xs text-[#191C16] dark:text-label-primary placeholder-[#A39E95] dark:placeholder-label-quaternary focus:outline-none focus:border-[#3A4630] dark:focus:border-olive"
+                      className="w-full px-3.5 py-2.5 bg-white dark:bg-tertiary border border-separator dark:border-separator rounded-xl text-xs text-label-primary dark:text-label-primary placeholder:text-label-tertiary dark:placeholder-label-quaternary focus:outline-none focus:border-terracotta dark:focus:border-mint"
                     />
                   </div>
                 </div>
@@ -1692,7 +1702,7 @@ export default function EventoContextModal({
               {plantilla === TipoPlantilla.MERCADO && (
                 <div className="p-4.5 bg-white/70 dark:bg-secondary/70 rounded-3xl border border-white/90 dark:border-separator space-y-4">
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2">
                       Encargados de las Compras
                     </label>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -1705,8 +1715,8 @@ export default function EventoContextModal({
                             onClick={() => toggleIdEnLista(m.id, encargadosMercadoIds, setEncargadosMercadoIds)}
                             className={`px-3 py-1.5 rounded-2xl text-xs font-bold transition border cursor-pointer ${
                               isSelected
-                                ? 'bg-[#059669] dark:bg-emerald-600 text-white border-[#059669] dark:border-emerald-600'
-                                : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                                ? 'bg-mint text-white border-mint'
+                                : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                             }`}
                           >
                             {m.nombre}
@@ -1718,7 +1728,7 @@ export default function EventoContextModal({
 
                   {/* Lista de Compras Dinámica */}
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
+                    <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-1.5">
                       Lista de Compras (Artículos)
                     </label>
                     <div className="flex gap-2 mb-2.5">
@@ -1733,12 +1743,12 @@ export default function EventoContextModal({
                           }
                         }}
                         placeholder="Ej. Leche, Frutas, Jabón..."
-                        className="flex-1 px-3.5 py-2 bg-white dark:bg-tertiary border border-[#D9CEBC] dark:border-separator rounded-xl text-xs text-[#191C16] dark:text-label-primary placeholder-[#A39E95] dark:placeholder-label-quaternary focus:outline-none focus:border-[#3A4630] dark:focus:border-olive"
+                        className="flex-1 px-3.5 py-2 bg-white dark:bg-tertiary border border-separator dark:border-separator rounded-xl text-xs text-label-primary dark:text-label-primary placeholder:text-label-tertiary dark:placeholder-label-quaternary focus:outline-none focus:border-terracotta dark:focus:border-mint"
                       />
                       <button
                         type="button"
                         onClick={handleAgregarItemMercado}
-                        className="px-3 py-2 bg-[#059669] dark:bg-emerald-600 text-white rounded-xl text-xs font-bold cursor-pointer hover:opacity-90 active:scale-95 transition"
+                        className="px-3 py-2 bg-mint hover:bg-mint-hover text-white rounded-xl text-xs font-bold cursor-pointer active:scale-95 transition"
                       >
                         <Plus size={14} strokeWidth={2.5} />
                       </button>
@@ -1748,7 +1758,7 @@ export default function EventoContextModal({
                       {itemsMercado.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between p-2 bg-white dark:bg-tertiary rounded-xl border border-[#E8E0D2] dark:border-separator text-xs"
+                          className="flex items-center justify-between p-2 bg-white dark:bg-tertiary rounded-xl border border-separator dark:border-separator text-xs"
                         >
                           <button
                             type="button"
@@ -1762,18 +1772,18 @@ export default function EventoContextModal({
                             className="flex items-center gap-2 text-left cursor-pointer flex-1"
                           >
                             {item.completado ? (
-                              <CheckSquare size={14} className="text-[#059669] dark:text-emerald-500" />
+                              <CheckSquare size={14} className="text-mint" />
                             ) : (
-                              <Square size={14} className="text-[#A39E95] dark:text-label-quaternary" />
+                              <Square size={14} className="text-label-tertiary dark:text-label-quaternary" />
                             )}
-                            <span className={item.completado ? 'line-through text-[#A39E95] dark:text-label-quaternary' : 'text-[#3A4630] dark:text-label-primary font-medium'}>
+                            <span className={item.completado ? 'line-through text-label-tertiary dark:text-label-quaternary' : 'text-label-primary dark:text-label-primary font-medium'}>
                               {item.descripcion}
                             </span>
                           </button>
                           <button
                             type="button"
                             onClick={() => setItemsMercado(itemsMercado.filter((it) => it.id !== item.id))}
-                            className="text-[#A39E95] dark:text-label-tertiary hover:text-[#B84626] dark:hover:text-terracotta p-1 cursor-pointer transition"
+                            className="text-label-tertiary dark:text-label-tertiary hover:text-terracotta dark:hover:text-terracotta p-1 cursor-pointer transition"
                           >
                             <Trash2 size={12} />
                           </button>
@@ -1788,11 +1798,11 @@ export default function EventoContextModal({
               
               {/* Ubicación */}
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
-                  Ubicación {plantilla === TipoPlantilla.CITA_MEDICA && <span className="text-[#B84626] dark:text-terracotta">*</span>}
+                <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-1.5">
+                  Ubicación {plantilla === TipoPlantilla.CITA_MEDICA && <span className="text-terracotta dark:text-terracotta">*</span>}
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#736F68] dark:text-label-tertiary">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-label-secondary dark:text-label-tertiary">
                     <MapPin size={15} strokeWidth={2.2} />
                   </div>
                   <input
@@ -1805,14 +1815,14 @@ export default function EventoContextModal({
                         ? 'Consultorio, clínica o centro de salud *'
                         : 'Lugar físico o digital (opcional)'
                     }
-                    className="w-full pl-10 pr-4 py-2.5 bg-white/80 dark:bg-tertiary border border-[#D9CEBC] dark:border-separator rounded-2xl text-xs text-[#191C16] dark:text-label-primary placeholder-[#A39E95] dark:placeholder-label-quaternary focus:outline-none focus:bg-white dark:focus:bg-secondary focus:border-[#3A4630] dark:focus:border-olive"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white/80 dark:bg-tertiary border border-separator dark:border-separator rounded-2xl text-xs text-label-primary dark:text-label-primary placeholder:text-label-tertiary dark:placeholder-label-quaternary focus:outline-none focus:bg-white dark:focus:bg-secondary focus:border-terracotta dark:focus:border-mint"
                   />
                 </div>
               </div>
 
               {/* Descripción */}
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-1.5">
+                <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-1.5">
                   Detalles o Notas Adicionales
                 </label>
                 <textarea
@@ -1820,7 +1830,7 @@ export default function EventoContextModal({
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
                   placeholder="Detalles adicionales, recordatorios o enlaces..."
-                  className="w-full px-3.5 py-2.5 bg-white/80 dark:bg-tertiary border border-[#D9CEBC] dark:border-separator rounded-2xl text-xs text-[#191C16] dark:text-label-primary placeholder-[#A39E95] dark:placeholder-label-quaternary focus:outline-none focus:bg-white dark:focus:bg-secondary focus:border-[#3A4630] dark:focus:border-olive"
+                  className="w-full px-3.5 py-2.5 bg-white/80 dark:bg-tertiary border border-separator dark:border-separator rounded-2xl text-xs text-label-primary dark:text-label-primary placeholder:text-label-tertiary dark:placeholder-label-quaternary focus:outline-none focus:bg-white dark:focus:bg-secondary focus:border-terracotta dark:focus:border-mint"
                 />
               </div>
 
@@ -1828,8 +1838,8 @@ export default function EventoContextModal({
               <div className="p-4 bg-white/70 dark:bg-secondary/70 rounded-3xl border border-white/90 dark:border-separator space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Bell size={15} strokeWidth={2.2} className="text-[#5F6F52] dark:text-olive" />
-                    <span className="text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary">
+                    <Bell size={15} strokeWidth={2.2} className="text-terracotta dark:text-olive" />
+                    <span className="apple-subhead font-medium text-label-primary dark:text-label-primary">
                       Recordatorios y Alarmas
                     </span>
                   </div>
@@ -1850,8 +1860,8 @@ export default function EventoContextModal({
                         onClick={() => setCanalPush(!canalPush)}
                         className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-1.5 cursor-pointer ${
                           canalPush
-                            ? 'bg-[#5F6F52] dark:bg-olive text-white border-[#5F6F52] dark:border-olive shadow-2xs'
-                            : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                            ? 'bg-terracotta dark:bg-mint text-white border-terracotta dark:border-mint shadow-2xs'
+                            : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                         }`}
                       >
                         <Smartphone size={13} />
@@ -1862,8 +1872,8 @@ export default function EventoContextModal({
                         onClick={() => setCanalEmail(!canalEmail)}
                         className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-1.5 cursor-pointer ${
                           canalEmail
-                            ? 'bg-[#5F6F52] dark:bg-olive text-white border-[#5F6F52] dark:border-olive shadow-2xs'
-                            : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                            ? 'bg-terracotta dark:bg-mint text-white border-terracotta dark:border-mint shadow-2xs'
+                            : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                         }`}
                       >
                         <Mail size={13} />
@@ -1885,8 +1895,8 @@ export default function EventoContextModal({
                           onClick={() => setMinutosAnticipacion(t.min)}
                           className={`py-1.5 text-[11px] font-bold rounded-xl border transition cursor-pointer ${
                             minutosAnticipacion === t.min
-                              ? 'bg-[#3A4630] dark:bg-olive text-white border-[#3A4630] dark:border-olive shadow-2xs'
-                              : 'bg-white dark:bg-tertiary text-[#736F68] dark:text-label-secondary border-[#E8E0D2] dark:border-separator'
+                              ? 'bg-terracotta dark:bg-mint text-white border-terracotta dark:border-mint shadow-2xs'
+                              : 'bg-white dark:bg-tertiary text-label-secondary dark:text-label-secondary border-separator dark:border-separator'
                           }`}
                         >
                           {t.label}
@@ -1899,7 +1909,7 @@ export default function EventoContextModal({
 
               {/* Selector de Color Identificador */}
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-[#3A4630] dark:text-label-primary mb-2">
+                <label className="block apple-subhead font-medium text-label-primary dark:text-label-primary mb-2">
                   Código de Color Identificador
                 </label>
                 <div className="flex items-center gap-3">
@@ -1917,21 +1927,38 @@ export default function EventoContextModal({
                 </div>
               </div>
 
-              {/* Botón de Envío */}
-              <div className="pt-3">
+              {/* BOTONES SIMÉTRICOS (APPLE HIG) */}
+              <div className="pt-3 flex gap-3">
+                {eventosDelDia.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={cancelarEdicion}
+                    disabled={procesando}
+                    className="flex-1 btn-apple-gray text-sm font-semibold justify-center"
+                  >
+                    Cancelar
+                  </button>
+                )}
                 <button
                   type="submit"
                   disabled={procesando}
-                  className="w-full py-4 bg-gradient-to-r from-[#5F6F52] to-[#4E5D42] dark:from-olive dark:to-[#4E5D42] hover:from-[#4E5D42] hover:to-[#3A4630] dark:hover:from-[#4E5D42] dark:hover:to-olive text-white font-black text-xs uppercase tracking-wider rounded-2xl transition shadow-lg shadow-[#5F6F52]/25 dark:shadow-none disabled:opacity-50 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+                  className="flex-1 btn-apple-filled text-sm font-semibold justify-center gap-2"
                 >
-                  <Check size={16} strokeWidth={2.5} />
-                  <span>
-                    {procesando
-                      ? 'Guardando en agenda...'
-                      : eventoAEditar
-                      ? 'Guardar Modificaciones'
-                      : 'Programar Actividad'}
-                  </span>
+                  {procesando ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin shrink-0" />
+                      <span>Guardando en agenda...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={16} strokeWidth={2.4} className="shrink-0" />
+                      <span>
+                        {eventoAEditar
+                          ? 'Guardar modificaciones'
+                          : 'Programar actividad'}
+                      </span>
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -1966,16 +1993,16 @@ export default function EventoContextModal({
         onClose={() => setIdEventoACancelar(null)}
       />
 
-      {/* Diálogo de Confirmación: Recurrencia Anual (RF-03) */}
+      {/* Diálogo de Decisión para Modificar Recurrencia (RF-04) */}
       {mostrarDialogoRecurrencia && (
         <div className="fixed inset-0 z-[10000] bg-black/65 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="relative glass-modal w-full max-w-md rounded-[2.5rem] p-6 sm:p-7 shadow-2xl border border-white/85 dark:border-separator bg-[#FDFBF7]/95 dark:bg-secondary/95 space-y-5 text-center my-auto animate-fade-in-up">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-xs bg-[#7C3AED]/15 dark:bg-purple-900/30 text-[#7C3AED] dark:text-purple-400 border border-[#7C3AED]/30 dark:border-purple-500/30">
+          <div className="relative glass-modal w-full max-w-md rounded-[2.5rem] p-6 sm:p-7 shadow-2xl border border-white/85 dark:border-separator bg-white/95 dark:bg-secondary/95 space-y-5 text-center my-auto animate-fade-in-up">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-xs bg-[#ce9b8c]/25 dark:bg-brand-deep/15 text-brand-deep border border-[#bd7471]/30">
               <Repeat size={26} strokeWidth={2.3} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-black text-[#2E2B27] dark:text-label-primary tracking-tight">Actividad con Recurrencia</h3>
-              <p className="text-xs text-[#736F68] dark:text-label-secondary font-medium leading-relaxed px-1">
+              <h3 className="apple-title-3 font-semibold text-label-primary tracking-tight">Actividad con Recurrencia</h3>
+              <p className="text-xs text-label-secondary font-medium leading-relaxed px-1">
                 Esta actividad cuenta con repetición programada. ¿Cómo deseas aplicar las modificaciones realizadas?
               </p>
             </div>
@@ -1984,7 +2011,7 @@ export default function EventoContextModal({
                 type="button"
                 onClick={() => payloadPendienteRecurrencia && ejecutarActualizacion(payloadPendienteRecurrencia, 'SOLO_ESTE')}
                 disabled={procesando}
-                className="w-full py-3.5 px-4 rounded-2xl border border-[#7C3AED]/40 dark:border-purple-500/40 bg-white dark:bg-tertiary hover:bg-[#F3E8FF] dark:hover:bg-purple-950/30 text-[#6B21A8] dark:text-purple-300 font-bold text-xs transition cursor-pointer active:scale-95 shadow-2xs"
+                className="w-full py-3.5 px-4 rounded-2xl border border-separator bg-white dark:bg-tertiary hover:bg-tertiary text-label-primary font-bold text-xs transition cursor-pointer active:scale-95 shadow-2xs"
               >
                 Modificar solo este evento
               </button>
@@ -1992,7 +2019,7 @@ export default function EventoContextModal({
                 type="button"
                 onClick={() => payloadPendienteRecurrencia && ejecutarActualizacion(payloadPendienteRecurrencia, 'ESTE_Y_FUTUROS')}
                 disabled={procesando}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#7C3AED] dark:bg-purple-600 hover:bg-[#6D28D9] dark:hover:bg-purple-700 text-white font-bold text-xs transition cursor-pointer active:scale-95 shadow-md"
+                className="w-full py-3.5 px-4 rounded-2xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs transition cursor-pointer active:scale-95 shadow-md shadow-terracotta/20"
               >
                 Modificar este y los eventos futuros
               </button>
@@ -2000,7 +2027,7 @@ export default function EventoContextModal({
                 type="button"
                 onClick={() => setMostrarDialogoRecurrencia(false)}
                 disabled={procesando}
-                className="w-full py-2.5 px-4 rounded-2xl text-[#736F68] dark:text-label-secondary hover:text-[#2E2B27] dark:hover:text-label-primary font-medium text-xs transition cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-2xl text-label-secondary hover:text-label-primary font-medium text-xs transition cursor-pointer"
               >
                 Volver al formulario
               </button>

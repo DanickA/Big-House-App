@@ -33,15 +33,15 @@ interface FormularioEventoProps {
 }
 
 const TEMPLATE_CONFIGS: Record<TipoPlantilla, { label: string; color: string; icon: any }> = {
-  [TipoPlantilla.EVENTO]: { label: 'Evento Estándar', color: '#2563EB', icon: Calendar },
-  [TipoPlantilla.CUMPLEANOS]: { label: 'Cumpleaños', color: '#7C3AED', icon: HeartHandshake },
-  [TipoPlantilla.TAREA]: { label: 'Tarea', color: '#D97706', icon: ListTodo },
-  [TipoPlantilla.CITA_MEDICA]: { label: 'Cita Médica', color: '#0284C7', icon: Stethoscope },
-  [TipoPlantilla.MERCADO]: { label: 'Mercado', color: '#059669', icon: ShoppingCart },
-  [TipoPlantilla.MANTENIMIENTO]: { label: 'Mantenimiento', color: '#D97706', icon: ListTodo },
-  [TipoPlantilla.VISITAS]: { label: 'Visitas', color: '#8C52FF', icon: HeartHandshake },
-  [TipoPlantilla.COMPRAS]: { label: 'Compras', color: '#059669', icon: ShoppingCart },
-  [TipoPlantilla.MASCOTAS]: { label: 'Mascotas', color: '#C86242', icon: HeartHandshake },
+  [TipoPlantilla.EVENTO]: { label: 'Evento Estándar', color: '#AA4B50', icon: Calendar },
+  [TipoPlantilla.CUMPLEANOS]: { label: 'Cumpleaños', color: '#A13842', icon: HeartHandshake },
+  [TipoPlantilla.TAREA]: { label: 'Tarea', color: '#BD7471', icon: ListTodo },
+  [TipoPlantilla.CITA_MEDICA]: { label: 'Cita Médica', color: '#B25D5D', icon: Stethoscope },
+  [TipoPlantilla.MERCADO]: { label: 'Mercado', color: '#6EB5A5', icon: ShoppingCart },
+  [TipoPlantilla.MANTENIMIENTO]: { label: 'Mantenimiento', color: '#BD7471', icon: ListTodo },
+  [TipoPlantilla.VISITAS]: { label: 'Visitas', color: '#CE9B8C', icon: HeartHandshake },
+  [TipoPlantilla.COMPRAS]: { label: 'Compras', color: '#6EB5A5', icon: ShoppingCart },
+  [TipoPlantilla.MASCOTAS]: { label: 'Mascotas', color: '#AA4B50', icon: HeartHandshake },
 };
 
 export function FormularioEvento({ 
@@ -349,8 +349,8 @@ export function FormularioEvento({
         
         {/* Selector de Plantilla */}
         <div>
-          <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
-            Plantilla Rápida
+          <label className="block apple-footnote font-medium text-label-secondary mb-2">
+            Plantilla rápida
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {(Object.keys(TEMPLATE_CONFIGS) as TipoPlantilla[]).map((tKey) => {
@@ -362,13 +362,13 @@ export function FormularioEvento({
                   key={tKey}
                   type="button"
                   onClick={() => handleCambiarPlantilla(tKey)}
-                  className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-2 p-2.5 rounded-xl border apple-footnote font-medium transition-all ${
                     activo 
-                      ? 'border-[#5F6F52] bg-[#EEF2EA] text-[#3A4630] shadow-sm' 
+                      ? 'border-terracotta bg-mint/15 text-label-primary shadow-sm font-semibold' 
                       : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  <IconComp size={15} className={activo ? 'text-[#5F6F52]' : 'text-gray-400'} />
+                  <IconComp size={15} className={activo ? 'text-terracotta' : 'text-gray-400'} />
                   <span className="truncate">{conf.label}</span>
                 </button>
               );
@@ -377,15 +377,15 @@ export function FormularioEvento({
         </div>
 
         {errorValidacion && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl apple-footnote text-red-700 font-medium">
             {errorValidacion}
           </div>
         )}
 
         {/* Título Principal */}
         <div>
-          <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">
-            Título de la Actividad *
+          <label className="block apple-footnote font-medium text-label-secondary mb-1">
+            Título de la actividad *
           </label>
           <input
             type="text"
@@ -393,7 +393,7 @@ export function FormularioEvento({
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             placeholder="Ej. Título de la actividad"
-            className="w-full text-sm border border-gray-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-[#5F6F52]/30 focus:border-[#5F6F52] outline-none transition"
+            className="w-full apple-body border border-gray-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-terracotta/30 focus:border-terracotta outline-none transition"
           />
         </div>
 
@@ -401,10 +401,10 @@ export function FormularioEvento({
 
         {/* 1. PLANTILLA: CUMPLEANOS */}
         {plantilla === TipoPlantilla.CUMPLEANOS && (
-          <div className="bg-[#FAFBF9] border border-[#E5EBE0] p-3.5 rounded-xl flex flex-col gap-3">
-            <span className="text-xs font-bold text-[#3A4630] flex items-center gap-1.5">
-              <HeartHandshake size={14} className="text-[#5F6F52]" />
-              Información del Agasajado
+          <div className="bg-secondary border border-separator p-3.5 rounded-xl flex flex-col gap-3">
+            <span className="apple-subhead font-semibold text-label-primary flex items-center gap-1.5">
+              <HeartHandshake size={14} className="text-terracotta" />
+              Información del agasajado
             </span>
 
             <div className="flex gap-4 text-xs">
@@ -414,7 +414,7 @@ export function FormularioEvento({
                   name="agasajadoTipo" 
                   checked={agasajadoTipo === 'hogar'} 
                   onChange={() => setAgasajadoTipo('hogar')}
-                  className="text-[#5F6F52] focus:ring-[#5F6F52]"
+                  className="text-terracotta focus:ring-terracotta"
                 />
                 Miembro del hogar
               </label>
@@ -424,7 +424,7 @@ export function FormularioEvento({
                   name="agasajadoTipo" 
                   checked={agasajadoTipo === 'externo'} 
                   onChange={() => setAgasajadoTipo('externo')}
-                  className="text-[#5F6F52] focus:ring-[#5F6F52]"
+                  className="text-terracotta focus:ring-terracotta"
                 />
                 Persona externa
               </label>
@@ -481,7 +481,7 @@ export function FormularioEvento({
                 id="recAnual"
                 checked={recurrenciaAnual}
                 onChange={(e) => setRecurrenciaAnual(e.target.checked)}
-                className="rounded text-[#5F6F52] focus:ring-[#5F6F52]"
+                className="rounded text-terracotta focus:ring-terracotta"
               />
               <label htmlFor="recAnual" className="text-xs font-medium text-gray-700 cursor-pointer">
                 Repetir anualmente en esta fecha
@@ -492,10 +492,10 @@ export function FormularioEvento({
 
         {/* 2. PLANTILLA: TAREA */}
         {plantilla === TipoPlantilla.TAREA && (
-          <div className="bg-[#FAFBF9] border border-[#E5EBE0] p-3.5 rounded-xl flex flex-col gap-3">
-            <span className="text-xs font-bold text-[#3A4630] flex items-center gap-1.5">
-              <ListTodo size={14} className="text-[#5F6F52]" />
-              Configuración de la Tarea
+          <div className="bg-secondary border border-separator p-3.5 rounded-xl flex flex-col gap-3">
+            <span className="apple-subhead font-semibold text-label-primary flex items-center gap-1.5">
+              <ListTodo size={14} className="text-terracotta" />
+              Configuración de la tarea
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -528,7 +528,7 @@ export function FormularioEvento({
 
             {/* To-Do Dinámico de la Tarea */}
             <div className="mt-1">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Lista de Subtareas</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Lista de subtareas</label>
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
@@ -541,7 +541,7 @@ export function FormularioEvento({
                 <button
                   type="button"
                   onClick={agregarSubtarea}
-                  className="px-3 py-1.5 bg-[#5F6F52] text-white text-xs font-semibold rounded-lg hover:bg-[#4E5C43] transition"
+                  className="px-3 py-1.5 bg-terracotta text-white text-xs font-semibold rounded-lg hover:bg-terracotta-hover transition"
                 >
                   Agregar
                 </button>
@@ -554,7 +554,7 @@ export function FormularioEvento({
                       className="flex items-center gap-2 cursor-pointer flex-1"
                       onClick={() => toggleSubtareaLocal(st.id)}
                     >
-                      {st.completado ? <CheckSquare size={14} className="text-[#5F6F52]" /> : <Square size={14} className="text-gray-400" />}
+                      {st.completado ? <CheckSquare size={14} className="text-terracotta" /> : <Square size={14} className="text-gray-400" />}
                       <span className={st.completado ? 'line-through text-gray-400' : 'text-gray-800'}>
                         {st.descripcion}
                       </span>
@@ -571,10 +571,10 @@ export function FormularioEvento({
 
         {/* 3. PLANTILLA: CITA MÉDICA */}
         {plantilla === TipoPlantilla.CITA_MEDICA && (
-          <div className="bg-[#FAFBF9] border border-[#E5EBE0] p-3.5 rounded-xl flex flex-col gap-3">
-            <span className="text-xs font-bold text-[#3A4630] flex items-center gap-1.5">
-              <Stethoscope size={14} className="text-[#5F6F52]" />
-              Detalles Médicos
+          <div className="bg-secondary border border-separator p-3.5 rounded-xl flex flex-col gap-3">
+            <span className="apple-subhead font-semibold text-label-primary flex items-center gap-1.5">
+              <Stethoscope size={14} className="text-terracotta" />
+              Detalles médicos
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -602,7 +602,7 @@ export function FormularioEvento({
                         type="button"
                         onClick={() => toggleParticipante(u.id, acompanantesIds, setAcompanantesIds)}
                         className={`text-xs px-2 py-0.5 rounded-md border ${
-                          sel ? 'bg-[#EEF2EA] border-[#5F6F52] text-[#3A4630] font-bold' : 'bg-gray-50 border-gray-200 text-gray-600'
+                          sel ? 'bg-mint/15 border-terracotta text-label-primary font-semibold' : 'bg-gray-50 border-gray-200 text-gray-600'
                         }`}
                       >
                         {u.nombre}
@@ -640,10 +640,10 @@ export function FormularioEvento({
 
         {/* 4. PLANTILLA: MERCADO */}
         {plantilla === TipoPlantilla.MERCADO && (
-          <div className="bg-[#FAFBF9] border border-[#E5EBE0] p-3.5 rounded-xl flex flex-col gap-3">
-            <span className="text-xs font-bold text-[#3A4630] flex items-center gap-1.5">
-              <ShoppingCart size={14} className="text-[#5F6F52]" />
-              Gestión de Compras
+          <div className="bg-secondary border border-separator p-3.5 rounded-xl flex flex-col gap-3">
+            <span className="apple-subhead font-semibold text-label-primary flex items-center gap-1.5">
+              <ShoppingCart size={14} className="text-terracotta" />
+              Gestión de compras
             </span>
 
             <div>
@@ -657,7 +657,7 @@ export function FormularioEvento({
                       type="button"
                       onClick={() => toggleParticipante(u.id, encargadosMercadoIds, setEncargadosMercadoIds)}
                       className={`text-xs px-2.5 py-1 rounded-md border ${
-                        sel ? 'bg-[#EEF2EA] border-[#5F6F52] text-[#3A4630] font-bold' : 'bg-gray-50 border-gray-200 text-gray-600'
+                        sel ? 'bg-mint/15 border-terracotta text-label-primary font-semibold' : 'bg-gray-50 border-gray-200 text-gray-600'
                       }`}
                     >
                       {u.nombre}
@@ -669,7 +669,7 @@ export function FormularioEvento({
 
             {/* Lista dinámica de compras */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Lista de Artículos / Productos</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Lista de artículos / productos</label>
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
@@ -682,7 +682,7 @@ export function FormularioEvento({
                 <button
                   type="button"
                   onClick={agregarItemCompra}
-                  className="px-3 py-1.5 bg-[#5F6F52] text-white text-xs font-semibold rounded-lg hover:bg-[#4E5C43] transition"
+                  className="px-3 py-1.5 bg-terracotta text-white text-xs font-semibold rounded-lg hover:bg-terracotta-hover transition"
                 >
                   Añadir
                 </button>
@@ -695,7 +695,7 @@ export function FormularioEvento({
                       className="flex items-center gap-2 cursor-pointer flex-1"
                       onClick={() => toggleItemCompraLocal(it.id)}
                     >
-                      {it.completado ? <CheckSquare size={14} className="text-[#5F6F52]" /> : <Square size={14} className="text-gray-400" />}
+                      {it.completado ? <CheckSquare size={14} className="text-terracotta" /> : <Square size={14} className="text-gray-400" />}
                       <span className={it.completado ? 'line-through text-gray-400' : 'text-gray-800'}>
                         {it.descripcion}
                       </span>
@@ -712,10 +712,10 @@ export function FormularioEvento({
 
         {/* 5. PLANTILLA: EVENTO ESTÁNDAR (Organizador / Correo) */}
         {plantilla === TipoPlantilla.EVENTO && (
-          <div className="bg-[#FAFBF9] border border-[#E5EBE0] p-3.5 rounded-xl flex flex-col gap-3">
-            <span className="text-xs font-bold text-[#3A4630] flex items-center gap-1.5">
-              <User size={14} className="text-[#5F6F52]" />
-              Organizador del Evento
+          <div className="bg-secondary border border-separator p-3.5 rounded-xl flex flex-col gap-3">
+            <span className="apple-subhead font-semibold text-label-primary flex items-center gap-1.5">
+              <User size={14} className="text-terracotta" />
+              Organizador del evento
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -751,9 +751,9 @@ export function FormularioEvento({
         {/* ----------------- TEMPORALIDAD Y FECHAS ----------------- */}
         <div className="flex flex-col gap-3 border-t pt-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="apple-footnote font-semibold text-label-secondary flex items-center gap-1.5">
               <Clock size={14} className="text-gray-500" />
-              Horario y Fechas
+              Horario y fechas
             </span>
             
             {/* Modalidad todo el día (deshabilitada para cita médica según RF-02) */}
@@ -763,7 +763,7 @@ export function FormularioEvento({
                   type="checkbox"
                   checked={todoElDia}
                   onChange={(e) => setTodoElDia(e.target.checked)}
-                  className="rounded text-[#5F6F52] focus:ring-[#5F6F52]"
+                  className="rounded text-terracotta focus:ring-terracotta"
                 />
                 Todo el día
               </label>
@@ -810,13 +810,13 @@ export function FormularioEvento({
         {/* ----------------- ASISTENTES / PARTICIPANTES GENERALES ----------------- */}
         {plantilla !== TipoPlantilla.MERCADO && (
           <div className="border-t pt-3">
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <label className="block apple-footnote font-semibold text-label-secondary mb-1.5 flex items-center gap-1.5">
               <Users size={14} className="text-gray-500" />
               {plantilla === TipoPlantilla.CUMPLEANOS 
-                ? 'Otros Participantes / Organizadores' 
+                ? 'Otros participantes / organizadores' 
                 : plantilla === TipoPlantilla.TAREA 
-                ? 'Otros Integrantes Sumados' 
-                : 'Asistentes / Miembros Involucrados'}
+                ? 'Otros integrantes sumados' 
+                : 'Asistentes / miembros involucrados'}
             </label>
             <div className="flex flex-wrap gap-1.5 p-2 bg-gray-50 border border-gray-200 rounded-xl">
               {usuarios
@@ -834,7 +834,7 @@ export function FormularioEvento({
                       type="button"
                       onClick={() => toggleParticipante(u.id, participantesSeleccionados, setParticipantesSeleccionados)}
                       className={`text-xs px-2.5 py-1 rounded-lg border transition ${
-                        sel ? 'bg-[#5F6F52] border-[#5F6F52] text-white font-medium' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-100'
+                        sel ? 'bg-terracotta border-terracotta text-white font-medium' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-100'
                       }`}
                     >
                       {u.nombre}
@@ -848,7 +848,7 @@ export function FormularioEvento({
         {/* ----------------- DETALLES GENERALES (UBICACIÓN Y NOTAS) ----------------- */}
         <div className="border-t pt-3 flex flex-col gap-3">
           <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <label className="block apple-footnote font-semibold text-label-secondary mb-1 flex items-center gap-1.5">
               <MapPin size={14} className="text-gray-500" />
               Ubicación {plantilla === TipoPlantilla.CITA_MEDICA && '* (Obligatoria)'}
             </label>
@@ -863,9 +863,9 @@ export function FormularioEvento({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <label className="block apple-footnote font-semibold text-label-secondary mb-1 flex items-center gap-1.5">
               <FileText size={14} className="text-gray-500" />
-              Notas Adicionales / Descripción
+              Notas adicionales / descripción
             </label>
             <textarea
               rows={2}
@@ -880,16 +880,16 @@ export function FormularioEvento({
         {/* ----------------- RECORDATORIOS Y ALARMAS ----------------- */}
         <div className="border-t pt-3 flex flex-col gap-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="apple-footnote font-semibold text-label-secondary flex items-center gap-1.5">
               <Bell size={14} className="text-gray-500" />
-              Recordatorios y Alarmas
+              Recordatorios y alarmas
             </span>
             <label className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-gray-700">
               <input
                 type="checkbox"
                 checked={activarRecordatorio}
                 onChange={(e) => setActivarRecordatorio(e.target.checked)}
-                className="rounded text-[#5F6F52] focus:ring-[#5F6F52]"
+                className="rounded text-terracotta focus:ring-terracotta"
               />
               Activar alerta
             </label>
@@ -904,7 +904,7 @@ export function FormularioEvento({
                     type="checkbox"
                     checked={canalPush}
                     onChange={(e) => setCanalPush(e.target.checked)}
-                    className="rounded text-[#5F6F52]"
+                    className="rounded text-terracotta"
                   />
                   Alerta móvil (Push)
                 </label>
@@ -913,7 +913,7 @@ export function FormularioEvento({
                     type="checkbox"
                     checked={canalEmail}
                     onChange={(e) => setCanalEmail(e.target.checked)}
-                    className="rounded text-[#5F6F52]"
+                    className="rounded text-terracotta"
                   />
                   Correo electrónico
                 </label>
@@ -939,12 +939,12 @@ export function FormularioEvento({
 
         {/* ----------------- CÓDIGO DE COLOR ----------------- */}
         <div className="border-t pt-3 flex items-center justify-between">
-          <span className="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-1.5">
+          <span className="apple-footnote font-semibold text-label-secondary flex items-center gap-1.5">
             <Tag size={14} className="text-gray-500" />
-            Color Identificador
+            Color identificador
           </span>
           <div className="flex items-center gap-2">
-            {['#2563EB', '#7C3AED', '#D97706', '#0284C7', '#059669', '#DC2626', '#4B5563'].map(c => (
+            {['#AA4B50', '#A13842', '#BD7471', '#B25D5D', '#6EB5A5', '#A13842', '#6B625E'].map(c => (
               <button
                 key={c}
                 type="button"
@@ -968,7 +968,7 @@ export function FormularioEvento({
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#5F6F52] hover:bg-[#4E5C43] text-white py-3 rounded-xl font-bold text-sm shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-terracotta hover:bg-terracotta-hover text-white py-3 rounded-xl font-semibold text-sm shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? 'Guardando actividad...' : 'Guardar Actividad'}
           </button>

@@ -36,7 +36,7 @@ export function VistaMensual({ mesActual, eventos, onDiaSeleccionado }: VistaMen
     <div className="flex flex-col w-full h-full bg-white rounded-xl shadow border overflow-hidden">
       <div className="grid grid-cols-7 border-b bg-gray-50">
         {semanaNombres.map((nombre) => (
-          <div key={nombre} className="text-center py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border-r last:border-r-0">
+          <div key={nombre} className="text-center py-2 apple-caption-2 font-semibold text-label-secondary border-r last:border-r-0">
             {nombre}
           </div>
         ))}
@@ -62,13 +62,13 @@ export function VistaMensual({ mesActual, eventos, onDiaSeleccionado }: VistaMen
               key={dia.toISOString()}
               onClick={() => onDiaSeleccionado(dia)}
               className={`
-                min-h-[100px] border-r border-b p-1 cursor-pointer transition-colors hover:bg-blue-50
+                min-h-[100px] border-r border-b p-1 cursor-pointer transition-colors hover:bg-mint/10
                 ${!esMesActual ? 'bg-gray-50 text-gray-400' : 'text-gray-900'}
                 ${index % 7 === 6 ? 'border-r-0' : ''}
               `}
             >
               <div className="flex justify-between items-center mb-1">
-                <span className={`text-sm font-medium w-6 h-6 flex items-center justify-center rounded-full ${esHoy ? 'bg-blue-600 text-white' : ''}`}>
+                <span className={`apple-footnote font-semibold tabular-nums w-6 h-6 flex items-center justify-center rounded-full ${esHoy ? 'bg-terracotta text-white' : ''}`}>
                   {format(dia, 'd')}
                 </span>
               </div>
@@ -76,7 +76,7 @@ export function VistaMensual({ mesActual, eventos, onDiaSeleccionado }: VistaMen
                 {eventosDia.map(evento => (
                   <div
                     key={evento.id}
-                    className={`text-xs px-1.5 py-0.5 rounded truncate text-white ${evento.estado === 'CANCELADO' ? 'line-through opacity-50' : ''}`}
+                    className={`apple-caption-2 font-medium px-1.5 py-0.5 rounded truncate text-white ${evento.estado === 'CANCELADO' ? 'line-through opacity-50' : ''}`}
                     style={{ backgroundColor: evento.color }}
                     title={evento.titulo}
                   >

@@ -58,7 +58,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       // Actualizar color de la barra de estado móvil
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', actual === 'dark' ? '#121411' : '#F4EFE6');
+        metaThemeColor.setAttribute('content', actual === 'dark' ? '#151413' : '#f9f6eb');
       }
     }
 

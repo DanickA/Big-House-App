@@ -31,10 +31,10 @@ export default function HeaderNav({ user }: HeaderNavProps) {
         {/* Logo de la Aplicación */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-[#5F6F52] dark:bg-[#8FA37E] text-white dark:text-[#121411] font-black text-sm flex items-center justify-center group-hover:scale-105 transition shadow-2xs">
+            <div className="w-8 h-8 rounded-xl bg-terracotta text-white font-bold text-sm flex items-center justify-center group-hover:scale-105 transition shadow-2xs">
               H
             </div>
-            <span className="font-extrabold text-base text-[#3A4630] dark:text-[#F5F2EB] tracking-tight">
+            <span className="font-semibold text-base text-label-primary tracking-tight">
               HogarApp
             </span>
           </Link>
@@ -42,70 +42,70 @@ export default function HeaderNav({ user }: HeaderNavProps) {
           {/* Navegación Desktop: Segmented Control (Apple HIG) */}
           <nav
             aria-label="Navegación Principal"
-            className="hidden sm:flex items-center bg-[#F4EFE6]/70 dark:bg-[#282C25]/70 p-1 rounded-2xl border border-[rgba(217,206,188,0.5)] dark:border-[rgba(255,255,255,0.08)]"
+            className="hidden sm:flex items-center bg-tertiary p-1 rounded-2xl border border-separator"
           >
             <Link
               href="/"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname === '/'
-                  ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
-                  : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'
+                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
+                  : 'text-label-secondary hover:text-label-primary font-medium'
               }`}
             >
-              <Home size={13} strokeWidth={2.2} />
+              <Home size={14} strokeWidth={2.2} />
               <span>Lobby</span>
             </Link>
 
             <Link
               href="/calendario"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/calendario')
-                  ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
-                  : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'
+                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
+                  : 'text-label-secondary hover:text-label-primary font-medium'
               }`}
             >
-              <Calendar size={13} strokeWidth={2.2} />
+              <Calendar size={14} strokeWidth={2.2} />
               <span>Agenda</span>
             </Link>
 
             <Link
               href="/plantas"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/plantas')
-                  ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
-                  : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'
+                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
+                  : 'text-label-secondary hover:text-label-primary font-medium'
               }`}
             >
-              <Sprout size={13} strokeWidth={2.2} />
+              <Sprout size={14} strokeWidth={2.2} />
               <span>Plantas</span>
             </Link>
 
             <Link
               href="/finanzas"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/finanzas') || pathname.startsWith('/servicios')
-                  ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
-                  : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'
+                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
+                  : 'text-label-secondary hover:text-label-primary font-medium'
               }`}
             >
-              <Receipt size={13} strokeWidth={2.2} />
+              <Receipt size={14} strokeWidth={2.2} />
               <span>Cuentas</span>
             </Link>
 
             <Link
               href="/usuarios"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/usuarios')
-                  ? 'bg-white dark:bg-[#1C1F1A] text-[#3A4630] dark:text-[#F5F2EB] shadow-2xs font-extrabold'
-                  : 'text-[#736F68] dark:text-[#ABA69B] hover:text-[#3A4630] dark:hover:text-[#F5F2EB]'
+                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
+                  : 'text-label-secondary hover:text-label-primary font-medium'
               }`}
             >
-              <Users size={13} strokeWidth={2.2} />
+              <Users size={14} strokeWidth={2.2} />
               <span>Miembros</span>
             </Link>
           </nav>
@@ -122,9 +122,9 @@ export default function HeaderNav({ user }: HeaderNavProps) {
           ) : (
             <Link
               href="/login"
-              className="text-xs font-bold px-4 py-2 bg-[#5F6F52] dark:bg-[#8FA37E] hover:bg-[#4E5D43] text-white dark:text-[#121411] rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#5F6F52]/20"
+              className="btn-apple-filled min-h-[40px] px-4 text-xs font-semibold flex items-center gap-1.5"
             >
-              <LogIn size={13} strokeWidth={2.2} />
+              <LogIn size={14} strokeWidth={2.2} />
               <span>Ingresar</span>
             </Link>
           )}

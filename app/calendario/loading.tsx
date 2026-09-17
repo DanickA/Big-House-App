@@ -3,20 +3,20 @@ import React from 'react';
 export default function CalendarioLoading() {
   return (
     <div className="relative min-h-screen bg-system text-label-primary p-4 sm:p-6 md:p-10 overflow-hidden select-none">
-      <div className="ambient-glow-olive top-[-50px] right-[-50px] opacity-40" />
+      <div className="ambient-glow-mint top-[-50px] right-[-50px] opacity-40" />
       <div className="ambient-glow-terracotta bottom-[-50px] left-[-50px] opacity-30" />
 
       <div className="relative z-10 max-w-5xl mx-auto space-y-6">
         {/* Enlace de regreso */}
-        <div className="w-24 h-4 rounded-full bg-[#736F68]/20 dark:bg-white/10 animate-pulse" />
+        <div className="w-24 h-4 rounded-full bg-label-secondary/20 dark:bg-white/10 animate-pulse" />
 
         {/* Encabezado del Calendario */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="w-48 h-8 rounded-2xl bg-[#5F6F52]/20 dark:bg-white/10 animate-pulse" />
-            <div className="w-64 h-3.5 rounded-full bg-[#736F68]/15 dark:bg-white/10 animate-pulse" />
+            <div className="w-48 h-8 rounded-2xl bg-mint/20 dark:bg-white/10 animate-pulse" />
+            <div className="w-64 h-3.5 rounded-full bg-label-secondary/15 dark:bg-white/10 animate-pulse" />
           </div>
-          <div className="w-36 h-10 rounded-2xl bg-[#5F6F52]/30 dark:bg-white/10 animate-pulse" />
+          <div className="w-36 h-10 rounded-2xl bg-terracotta/20 dark:bg-white/10 animate-pulse" />
         </div>
 
         {/* Controles y Filtros */}
@@ -41,7 +41,7 @@ export default function CalendarioLoading() {
               <div key={i} className="h-16 sm:h-24 rounded-2xl bg-[#736F68]/10 dark:bg-white/5 p-2 flex flex-col justify-between">
                 <div className="w-4 h-4 rounded-full bg-[#736F68]/20 dark:bg-white/10" />
                 {i % 4 === 0 && (
-                  <div className="w-full h-3 rounded-md bg-[#5F6F52]/25 dark:bg-white/10" />
+                  <div className="w-full h-3 rounded-md bg-mint/25 dark:bg-white/10" />
                 )}
               </div>
             ))}

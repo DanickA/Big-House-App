@@ -6,7 +6,8 @@ import { getUsuarios, deleteUsuario } from '@/actions/usuarios';
 import UsuarioModal, { UsuarioItem } from '@/components/usuarios/UsuarioModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import EmptyState from '@/components/ui/EmptyState';
-import { ArrowLeft, UserPlus, ShieldCheck, Key, Edit2, Trash2, CheckCircle2, User, AlertCircle } from 'lucide-react';
+import PullDownMenu from '@/components/ui/PullDownMenu';
+import { ArrowLeft, UserPlus, ShieldCheck, Key, Pencil, Trash2, CheckCircle2, User, AlertCircle } from 'lucide-react';
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<UsuarioItem[]>([]);
@@ -59,23 +60,23 @@ export default function UsuariosPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#F4EFE6] dark:bg-system text-[#2E2B27] dark:text-label-primary p-6 md:p-10 transition-colors duration-300">
+    <div className="relative min-h-screen bg-system text-label-primary p-6 md:p-10 transition-colors duration-300">
       {/* Luces Ambientales */}
-      <div className="ambient-glow-olive top-[-50px] right-[-50px]" />
+      <div className="ambient-glow-mint top-[-50px] right-[-50px]" />
       <div className="ambient-glow-terracotta bottom-[-50px] left-[-50px]" />
 
       <div className="relative z-10 max-w-5xl mx-auto space-y-8 animate-fade-in-up">
         
         {/* Notificación Flotante */}
         {mensajeExito && (
-          <div className="fixed top-20 right-6 z-60 glass-card bg-[#EEF2EA]/90 dark:bg-secondary/95 border border-[#B7CBA9] dark:border-olive/40 text-[#2D3E24] dark:text-olive px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
-            <CheckCircle2 size={18} className="text-[#5F6F52] dark:text-olive" />
+          <div className="fixed top-20 right-6 z-60 glass-card bg-[#c7e1d7]/95 dark:bg-mint/20 border border-[#6eb5a5]/40 text-mint px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+            <CheckCircle2 size={18} className="text-mint" />
             <span>{mensajeExito}</span>
           </div>
         )}
         {mensajeError && (
-          <div className="fixed top-20 right-6 z-60 glass-card bg-[#FBEAE5]/95 dark:bg-secondary/95 border border-[#E8B4A2] dark:border-terracotta/40 text-[#C86242] dark:text-terracotta px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
-            <AlertCircle size={18} className="text-[#C86242] dark:text-terracotta" />
+          <div className="fixed top-20 right-6 z-60 glass-card bg-[#ce9b8c]/30 dark:bg-terracotta/20 border border-[#aa4b50]/40 text-terracotta px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+            <AlertCircle size={18} className="text-terracotta" />
             <span>{mensajeError}</span>
           </div>
         )}
@@ -85,15 +86,15 @@ export default function UsuariosPage() {
           <div className="space-y-1">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#736F68] dark:text-label-tertiary hover:text-[#3A4630] dark:hover:text-label-primary transition uppercase tracking-wider mb-1"
+              className="inline-flex items-center gap-1.5 apple-footnote font-medium text-label-secondary hover:text-label-primary transition mb-1"
             >
               <ArrowLeft size={13} strokeWidth={2.5} />
-              <span>Volver al Lobby</span>
+              <span>Volver al lobby</span>
             </Link>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-[#3A4630] dark:text-label-primary tracking-tight">
+            <h1 className="apple-large-title text-label-primary">
               Miembros del Hogar
             </h1>
-            <p className="text-[#736F68] dark:text-label-secondary text-xs font-medium">
+            <p className="apple-subhead text-label-secondary">
               {usuarios.length} {usuarios.length === 1 ? 'miembro registrado' : 'miembros registrados'} en la casa
             </p>
           </div>
@@ -104,10 +105,10 @@ export default function UsuariosPage() {
               setUsuarioAEditar(null);
               setIsModalOpen(true);
             }}
-            className="px-5 py-3 bg-[#5F6F52] dark:bg-olive hover:bg-[#4E5D42] dark:hover:opacity-90 text-white rounded-2xl text-xs font-bold transition shadow-md shadow-[#5F6F52]/20 dark:shadow-none flex items-center gap-2 cursor-pointer active:scale-95 self-start sm:self-auto"
+            className="btn-apple-filled px-5 text-sm font-semibold flex items-center gap-2 self-start sm:self-auto"
           >
-            <UserPlus size={16} strokeWidth={2.5} />
-            <span>Agregar Miembro</span>
+            <UserPlus size={16} strokeWidth={2.4} />
+            <span>Agregar miembro</span>
           </button>
         </div>
 
@@ -141,58 +142,65 @@ export default function UsuariosPage() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#5F6F52] to-[#3A4630] dark:from-olive dark:to-[#3A4630] text-white font-black text-xl flex items-center justify-center shadow-md shadow-[#3A4630]/15 dark:shadow-none">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-terracotta to-brand-deep text-white font-bold text-lg flex items-center justify-center shadow-md shadow-terracotta/15">
                       {u.nombre.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h2 className="text-base font-extrabold text-[#3A4630] dark:text-label-primary tracking-tight">{u.nombre}</h2>
-                      <p className="text-xs text-[#736F68] dark:text-label-secondary font-medium">{u.email}</p>
+                      <h2 className="apple-headline text-label-primary">{u.nombre}</h2>
+                      <p className="apple-footnote text-label-secondary">{u.email}</p>
                     </div>
                   </div>
 
                   {/* Badge de Seguridad */}
                   {u.tienePin ? (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-[#EEF2EA] dark:bg-secondary text-[#3A4630] dark:text-olive border border-[#DCE7D3] dark:border-separator shadow-2xs">
-                      <ShieldCheck size={11} className="text-[#5F6F52] dark:text-olive" />
-                      <span>PIN Activo</span>
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full apple-caption-2 font-semibold bg-[#c7e1d7]/60 dark:bg-mint/20 text-mint border border-[#6eb5a5]/30 dark:border-mint/40 shadow-2xs">
+                      <ShieldCheck size={11} className="text-mint" />
+                      <span>PIN activo</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-semibold bg-[#F4EFE6] dark:bg-tertiary text-[#736F68] dark:text-label-tertiary border border-[#E8E0D2] dark:border-separator">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full apple-caption-2 font-medium bg-tertiary text-label-secondary border border-separator">
                       <Key size={11} />
-                      <span>Solo Clave</span>
+                      <span>Solo clave</span>
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-3.5 border-t border-[#F0EAE1] dark:border-separator">
-                  <span className="text-[11px] text-[#A39E95] dark:text-label-tertiary font-medium">
+                <div className="flex items-center justify-between pt-3.5 border-t border-separator">
+                  <span className="apple-caption-1 text-label-tertiary">
                     {u.fecha_registro
                       ? `Miembro desde ${new Date(u.fecha_registro).toLocaleDateString()}`
                       : 'Miembro del hogar'}
                   </span>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUsuarioAEditar(u);
-                        setIsModalOpen(true);
-                      }}
-                      className="px-3.5 py-1.5 bg-white/80 dark:bg-tertiary hover:bg-white dark:hover:bg-secondary text-[#3A4630] dark:text-label-primary border border-[#E8E0D2] dark:border-separator rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs"
-                    >
-                      <Edit2 size={11} strokeWidth={2.2} />
-                      <span>Editar</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleEliminar(u)}
-                      className="p-2 bg-white/80 dark:bg-tertiary hover:bg-[#FAE2D8] dark:hover:bg-terracotta/20 text-[#736F68] dark:text-label-tertiary hover:text-[#B84626] dark:hover:text-terracotta border border-[#E8E0D2] dark:border-separator hover:border-[#F2BAA5] dark:hover:border-terracotta/30 rounded-xl text-xs font-bold transition cursor-pointer active:scale-95 shadow-2xs"
-                      title="Eliminar usuario"
-                      aria-label="Eliminar usuario"
-                    >
-                      <Trash2 size={13} strokeWidth={2.2} />
-                    </button>
-                  </div>
+                  <PullDownMenu
+                    ariaLabel={`Opciones de ${u.nombre}`}
+                    groups={[
+                      {
+                        items: [
+                          {
+                            id: 'editar',
+                            label: 'Editar miembro...',
+                            icon: Pencil,
+                            onClick: () => {
+                              setUsuarioAEditar(u);
+                              setIsModalOpen(true);
+                            },
+                          },
+                        ],
+                      },
+                      {
+                        items: [
+                          {
+                            id: 'eliminar',
+                            label: 'Eliminar habitante',
+                            icon: Trash2,
+                            destructive: true,
+                            onClick: () => handleEliminar(u),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
                 </div>
               </div>
             ))}

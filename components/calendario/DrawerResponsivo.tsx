@@ -42,7 +42,7 @@ export function DrawerResponsivo({ isOpen, onClose, title, children }: DrawerRes
         "
       >
         <div className="flex items-center justify-between p-4 border-b shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="apple-title-3 font-semibold text-label-primary">{title}</h2>
           <button 
             onClick={onClose}
             className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"

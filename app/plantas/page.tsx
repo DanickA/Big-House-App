@@ -65,20 +65,20 @@ export default function PlantasPage() {
   return (
     <div className="relative min-h-screen bg-system text-label-primary p-6 md:p-10">
       {/* Luces Ambientales de Fondo */}
-      <div className="ambient-glow-olive top-[-50px] right-[-50px]" />
+      <div className="ambient-glow-mint top-[-50px] right-[-50px]" />
       <div className="ambient-glow-terracotta bottom-[-50px] left-[-50px]" />
 
       <div className="relative z-10 max-w-6xl mx-auto space-y-8 animate-fade-in-up">
         
         {/* Notificación Flotante Glassmorphic */}
         {mensajeExito && (
-          <div className="fixed top-20 right-6 z-60 glass-card bg-[#EEF2EA]/90 dark:bg-[#1E261B]/95 border border-[#B7CBA9] dark:border-olive/40 text-[#2D3E24] dark:text-olive px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
-            <CheckCircle2 size={18} className="text-olive" />
+          <div className="fixed top-20 right-6 z-60 glass-card bg-[#c7e1d7]/95 dark:bg-mint/20 border border-[#6eb5a5]/40 text-mint px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+            <CheckCircle2 size={18} className="text-mint" />
             <span>{mensajeExito}</span>
           </div>
         )}
         {mensajeError && (
-          <div className="fixed top-20 right-6 z-60 glass-card bg-[#FBEAE5]/95 dark:bg-[#3A1F18]/95 border border-[#E8B4A2] dark:border-terracotta/40 text-terracotta px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+          <div className="fixed top-20 right-6 z-60 glass-card bg-[#ce9b8c]/30 dark:bg-terracotta/20 border border-[#aa4b50]/40 text-terracotta px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
             <AlertCircle size={18} className="text-terracotta" />
             <span>{mensajeError}</span>
           </div>
@@ -89,15 +89,15 @@ export default function PlantasPage() {
           <div className="space-y-1">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-label-secondary hover:text-label-primary transition uppercase tracking-wider mb-1"
+              className="apple-footnote font-medium text-label-secondary hover:text-label-primary transition flex items-center gap-1.5 mb-1"
             >
               <ArrowLeft size={13} strokeWidth={2.5} />
               <span>Volver al Lobby</span>
             </Link>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-[#3A4630] dark:text-label-primary tracking-tight">
+            <h1 className="apple-large-title text-label-primary tracking-tight">
               Nuestras Plantas
             </h1>
-            <p className="text-label-secondary text-xs font-medium">
+            <p className="apple-subhead text-label-secondary font-normal">
               {plantas.length} {plantas.length === 1 ? 'planta registrada' : 'plantas registradas'} en el hogar
             </p>
           </div>
@@ -108,10 +108,10 @@ export default function PlantasPage() {
               setPlantaAEditar(null);
               setIsFormOpen(true);
             }}
-            className="px-5 py-3 bg-[#5F6F52] hover:bg-[#4E5D42] text-white rounded-2xl text-xs font-bold transition shadow-md shadow-[#5F6F52]/20 flex items-center gap-2 cursor-pointer active:scale-95 self-start sm:self-auto"
+            className="btn-apple-filled-mint px-5 text-sm font-semibold flex items-center gap-2 self-start sm:self-auto"
           >
-            <Plus size={16} strokeWidth={2.5} />
-            <span>Agregar Planta</span>
+            <Plus size={16} strokeWidth={2.4} />
+            <span>Agregar planta</span>
           </button>
         </header>
 
@@ -132,13 +132,13 @@ export default function PlantasPage() {
                 setPlantaAEditar(null);
                 setIsFormOpen(true);
               }}
-              className="h-72 rounded-[2rem] border-2 border-dashed border-[#B7CBA9]/80 dark:border-separator bg-white/40 dark:bg-tertiary/30 hover:bg-white/70 dark:hover:bg-tertiary/60 backdrop-blur-xs transition-all duration-300 flex flex-col items-center justify-center p-6 text-center group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1"
+              className="h-72 rounded-[2rem] border-2 border-dashed border-mint/40 dark:border-separator bg-white/40 dark:bg-tertiary/30 hover:bg-white/70 dark:hover:bg-tertiary/60 backdrop-blur-xs transition-all duration-300 flex flex-col items-center justify-center p-6 text-center group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1"
             >
-              <div className="w-14 h-14 rounded-2xl bg-[#EEF2EA] dark:bg-[#282C25] border border-[#DCE7D3] dark:border-separator flex items-center justify-center text-[#3A4630] dark:text-olive group-hover:scale-110 transition shadow-2xs">
+              <div className="w-14 h-14 rounded-2xl bg-[#c7e1d7]/50 dark:bg-mint/15 border border-[#6eb5a5]/30 flex items-center justify-center text-mint group-hover:scale-110 transition shadow-2xs">
                 <Plus size={24} strokeWidth={2.5} />
               </div>
-              <span className="mt-4 text-sm font-extrabold text-[#3A4630] dark:text-label-primary">Agregar nueva planta</span>
-              <span className="text-xs text-label-secondary mt-1 font-medium">Registrar especie y ciclo</span>
+              <span className="mt-4 apple-headline font-semibold text-label-primary">Agregar nueva planta</span>
+              <span className="apple-subhead text-label-secondary mt-1 font-normal">Registrar especie y ciclo</span>
             </button>
 
             {plantas.map((planta) => (

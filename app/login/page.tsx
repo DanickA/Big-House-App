@@ -9,7 +9,7 @@ export default async function LoginPage() {
   const miembros = res.success ? res.data : [];
 
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F4EFE6] flex items-center justify-center text-xs text-[#736F68]">Cargando acceso...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-system flex items-center justify-center text-xs text-label-secondary">Cargando acceso...</div>}>
       <LoginForm initialMiembros={miembros} />
     </Suspense>
   );

@@ -10,18 +10,25 @@ export interface AppleSwitchProps {
   disabled?: boolean;
   label?: React.ReactNode;
   description?: React.ReactNode;
-  accentColor?: 'olive' | 'purple' | 'amber' | 'blue' | 'terracotta';
+  accentColor?: 'terracotta' | 'pistachio' | 'turquoise' | 'royalblue' | 'khaki' | 'olive' | 'purple' | 'amber' | 'blue' | 'mint' | 'brandDeep' | 'clay';
   size?: 'md' | 'sm';
   ariaLabel?: string;
   className?: string;
 }
 
 const ACCENT_BG = {
-  olive: 'bg-[#5F6F52] dark:bg-olive',
-  purple: 'bg-[#7C3AED] dark:bg-purple-600',
-  amber: 'bg-[#D97706] dark:bg-amber-600',
-  blue: 'bg-[#2563EB] dark:bg-blue-600',
   terracotta: 'bg-terracotta dark:bg-terracotta',
+  pistachio: 'bg-mint dark:bg-mint',
+  turquoise: 'bg-mint dark:bg-mint',
+  royalblue: 'bg-brand-deep dark:bg-brand-deep',
+  khaki: 'bg-khaki dark:bg-khaki',
+  olive: 'bg-mint dark:bg-mint',
+  purple: 'bg-brand-deep dark:bg-brand-deep',
+  amber: 'bg-clay dark:bg-clay',
+  blue: 'bg-brand-deep dark:bg-brand-deep',
+  mint: 'bg-mint dark:bg-mint',
+  brandDeep: 'bg-brand-deep dark:bg-brand-deep',
+  clay: 'bg-clay dark:bg-clay',
 };
 
 export default function AppleSwitch({
@@ -32,7 +39,7 @@ export default function AppleSwitch({
   disabled = false,
   label,
   description,
-  accentColor = 'olive',
+  accentColor = 'terracotta',
   size = 'md',
   ariaLabel,
   className = '',
@@ -69,7 +76,7 @@ export default function AppleSwitch({
       tabIndex={disabled ? -1 : 0}
       onClick={handleToggle}
       onKeyDown={handleKeyDown}
-      className={`touch-target relative inline-flex items-center justify-center cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-olive/50 rounded-full transition-opacity ${
+      className={`touch-target relative inline-flex items-center justify-center cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 rounded-full transition-opacity ${
         disabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'active:scale-95'
       }`}
     >
@@ -91,7 +98,7 @@ export default function AppleSwitch({
         className={`${trackWidth} ${trackHeight} rounded-full transition-colors duration-250 ease-[cubic-bezier(0.4,0,0.2,1)] p-[2px] flex items-center ${
           checked
             ? ACCENT_BG[accentColor]
-            : 'bg-[#D9CEBC] dark:bg-[#383C34]'
+            : 'bg-[#DCD3C4] dark:bg-[#362F29]'
         }`}
       >
         {/* Perilla deslizante con sombra Apple HIG */}
@@ -117,12 +124,12 @@ export default function AppleSwitch({
     >
       <div className="flex-1 min-w-0 select-none">
         {label && (
-          <span className="block text-xs font-black uppercase tracking-wider text-label-primary">
+          <span className="block apple-subhead font-semibold text-label-primary">
             {label}
           </span>
         )}
         {description && (
-          <p className="text-[11px] text-label-secondary font-medium mt-0.5">
+          <p className="apple-footnote text-label-secondary mt-0.5">
             {description}
           </p>
         )}

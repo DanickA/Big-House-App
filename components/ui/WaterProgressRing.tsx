@@ -21,7 +21,7 @@ export default function WaterProgressRing({
 
   // Cálculo del porcentaje de avance hacia el próximo riego
   let progress = 0;
-  let strokeColor = 'var(--color-olive)';
+  let strokeColor = 'var(--color-pistachio)';
   let trackColor = 'rgba(128, 128, 128, 0.18)';
   let label = '-';
   let isLate = false;
@@ -50,11 +50,11 @@ export default function WaterProgressRing({
     label = `${diasRestantes}d`;
 
     if (diasRestantes === 1) {
-      strokeColor = 'var(--color-amber)';
-      trackColor = 'var(--color-amber-tint)';
+      strokeColor = 'var(--color-khaki)';
+      trackColor = 'var(--color-khaki-tint)';
     } else {
-      strokeColor = 'var(--color-olive)';
-      trackColor = 'var(--color-olive-tint)';
+      strokeColor = 'var(--color-pistachio)';
+      trackColor = 'var(--color-pistachio-tint)';
     }
   }
 
@@ -109,7 +109,7 @@ export default function WaterProgressRing({
 
       {/* Texto Central */}
       <span
-        className="absolute text-[11px] font-extrabold tracking-tight"
+        className="absolute text-[11px] font-semibold tabular-nums tracking-tight"
         style={{
           color: darkText
             ? (isLate || isToday ? 'var(--color-terracotta)' : 'var(--label-primary)')

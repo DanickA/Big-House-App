@@ -30,7 +30,7 @@ export default async function CalendarioPage() {
   return (
     <div className="relative min-h-screen bg-system text-label-primary p-4 sm:p-6 md:p-10 overflow-hidden">
       {/* Luces Ambientales de Fondo */}
-      <div className="ambient-glow-olive top-[-50px] right-[-50px]" />
+      <div className="ambient-glow-mint top-[-50px] right-[-50px]" />
       <div className="ambient-glow-terracotta bottom-[-50px] left-[-50px]" />
 
       <div className="relative z-10 max-w-5xl mx-auto space-y-6 animate-fade-in-up">
@@ -39,15 +39,15 @@ export default async function CalendarioPage() {
         <div>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-label-secondary hover:text-label-primary transition uppercase tracking-wider mb-1"
+            className="apple-footnote font-medium text-label-secondary hover:text-label-primary transition flex items-center gap-1.5 mb-1"
           >
             <ArrowLeft size={13} strokeWidth={2.5} />
             <span>Volver al Lobby</span>
           </Link>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#3A4630] dark:text-label-primary tracking-tight">
+          <h1 className="apple-large-title text-label-primary tracking-tight">
             Agenda del Hogar
           </h1>
-          <p className="text-label-secondary text-xs font-medium mt-0.5">
+          <p className="apple-subhead text-label-secondary font-normal mt-0.5">
             Planificación compartida, riegos automáticos y vencimientos
           </p>
         </div>

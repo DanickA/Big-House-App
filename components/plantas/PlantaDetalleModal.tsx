@@ -99,12 +99,12 @@ export default function PlantaDetalleModal({
       <div className="relative glass-modal w-full max-w-lg rounded-[2.5rem] overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col shadow-2xl animate-fade-in-up my-auto border border-white/80 dark:border-white/10">
         
         {/* Cabecera con Imagen / Gradiente */}
-        <div className="h-48 relative bg-[#DCE7D3] dark:bg-[#282C25] shrink-0">
+        <div className="h-48 relative bg-mint/15 dark:bg-tertiary shrink-0">
           {planta.foto_url ? (
             <img src={planta.foto_url} alt={planta.nombre_comun} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#E2EBDC] to-[#C9D9C0] dark:from-[#242C20] dark:to-[#181F15]">
-              <span className="font-black text-5xl text-[#3A4630]/60 dark:text-olive/70">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-mint/20 dark:bg-tertiary">
+              <span className="font-bold text-4xl text-mint">
                 {planta.nombre_comun.slice(0, 2).toUpperCase()}
               </span>
             </div>
@@ -121,11 +121,11 @@ export default function PlantaDetalleModal({
 
           <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between text-white">
             <div className="space-y-0.5 max-w-[280px]">
-              <h2 className="text-xl font-extrabold tracking-tight drop-shadow-sm truncate">
+              <h2 className="apple-title-3 font-semibold tracking-tight drop-shadow-sm truncate">
                 {planta.nombre_comun}
               </h2>
-              <p className="text-xs text-stone-200 flex items-center gap-1">
-                <MapPin size={12} className="text-[#B7CBA9]" />
+              <p className="apple-subhead text-stone-200 flex items-center gap-1 font-normal">
+                <MapPin size={12} className="text-mint" />
                 <span>{planta.ubicacion}</span>
               </p>
             </div>
@@ -140,11 +140,11 @@ export default function PlantaDetalleModal({
         </div>
 
         {/* Selector de Pestañas Segmentado Apple HIG */}
-        <div className="p-3.5 border-b border-[#E8E0D2] dark:border-separator shrink-0">
+        <div className="p-3.5 border-b border-separator shrink-0">
           <SegmentedControl<'acciones' | 'historial'>
             options={[
-              { value: 'acciones', label: 'Acciones de Cuidado', icon: Sparkles },
-              { value: 'historial', label: 'Historial de Registros', icon: History },
+              { value: 'acciones', label: 'Acciones de cuidado', icon: Sparkles },
+              { value: 'historial', label: 'Historial de registros', icon: History },
             ]}
             value={pestanaActiva}
             onChange={(val) => setPestanaActiva(val)}
@@ -155,7 +155,7 @@ export default function PlantaDetalleModal({
         {/* Contenido Modular con Scroll */}
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           {errorMsg && (
-            <div className="p-3.5 bg-[#FBEAE5] dark:bg-terracotta/20 border border-[#E8B4A2] dark:border-terracotta/40 text-terracotta rounded-2xl flex items-center gap-2.5 text-xs font-bold animate-fade-in-up">
+            <div className="p-3.5 bg-terracotta/15 border border-terracotta/30 text-terracotta rounded-2xl flex items-center gap-2.5 text-xs font-semibold animate-fade-in-up">
               <AlertCircle size={16} strokeWidth={2.2} className="shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -163,16 +163,36 @@ export default function PlantaDetalleModal({
 
           {pestanaActiva === 'acciones' ? (
             <div className="space-y-4">
-              <p className="text-xs font-semibold text-label-secondary">
+              <p className="apple-footnote font-normal text-label-secondary">
                 Selecciona la labor realizada hoy para actualizar el ciclo de cuidado:
               </p>
 
               <div className="grid grid-cols-2 gap-3.5">
                 {[
-                  { label: 'Regar', icon: Droplets, tipo: 'RIEGO', color: 'bg-[#EEF4FB] dark:bg-blue-sem/15 text-[#2B6CB0] dark:text-blue-sem border-[#C3DAFE] dark:border-blue-sem/30' },
-                  { label: 'Abonar', icon: Sparkles, tipo: 'ABONO', color: 'bg-[#FEF9E7] dark:bg-amber-sem/15 text-[#975A16] dark:text-amber-sem border-[#FEEBC8] dark:border-amber-sem/30' },
-                  { label: 'Podar', icon: Scissors, tipo: 'PODA', color: 'bg-[#FDF2EC] dark:bg-terracotta/15 text-[#B84626] dark:text-terracotta border-[#F2BAA5] dark:border-terracotta/30' },
-                  { label: 'Limpiar', icon: Leaf, tipo: 'LIMPIEZA', color: 'bg-[#EEF2EA] dark:bg-olive/15 text-[#3A4630] dark:text-olive border-[#DCE7D3] dark:border-olive/30' },
+                  {
+                    label: 'Regar',
+                    icon: Droplets,
+                    tipo: 'RIEGO',
+                    color: 'bg-mint/20 text-mint border-mint/40 hover:bg-mint/30 shadow-xs ring-1 ring-mint/25 font-bold',
+                  },
+                  {
+                    label: 'Abonar',
+                    icon: Sparkles,
+                    tipo: 'ABONO',
+                    color: 'bg-khaki/20 text-label-primary border-khaki/40 hover:bg-khaki/30 font-semibold',
+                  },
+                  {
+                    label: 'Podar',
+                    icon: Scissors,
+                    tipo: 'PODA',
+                    color: 'bg-[#ce9b8c]/20 text-terracotta border-terracotta/30 hover:bg-[#ce9b8c]/30 font-semibold',
+                  },
+                  {
+                    label: 'Limpiar',
+                    icon: Leaf,
+                    tipo: 'LIMPIEZA',
+                    color: 'bg-tertiary text-label-primary border-separator hover:bg-tertiary-hover font-semibold',
+                  },
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
@@ -181,10 +201,10 @@ export default function PlantaDetalleModal({
                       type="button"
                       disabled={procesando}
                       onClick={() => handleEjecutarCuidado(item.tipo)}
-                      className={`p-4 rounded-2xl border ${item.color} flex flex-col items-center justify-center gap-2 font-bold text-xs transition-all duration-200 hover:scale-103 active:scale-95 disabled:opacity-50 cursor-pointer shadow-2xs`}
+                      className={`min-h-[72px] p-4 rounded-2xl border ${item.color} flex flex-col items-center justify-center gap-2 text-xs transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-2xs`}
                     >
                       <Icon size={22} strokeWidth={2.2} />
-                      <span className="tracking-wide uppercase text-[11px]">{item.label}</span>
+                      <span className="apple-caption-1">{item.label}</span>
                     </button>
                   );
                 })}
@@ -192,7 +212,7 @@ export default function PlantaDetalleModal({
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-label-secondary">Registro cronológico de cuidados realizados:</p>
+              <p className="apple-footnote font-normal text-label-secondary">Registro cronológico de cuidados realizados:</p>
               
               {cargandoHistorial ? (
                 <div className="py-8 text-center text-xs text-label-secondary animate-pulse">
@@ -218,21 +238,21 @@ export default function PlantaDetalleModal({
                   {historial.map((item) => (
                     <div
                       key={item.id}
-                      className="p-3.5 bg-white/80 dark:bg-tertiary/60 rounded-2xl border border-white dark:border-white/10 flex items-start gap-3 shadow-2xs"
+                      className="p-3.5 bg-secondary/80 dark:bg-tertiary/60 rounded-2xl border border-separator flex items-start gap-3 shadow-2xs"
                     >
-                      <div className="w-8 h-8 rounded-xl bg-[#EEF2EA] dark:bg-secondary text-[#3A4630] dark:text-olive flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-mint/15 text-mint flex items-center justify-center shrink-0">
                         <CheckCircle2 size={16} strokeWidth={2.2} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-extrabold text-[#3A4630] dark:text-label-primary">
+                          <span className="apple-footnote font-semibold text-label-primary">
                             {item.tareas_cuidado.tipo_tarea}
                           </span>
-                          <span className="text-[10px] font-medium text-label-secondary">
+                          <span className="apple-caption-2 font-normal text-label-secondary tabular-nums">
                             {new Date(item.fecha_realizada).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="text-[11px] text-label-secondary flex items-center gap-1 mt-0.5">
+                        <p className="apple-caption-2 text-label-secondary flex items-center gap-1 mt-0.5 font-normal">
                           <User size={11} />
                           <span>Por {item.usuarios.nombre}</span>
                           {item.observaciones && <span className="italic">• {item.observaciones}</span>}

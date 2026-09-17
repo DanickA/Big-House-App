@@ -140,8 +140,8 @@ export default function CalendarioView({
       
       {/* Notificación Flotante */}
       {notificacion && (
-        <div className="fixed top-20 right-6 z-60 glass-card bg-[#EEF2EA]/90 dark:bg-[#1E261B]/95 border border-[#B7CBA9] dark:border-olive/40 text-[#2D3E24] dark:text-olive px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
-          <CheckCircle2 size={18} className="text-olive" />
+        <div className="fixed top-20 right-6 z-60 glass-card bg-[#c7e1d7]/95 dark:bg-mint/20 border border-[#6eb5a5]/40 text-mint px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+          <CheckCircle2 size={18} className="text-mint" />
           <span>{notificacion}</span>
         </div>
       )}
@@ -149,14 +149,14 @@ export default function CalendarioView({
       {/* Cabecera del Calendario */}
       <div className="glass-card p-5 sm:p-6 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm border border-white/80 dark:border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#EEF2EA] dark:bg-[#282C25] border border-[#DCE7D3] dark:border-separator text-[#3A4630] dark:text-olive flex items-center justify-center shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-[#ce9b8c]/25 dark:bg-brand-deep/15 border border-[#bd7471]/30 text-brand-deep flex items-center justify-center shadow-2xs">
             <CalendarIcon size={22} strokeWidth={2.2} />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-[#3A4630] dark:text-label-primary tracking-tight">
+            <h2 className="apple-title-2 font-bold text-label-primary tracking-tight">
               {MESES[mesActual]} {anioActual}
             </h2>
-            <p className="text-xs text-label-secondary font-medium">
+            <p className="apple-subhead text-label-secondary font-normal">
               Agenda unificada de tareas, riegos y finanzas
             </p>
           </div>
@@ -166,16 +166,16 @@ export default function CalendarioView({
           <button
             type="button"
             onClick={irAHoy}
-            className="px-3.5 py-2 bg-white/80 dark:bg-tertiary/60 hover:bg-white dark:hover:bg-tertiary text-xs font-bold text-[#3A4630] dark:text-label-primary rounded-xl border border-[#E8E0D2] dark:border-separator transition cursor-pointer active:scale-95 shadow-2xs"
+            className="px-3.5 py-2 bg-white/80 dark:bg-tertiary/60 hover:bg-white dark:hover:bg-tertiary text-xs font-semibold text-label-primary rounded-xl border border-separator transition cursor-pointer active:scale-95 shadow-2xs"
           >
             Hoy
           </button>
           
-          <div className="flex items-center gap-1 bg-white/60 dark:bg-tertiary/40 p-1 rounded-2xl border border-[#E8E0D2] dark:border-separator">
+          <div className="flex items-center gap-1 bg-white/60 dark:bg-tertiary/40 p-1 rounded-2xl border border-separator">
             <button
               type="button"
               onClick={() => cambiarMes(-1)}
-              className="w-8 h-8 rounded-xl bg-white dark:bg-secondary hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-[#3A4630] dark:text-label-primary flex items-center justify-center transition cursor-pointer active:scale-90"
+              className="w-8 h-8 rounded-xl bg-white dark:bg-secondary hover:bg-[#c7e1d7]/40 dark:hover:bg-tertiary text-label-primary flex items-center justify-center transition cursor-pointer active:scale-90"
               title="Mes anterior"
             >
               <ChevronLeft size={16} strokeWidth={2.5} />
@@ -183,7 +183,7 @@ export default function CalendarioView({
             <button
               type="button"
               onClick={() => cambiarMes(1)}
-              className="w-8 h-8 rounded-xl bg-white dark:bg-secondary hover:bg-[#EEF2EA] dark:hover:bg-tertiary text-[#3A4630] dark:text-label-primary flex items-center justify-center transition cursor-pointer active:scale-90"
+              className="w-8 h-8 rounded-xl bg-white dark:bg-secondary hover:bg-[#c7e1d7]/40 dark:hover:bg-tertiary text-label-primary flex items-center justify-center transition cursor-pointer active:scale-90"
               title="Mes siguiente"
             >
               <ChevronRight size={16} strokeWidth={2.5} />
@@ -193,7 +193,7 @@ export default function CalendarioView({
           <button
             type="button"
             onClick={() => handleDayClick(new Date())}
-            className="px-4 py-2 bg-[#5F6F52] hover:bg-[#4E5D42] text-white rounded-xl text-xs font-bold transition shadow-sm shadow-[#5F6F52]/20 flex items-center gap-1.5 cursor-pointer active:scale-95"
+            className="px-4 py-2 bg-terracotta hover:bg-terracotta-hover text-white rounded-xl text-xs font-semibold transition shadow-sm shadow-terracotta/20 flex items-center gap-1.5 cursor-pointer active:scale-95"
           >
             <Plus size={15} strokeWidth={2.5} />
             <span>Agendar</span>
@@ -209,7 +209,7 @@ export default function CalendarioView({
           {DIAS_SEMANA.map((dia) => (
             <div
               key={dia}
-              className="py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-label-secondary"
+              className="py-1.5 apple-caption-2 font-semibold text-label-secondary"
             >
               {dia}
             </div>
@@ -235,20 +235,20 @@ export default function CalendarioView({
                 onClick={() => handleDayClick(fecha)}
                 className={`min-h-[72px] sm:min-h-[96px] p-2 rounded-2xl sm:rounded-3xl transition-all duration-200 cursor-pointer flex flex-col justify-between border ${
                   esHoy
-                    ? 'bg-[#EEF2EA] dark:bg-olive/20 border-[#B7CBA9] dark:border-olive/40 shadow-xs'
+                    ? 'bg-[#ce9b8c]/20 dark:bg-terracotta/15 border-terracotta/40 dark:border-terracotta/40 shadow-xs'
                     : esMesActual
-                    ? 'bg-white/70 dark:bg-tertiary/40 hover:bg-white dark:hover:bg-tertiary/70 hover:border-[#B7CBA9] dark:hover:border-olive/40 hover:shadow-sm border-white/80 dark:border-white/10'
+                    ? 'bg-white/70 dark:bg-tertiary/40 hover:bg-white dark:hover:bg-tertiary/70 hover:border-terracotta/30 dark:hover:border-terracotta/30 hover:shadow-sm border-white/80 dark:border-white/10'
                     : 'bg-white/20 dark:bg-transparent text-label-quaternary border-transparent hover:bg-white/40 dark:hover:bg-tertiary/20'
                 } group active:scale-95`}
               >
                 {/* Número del día */}
                 <div className="flex items-center justify-between">
                   <span
-                    className={`text-xs sm:text-sm font-black w-6 h-6 rounded-full flex items-center justify-center ${
+                    className={`apple-footnote font-semibold tabular-nums w-6 h-6 rounded-full flex items-center justify-center ${
                       esHoy
-                        ? 'bg-[#5F6F52] dark:bg-olive text-white shadow-2xs'
+                        ? 'bg-terracotta text-white shadow-2xs'
                         : esMesActual
-                        ? 'text-[#3A4630] dark:text-label-primary'
+                        ? 'text-label-primary'
                         : 'text-label-quaternary'
                     }`}
                   >
@@ -256,7 +256,7 @@ export default function CalendarioView({
                   </span>
 
                   {/* Micro botón '+' al hover */}
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-olive hidden sm:inline-block">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-terracotta hidden sm:inline-block">
                     <Plus size={12} strokeWidth={2.5} />
                   </span>
                 </div>
@@ -265,9 +265,9 @@ export default function CalendarioView({
                 <div className="space-y-1 mt-1">
                   {/* Vista condensada en móvil (Puntos) */}
                   <div className="flex items-center gap-1 sm:hidden">
-                    {tieneRiego && <span className="w-1.5 h-1.5 rounded-full bg-olive" />}
+                    {tieneRiego && <span className="w-1.5 h-1.5 rounded-full bg-mint" />}
                     {tieneServicio && <span className="w-1.5 h-1.5 rounded-full bg-terracotta" />}
-                    {tieneManual && <span className="w-1.5 h-1.5 rounded-full bg-[#2B6CB0] dark:bg-blue-sem" />}
+                    {tieneManual && <span className="w-1.5 h-1.5 rounded-full bg-brand-deep" />}
                   </div>
 
                   {/* Vista detallada en tablet/escritorio */}
@@ -277,7 +277,7 @@ export default function CalendarioView({
                       return (
                         <div
                           key={ev.id}
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-lg truncate flex items-center gap-1 leading-tight text-white transition-opacity ${
+                          className={`apple-caption-2 font-medium px-1.5 py-0.5 rounded-lg truncate flex items-center gap-1 leading-tight text-white transition-opacity ${
                             esCancelado ? 'line-through opacity-50 italic' : ''
                           }`}
                           style={{ backgroundColor: ev.color }}
@@ -290,7 +290,7 @@ export default function CalendarioView({
                       );
                     })}
                     {eventosDia.length > 2 && (
-                      <span className="text-[9px] font-extrabold text-label-secondary pl-1">
+                      <span className="apple-caption-2 font-medium text-label-secondary pl-1 tabular-nums">
                         +{eventosDia.length - 2} más
                       </span>
                     )}

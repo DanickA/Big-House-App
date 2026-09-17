@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import { EventoUnificado } from '@/actions/eventos';
-import EventoContextModal from './EventoContextModal';
+import dynamic from 'next/dynamic';
+
+const EventoContextModal = dynamic(() => import('./EventoContextModal'), {
+  ssr: false,
+});
 import {
   ChevronLeft,
   ChevronRight,

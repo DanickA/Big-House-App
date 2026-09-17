@@ -16,6 +16,7 @@ export default function InactivityTimer({
   const router = useRouter();
   const pathname = usePathname();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastResetRef = useRef<number>(0);
 
   const handleLogout = useCallback(async () => {
     if (pathname === '/login') return;
@@ -24,8 +25,13 @@ export default function InactivityTimer({
     router.refresh();
   }, [pathname, router]);
 
-  const resetTimer = useCallback(() => {
+  const resetTimer = useCallback((force = false) => {
     if (!isLoggedIn || pathname === '/login') return;
+
+    const now = Date.now();
+    // Throttle de 2000ms para evitar saturar el Main Thread en scrolls o eventos táctiles continuos
+    if (!force && now - lastResetRef.current < 2000) return;
+    lastResetRef.current = now;
 
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -44,8 +50,8 @@ export default function InactivityTimer({
 
     const events = ['mousedown', 'mousemove', 'keydown', 'touchstart', 'scroll', 'click'];
 
-    // Iniciar temporizador
-    resetTimer();
+    // Iniciar temporizador forzando el primer registro
+    resetTimer(true);
 
     // Agregar listeners
     const onActivity = () => resetTimer();

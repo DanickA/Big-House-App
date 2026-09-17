@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getUsuarios, deleteUsuario } from '@/actions/usuarios';
-import UsuarioModal, { UsuarioItem } from '@/components/usuarios/UsuarioModal';
-import ConfirmModal from '@/components/ui/ConfirmModal';
+import dynamic from 'next/dynamic';
+import type { UsuarioItem } from '@/components/usuarios/UsuarioModal';
+const UsuarioModal = dynamic(() => import('@/components/usuarios/UsuarioModal'), { ssr: false });
+const ConfirmModal = dynamic(() => import('@/components/ui/ConfirmModal'), { ssr: false });
 import EmptyState from '@/components/ui/EmptyState';
 import PullDownMenu from '@/components/ui/PullDownMenu';
 import { ArrowLeft, UserPlus, ShieldCheck, Key, Pencil, Trash2, CheckCircle2, User, AlertCircle } from 'lucide-react';

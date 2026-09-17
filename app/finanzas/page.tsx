@@ -8,12 +8,14 @@ import {
   ServicioConEstado,
   ResumenServicios,
 } from '@/actions/pagos';
+import dynamic from 'next/dynamic';
 import ServicioCard from '@/components/pagos/ServicioCard';
-import ServicioFormModal from '@/components/pagos/ServicioFormModal';
-import PagoModal from '@/components/pagos/PagoModal';
-import ConfirmModal from '@/components/ui/ConfirmModal';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import EmptyState from '@/components/ui/EmptyState';
+
+const ServicioFormModal = dynamic(() => import('@/components/pagos/ServicioFormModal'), { ssr: false });
+const PagoModal = dynamic(() => import('@/components/pagos/PagoModal'), { ssr: false });
+const ConfirmModal = dynamic(() => import('@/components/ui/ConfirmModal'), { ssr: false });
 import {
   ArrowLeft,
   Plus,

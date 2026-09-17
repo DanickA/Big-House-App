@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getPlantas, deletePlanta } from '@/actions/plantas';
+import dynamic from 'next/dynamic';
 import PlantaCard, { Planta } from '@/components/plantas/PlantaCard';
-import PlantaFormModal from '@/components/plantas/PlantaFormModal';
-import PlantaDetalleModal from '@/components/plantas/PlantaDetalleModal';
-import ConfirmModal from '@/components/ui/ConfirmModal';
 import { ArrowLeft, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+
+const PlantaFormModal = dynamic(() => import('@/components/plantas/PlantaFormModal'), { ssr: false });
+const PlantaDetalleModal = dynamic(() => import('@/components/plantas/PlantaDetalleModal'), { ssr: false });
+const ConfirmModal = dynamic(() => import('@/components/ui/ConfirmModal'), { ssr: false });
 
 export default function PlantasPage() {
   const [plantas, setPlantas] = useState<Planta[]>([]);

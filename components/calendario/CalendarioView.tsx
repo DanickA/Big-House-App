@@ -124,12 +124,14 @@ export default function CalendarioView({
     }
   }
 
-  // Filtrar eventos por fecha
+  // Filtrar eventos por fecha (respetando zona horaria local e intervalos multi-día)
   function getEventosParaFecha(f: Date) {
-    const fStr = f.toISOString().split('T')[0];
+    const fInicio = new Date(f.getFullYear(), f.getMonth(), f.getDate(), 0, 0, 0, 0);
+    const fFin = new Date(f.getFullYear(), f.getMonth(), f.getDate(), 23, 59, 59, 999);
     return eventos.filter((ev) => {
-      const evStr = new Date(ev.fecha_inicio).toISOString().split('T')[0];
-      return evStr === fStr;
+      const evInicio = new Date(ev.fecha_inicio);
+      const evFin = ev.fecha_fin ? new Date(ev.fecha_fin) : evInicio;
+      return evInicio <= fFin && evFin >= fInicio;
     });
   }
 
@@ -225,15 +227,12 @@ export default function CalendarioView({
               fecha.getFullYear() === hoy.getFullYear();
 
             const eventosDia = getEventosParaFecha(fecha);
-            const tieneRiego = eventosDia.some((e) => e.origen === 'PLANTA');
-            const tieneServicio = eventosDia.some((e) => e.origen === 'SERVICIO');
-            const tieneManual = eventosDia.some((e) => e.origen === 'MANUAL');
 
             return (
               <div
                 key={index}
                 onClick={() => handleDayClick(fecha)}
-                className={`min-h-[72px] sm:min-h-[96px] p-2 rounded-2xl sm:rounded-3xl transition-all duration-200 cursor-pointer flex flex-col justify-between border ${
+                className={`min-h-[88px] sm:min-h-[118px] p-1 sm:p-2 rounded-2xl sm:rounded-3xl transition-all duration-200 cursor-pointer flex flex-col justify-between border ${
                   esHoy
                     ? 'bg-[#ce9b8c]/20 dark:bg-terracotta/15 border-terracotta/40 dark:border-terracotta/40 shadow-xs'
                     : esMesActual
@@ -244,7 +243,7 @@ export default function CalendarioView({
                 {/* Número del día */}
                 <div className="flex items-center justify-between">
                   <span
-                    className={`apple-footnote font-semibold tabular-nums w-6 h-6 rounded-full flex items-center justify-center ${
+                    className={`apple-footnote font-semibold tabular-nums w-6 h-6 rounded-full flex items-center justify-center text-center leading-none ${
                       esHoy
                         ? 'bg-terracotta text-white shadow-2xs'
                         : esMesActual
@@ -261,40 +260,44 @@ export default function CalendarioView({
                   </span>
                 </div>
 
-                {/* Indicadores de Eventos (Dots y Micro-Badges) */}
-                <div className="space-y-1 mt-1">
-                  {/* Vista condensada en móvil (Puntos) */}
-                  <div className="flex items-center gap-1 sm:hidden">
-                    {tieneRiego && <span className="w-1.5 h-1.5 rounded-full bg-mint" />}
-                    {tieneServicio && <span className="w-1.5 h-1.5 rounded-full bg-terracotta" />}
-                    {tieneManual && <span className="w-1.5 h-1.5 rounded-full bg-brand-deep" />}
-                  </div>
+                {/* Lista de píldoras de eventos visibles en móvil y desktop */}
+                <div className="flex flex-col gap-1 w-full overflow-hidden mt-1 flex-1">
+                  {eventosDia.slice(0, 3).map((ev, i) => {
+                    const esCancelado = ev.estado === 'CANCELADO';
+                    // Si hay más de 2 eventos, en móvil mostramos los 2 primeros + contador
+                    const ocultarEnMovil = i === 2 && eventosDia.length > 2;
 
-                  {/* Vista detallada en tablet/escritorio */}
-                  <div className="hidden sm:flex flex-col gap-1 overflow-hidden">
-                    {eventosDia.slice(0, 2).map((ev) => {
-                      const esCancelado = ev.estado === 'CANCELADO';
-                      return (
-                        <div
-                          key={ev.id}
-                          className={`apple-caption-2 font-medium px-1.5 py-0.5 rounded-lg truncate flex items-center gap-1 leading-tight text-white transition-opacity ${
-                            esCancelado ? 'line-through opacity-50 italic' : ''
-                          }`}
-                          style={{ backgroundColor: ev.color }}
-                          title={esCancelado ? `${ev.titulo} (Cancelado)` : ev.titulo}
-                        >
-                          {ev.origen === 'PLANTA' && <Sprout size={10} className="shrink-0" />}
-                          {ev.origen === 'SERVICIO' && <Receipt size={10} className="shrink-0" />}
-                          <span className="truncate">{ev.titulo}</span>
-                        </div>
-                      );
-                    })}
-                    {eventosDia.length > 2 && (
-                      <span className="apple-caption-2 font-medium text-label-secondary pl-1 tabular-nums">
-                        +{eventosDia.length - 2} más
-                      </span>
-                    )}
-                  </div>
+                    return (
+                      <div
+                        key={ev.id}
+                        className={`w-full text-[9px] sm:text-[10.5px] font-semibold px-1 sm:px-1.5 py-0.5 rounded-md truncate items-center gap-1 leading-tight text-white transition-opacity shadow-3xs ${
+                          ocultarEnMovil ? 'hidden sm:flex' : 'flex'
+                        } ${
+                          esCancelado ? 'line-through opacity-50 italic' : ''
+                        }`}
+                        style={{ backgroundColor: ev.color }}
+                        title={esCancelado ? `${ev.titulo} (Cancelado)` : ev.titulo}
+                      >
+                        {ev.origen === 'PLANTA' && <Sprout size={9} className="shrink-0 hidden sm:inline-block" />}
+                        {ev.origen === 'SERVICIO' && <Receipt size={9} className="shrink-0 hidden sm:inline-block" />}
+                        <span className="truncate">{ev.titulo}</span>
+                      </div>
+                    );
+                  })}
+
+                  {/* Contador +N más en móvil (cuando hay > 2 eventos) */}
+                  {eventosDia.length > 2 && (
+                    <span className="sm:hidden text-[8.5px] font-bold text-label-secondary px-0.5 truncate leading-tight tabular-nums">
+                      +{eventosDia.length - 2} más
+                    </span>
+                  )}
+
+                  {/* Contador +N más en desktop (cuando hay > 3 eventos) */}
+                  {eventosDia.length > 3 && (
+                    <span className="hidden sm:inline-block text-[10px] font-bold text-label-secondary pl-0.5 truncate leading-tight tabular-nums">
+                      +{eventosDia.length - 3} más
+                    </span>
+                  )}
                 </div>
               </div>
             );

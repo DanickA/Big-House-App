@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/session';
+import { resolveSessionUser } from '@/lib/auth-guard';
 import { revalidatePath } from 'next/cache';
 import { TipoPlantilla } from '@prisma/client';
 
@@ -259,16 +259,12 @@ export async function createEvento(formData: FormData) {
       return { success: false, error: 'El título y la fecha son obligatorios' };
     }
 
-    // Resolver creador
-    const session = await getSession();
-    let creadorId = session?.userId;
-    if (!creadorId) {
-      const primerUsuario = await prisma.usuarios.findFirst();
-      if (!primerUsuario) {
-        return { success: false, error: 'No hay usuarios registrados para asociar el evento' };
-      }
-      creadorId = primerUsuario.id;
+    // Resolver creador exclusivamente desde la sesión firmada (sin fallback)
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
     }
+    const creadorId = auth.user.userId;
 
     const fecha_inicio = new Date(fecha_inicio_str);
     const fecha_fin = fecha_fin_str ? new Date(fecha_fin_str) : new Date(fecha_inicio.getTime() + 60 * 60 * 1000);
@@ -308,6 +304,11 @@ export async function createEvento(formData: FormData) {
 // 4. Eliminar un evento manual
 export async function deleteEvento(id: string) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     if (id.startsWith('planta-') || id.startsWith('servicio-')) {
       return { success: false, error: 'Este evento automático se gestiona desde su módulo correspondiente' };
     }

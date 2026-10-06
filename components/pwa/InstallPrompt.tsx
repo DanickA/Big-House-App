@@ -83,34 +83,60 @@ export default function InstallPrompt() {
   }
 
   return (
-    <aside aria-label="Instalación de la aplicación" className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 animate-fade-in-up">
-      <div className="glass-modal bg-[#FCFAF7]/95 backdrop-blur-xl border border-white/80 rounded-2xl p-4 shadow-xl shadow-[#2D3E24]/10 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#2D3E24] text-[#ECE3D4] flex items-center justify-center shrink-0 shadow-xs">
-            <Download size={20} />
-          </div>
-          <div>
-            <h2 className="text-sm font-bold text-[#2D3E24] leading-tight">Instalar HogarApp</h2>
-            <p className="text-xs text-[#736F68]">Acceso rápido desde tu pantalla de inicio</p>
-          </div>
-        </div>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Instalación de la aplicación"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs animate-fade-in"
+    >
+      {/* Fondo para descartar al tocar fuera */}
+      <div className="fixed inset-0 -z-10" onClick={handleDismiss} />
 
-        <div className="flex items-center gap-2">
+      <div className="w-full sm:max-w-md bg-secondary/95 backdrop-blur-2xl border-t sm:border border-separator rounded-t-[2rem] sm:rounded-[2rem] p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] shadow-2xl animate-fade-in-up space-y-4">
+        {/* Asa táctil superior estilo iOS Sheet */}
+        <div className="sm:hidden w-10 h-1.5 bg-separator-opaque rounded-full mx-auto -mt-1 mb-2" />
+
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-terracotta/15 border border-terracotta/30 text-terracotta flex items-center justify-center shrink-0 shadow-2xs">
+              <Download size={22} strokeWidth={2.2} />
+            </div>
+            <div>
+              <h2 className="apple-headline font-semibold text-label-primary leading-tight">
+                Instalar HogarApp
+              </h2>
+              <p className="apple-footnote text-label-secondary font-normal">
+                Acceso rápido desde tu pantalla de inicio
+              </p>
+            </div>
+          </div>
           <button
-            onClick={handleInstallClick}
-            className="px-3 py-1.5 rounded-xl bg-[#2D3E24] hover:bg-[#3A4E30] text-white text-xs font-bold transition shadow-xs cursor-pointer"
-          >
-            Instalar
-          </button>
-          <button
+            type="button"
             onClick={handleDismiss}
             aria-label="Cerrar aviso de instalación"
-            className="p-1 rounded-lg text-[#9E988F] hover:text-[#2D3E24] transition cursor-pointer"
+            className="w-11 h-11 rounded-full bg-tertiary text-label-secondary hover:text-label-primary flex items-center justify-center transition active:scale-90"
           >
-            <X size={16} />
+            <X size={16} strokeWidth={2.2} />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2.5 pt-1">
+          <button
+            type="button"
+            onClick={handleDismiss}
+            className="flex-1 btn-apple-gray text-xs font-semibold py-2.5 min-h-[44px]"
+          >
+            Ahora no
+          </button>
+          <button
+            type="button"
+            onClick={handleInstallClick}
+            className="flex-1 btn-apple-filled text-xs font-semibold py-2.5 min-h-[44px]"
+          >
+            Instalar app
           </button>
         </div>
       </div>
-    </aside>
+    </div>
   );
 }

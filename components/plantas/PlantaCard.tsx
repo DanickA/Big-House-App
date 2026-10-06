@@ -1,8 +1,10 @@
 'use client';
 
-import { Pencil, History, Trash2, MapPin, Droplets, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { Pencil, History, Trash2, MapPin, Droplets, MoreHorizontal, Loader2, Check } from 'lucide-react';
 import WaterProgressRing from '@/components/ui/WaterProgressRing';
 import PullDownMenu from '@/components/ui/PullDownMenu';
+import { registrarCuidado } from '@/actions/plantas';
 
 export type Planta = {
   id: string;
@@ -20,6 +22,7 @@ interface PlantaCardProps {
   onEdit: (planta: Planta) => void;
   onDelete: (planta: Planta) => void;
   onOpenHistorial: (planta: Planta) => void;
+  onQuickWater?: (planta: Planta) => Promise<void> | void;
 }
 
 export default function PlantaCard({
@@ -28,11 +31,45 @@ export default function PlantaCard({
   onEdit,
   onDelete,
   onOpenHistorial,
+  onQuickWater,
 }: PlantaCardProps) {
+  const [regando, setRegando] = useState(false);
+  const [regadoReciente, setRegadoReciente] = useState(false);
+
+  async function handleQuickWater(e?: React.MouseEvent) {
+    if (e) e.stopPropagation();
+    if (regando) return;
+
+    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate([20, 40, 20]);
+      } catch {}
+    }
+
+    setRegando(true);
+    try {
+      if (onQuickWater) {
+        await onQuickWater(planta);
+      } else {
+        await registrarCuidado(planta.id, 'RIEGO');
+      }
+      setRegadoReciente(true);
+      setTimeout(() => setRegadoReciente(false), 2500);
+    } finally {
+      setRegando(false);
+    }
+  }
+
   // Grupos del Menú Desplegable (Apple HIG Pull-Down Menu)
   const menuGroups = [
     {
       items: [
+        {
+          id: 'regar',
+          label: 'Regar ahora (1 toque)',
+          icon: Droplets,
+          onClick: () => handleQuickWater(),
+        },
         {
           id: 'historial',
           label: 'Ver bitácora de cuidados...',
@@ -105,13 +142,39 @@ export default function PlantaCard({
           />
         </div>
 
-        {/* Anillo de Progreso de Riego Interactivo */}
-        <WaterProgressRing
-          diasRestantes={planta.diasRestantes}
-          frecuenciaDias={planta.frecuencia_dias}
-          size={44}
-          strokeWidth={3.5}
-        />
+        {/* Anillo de Progreso de Riego Interactivo (Quick Water 1 Toque) */}
+        <div onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={handleQuickWater}
+            disabled={regando}
+            title={`Regar ahora en 1 toque: ${planta.nombre_comun}`}
+            aria-label={`Regar ahora a ${planta.nombre_comun}`}
+            className="group/water relative inline-flex items-center justify-center rounded-full cursor-pointer transition-transform duration-200 active:scale-90 hover:scale-108 focus:outline-none focus-visible:ring-2 focus-visible:ring-mint shadow-md hover:shadow-lg disabled:opacity-85"
+          >
+            {regando ? (
+              <div className="w-11 h-11 rounded-full bg-mint/90 backdrop-blur-md flex items-center justify-center text-white shadow-inner animate-pulse">
+                <Loader2 size={18} className="animate-spin" />
+              </div>
+            ) : regadoReciente ? (
+              <div className="w-11 h-11 rounded-full bg-mint text-white flex items-center justify-center shadow-md animate-scale-in">
+                <Check size={18} strokeWidth={2.8} />
+              </div>
+            ) : (
+              <>
+                <WaterProgressRing
+                  diasRestantes={planta.diasRestantes}
+                  frecuenciaDias={planta.frecuencia_dias}
+                  size={44}
+                  strokeWidth={3.5}
+                />
+                <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 opacity-0 group-hover/water:opacity-100 transition-opacity duration-150 pointer-events-none bg-black/85 text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-xs border border-white/10 z-20">
+                  Toca para regar
+                </span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Información Inferior de la Planta */}

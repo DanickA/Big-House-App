@@ -3,28 +3,52 @@
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
+import { resolveSessionUser } from '@/lib/auth-guard';
 
 // 1. Obtener todos los usuarios registrados
 export async function getUsuarios() {
   try {
-    const usuarios = await prisma.usuarios.findMany({
-      select: {
-        id: true,
-        nombre: true,
-        email: true,
-        pin_hash: true,
-        fecha_registro: true,
-      },
-      orderBy: {
-        fecha_registro: 'desc',
-      },
-    });
+    let usuarios: any[];
+    try {
+      usuarios = await prisma.usuarios.findMany({
+        select: {
+          id: true,
+          nombre: true,
+          email: true,
+          pin_hash: true,
+          pin_longitud: true,
+          fecha_registro: true,
+        },
+        orderBy: {
+          fecha_registro: 'desc',
+        },
+      });
+    } catch (queryErr: any) {
+      if (queryErr?.message?.includes('pin_longitud')) {
+        const fallback = await prisma.usuarios.findMany({
+          select: {
+            id: true,
+            nombre: true,
+            email: true,
+            pin_hash: true,
+            fecha_registro: true,
+          },
+          orderBy: {
+            fecha_registro: 'desc',
+          },
+        });
+        usuarios = fallback.map((u) => ({ ...u, pin_longitud: 4 }));
+      } else {
+        throw queryErr;
+      }
+    }
 
     return {
       success: true,
       data: usuarios.map((u) => ({
         ...u,
         tienePin: !!u.pin_hash,
+        pinLongitud: u.pin_longitud || 4,
       })),
     };
   } catch (error) {
@@ -35,6 +59,11 @@ export async function getUsuarios() {
 
 // 2. Crear un nuevo usuario en la base de datos
 export async function createUsuario(formData: FormData) {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
+
   const nombre = formData.get('nombre') as string;
   const email = (formData.get('email') as string)?.toLowerCase().trim();
   const password = formData.get('password') as string;
@@ -51,6 +80,7 @@ export async function createUsuario(formData: FormData) {
   try {
     const password_hash = await bcrypt.hash(password, 10);
     const pin_hash = pin && pin.trim().length > 0 ? await bcrypt.hash(pin.trim(), 10) : null;
+    const pin_longitud = pin && pin.trim().length > 0 ? pin.trim().length : null;
 
     const nuevoUsuario = await prisma.usuarios.create({
       data: {
@@ -58,6 +88,7 @@ export async function createUsuario(formData: FormData) {
         email,
         password_hash,
         pin_hash,
+        pin_longitud,
       },
     });
 
@@ -73,6 +104,11 @@ export async function createUsuario(formData: FormData) {
 
 // 3. Actualizar información de un usuario (Nombre, Email, Contraseña y PIN)
 export async function updateUsuario(id: string, formData: FormData) {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
+
   const nombre = formData.get('nombre') as string;
   const email = (formData.get('email') as string)?.toLowerCase().trim();
   const password = formData.get('password') as string | null;
@@ -92,6 +128,7 @@ export async function updateUsuario(id: string, formData: FormData) {
       email: string;
       password_hash?: string;
       pin_hash?: string | null;
+      pin_longitud?: number | null;
     } = {
       nombre,
       email,
@@ -104,6 +141,7 @@ export async function updateUsuario(id: string, formData: FormData) {
     if (pin !== null && pin !== undefined) {
       if (pin.trim().length > 0) {
         dataToUpdate.pin_hash = await bcrypt.hash(pin.trim(), 10);
+        dataToUpdate.pin_longitud = pin.trim().length;
       }
     }
 
@@ -125,6 +163,18 @@ export async function updateUsuario(id: string, formData: FormData) {
 // 4. Eliminar un usuario
 export async function deleteUsuario(id: string) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
+    if (auth.user.userId === id) {
+      return {
+        success: false,
+        error: 'No puedes eliminar tu propia cuenta mientras tu sesión esté activa',
+      };
+    }
+
     await prisma.usuarios.delete({
       where: { id },
     });

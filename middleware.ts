@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
-
-const SECRET_KEY = process.env.SESSION_SECRET || 'bighouseapp_secret_key_super_segura_para_hogar_app_2026';
-const key = new TextEncoder().encode(SECRET_KEY);
+import { getAuthSecret } from '@/lib/auth-secret';
 
 const PUBLIC_PATHS = ['/login', '/register', '/favicon.ico'];
 
@@ -25,6 +23,7 @@ export async function middleware(request: NextRequest) {
   let isValidSession = false;
   if (sessionCookie) {
     try {
+      const key = getAuthSecret();
       await jwtVerify(sessionCookie, key, { algorithms: ['HS256'] });
       isValidSession = true;
     } catch {

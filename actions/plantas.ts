@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { getSession } from '@/lib/session';
+import { resolveSessionUser } from '@/lib/auth-guard';
 import { uploadImage } from '@/lib/storage';
 
 // 1. Obtener resumen de plantas para el Lobby (con tareas de riego)
@@ -59,6 +59,11 @@ export async function getResumenPlantasLobby() {
 // 2. Crear una nueva planta
 export async function createPlanta(formData: FormData) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     const nombre_comun = formData.get('nombre_comun') as string;
     const ubicacion = formData.get('ubicacion') as string;
     const especie = (formData.get('especie') as string) || null;
@@ -159,6 +164,11 @@ export async function getPlantas() {
 
 // 4. Actualizar una planta y recalcular su ciclo de riego
 export async function updatePlanta(id: string, formData: FormData) {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
+
   const nombre_comun = formData.get('nombre_comun') as string;
   const ubicacion = formData.get('ubicacion') as string;
   const especie = (formData.get('especie') as string) || null;
@@ -253,6 +263,11 @@ export async function updatePlanta(id: string, formData: FormData) {
 // 5. Eliminar planta
 export async function deletePlanta(id: string) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     await prisma.plantas.delete({
       where: { id },
     });
@@ -295,26 +310,20 @@ export async function getHistorialByPlanta(plantaId: string) {
 }
 
 // 7. Registrar un nuevo evento de cuidado
+// La autoría se toma SOLO de la sesión firmada. Antes se aceptaba un `usuarioId` opcional
+// desde el cliente; como las Server Actions son endpoints públicos, eso permitía atribuir
+// el cuidado a cualquier habitante. Ningún llamador lo utilizaba.
 export async function registrarCuidado(
   plantaId: string,
   tipoTarea: string,
-  usuarioId?: string,
   observaciones?: string
 ) {
   try {
-    let idFinal = usuarioId;
-    if (!idFinal) {
-      const session = await getSession();
-      if (session?.userId) {
-        idFinal = session.userId;
-      } else {
-        const primerUsuario = await prisma.usuarios.findFirst();
-        if (!primerUsuario) {
-          return { success: false, error: 'No hay usuarios registrados en la base de datos' };
-        }
-        idFinal = primerUsuario.id;
-      }
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
     }
+    const idFinal = auth.user.userId;
 
     let tarea = await prisma.tareas_cuidado.findFirst({
       where: {
@@ -338,6 +347,8 @@ export async function registrarCuidado(
       });
     }
 
+    const fechaAnterior = tarea.proxima_fecha;
+
     if (tipoTarea === 'RIEGO') {
       const nuevaProximaFecha = new Date();
       nuevaProximaFecha.setHours(0, 0, 0, 0);
@@ -359,9 +370,89 @@ export async function registrarCuidado(
 
     revalidatePath('/plantas');
     revalidatePath('/');
-    return { success: true, data: nuevoHistorial };
+    return {
+      success: true,
+      data: nuevoHistorial,
+      meta: {
+        historialId: nuevoHistorial.id,
+        tareaId: tarea.id,
+        plantaId,
+        tipoTarea,
+        fechaAnterior,
+      },
+    };
   } catch (error) {
     console.error('Error al registrar el cuidado:', error);
     return { success: false, error: 'No se pudo registrar la acción de cuidado' };
   }
 }
+
+// 8. Deshacer un evento de cuidado (Rollback de historial y recálculo de tareas_cuidado)
+export async function deshacerCuidado(historialId: string) {
+  try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
+    const registro = await prisma.historial_cuidado.findUnique({
+      where: { id: historialId },
+      include: {
+        tareas_cuidado: true,
+      },
+    });
+
+    if (!registro) {
+      return { success: false, error: 'El registro de cuidado no existe o ya fue eliminado' };
+    }
+
+    const { tarea_id, tareas_cuidado } = registro;
+
+    // Buscar el cuidado anterior más reciente para recalcular proxima_fecha
+    const cuidadoAnterior = await prisma.historial_cuidado.findFirst({
+      where: {
+        tarea_id,
+        id: { not: historialId },
+      },
+      orderBy: { fecha_realizada: 'desc' },
+    });
+
+    let nuevaProximaFecha: Date;
+    if (cuidadoAnterior?.fecha_realizada) {
+      nuevaProximaFecha = new Date(cuidadoAnterior.fecha_realizada);
+      nuevaProximaFecha.setHours(0, 0, 0, 0);
+      nuevaProximaFecha.setDate(nuevaProximaFecha.getDate() + (tareas_cuidado.frecuencia_dias || 7));
+    } else {
+      // Si no hay cuidados previos, la fecha de riego vencía hoy (necesitaba riego)
+      nuevaProximaFecha = new Date();
+      nuevaProximaFecha.setHours(0, 0, 0, 0);
+    }
+
+    // Transacción atómica: eliminar el registro de historial y actualizar la próxima fecha de la tarea
+    await prisma.$transaction([
+      prisma.historial_cuidado.delete({
+        where: { id: historialId },
+      }),
+      prisma.tareas_cuidado.update({
+        where: { id: tarea_id },
+        data: { proxima_fecha: nuevaProximaFecha },
+      }),
+    ]);
+
+    revalidatePath('/plantas');
+    revalidatePath('/');
+    return {
+      success: true,
+      data: {
+        historialId,
+        tareaId: tarea_id,
+        plantaId: tareas_cuidado.planta_id,
+        nuevaProximaFecha,
+      },
+    };
+  } catch (error) {
+    console.error('Error al deshacer cuidado:', error);
+    return { success: false, error: 'No se pudo deshacer la acción de cuidado' };
+  }
+}
+

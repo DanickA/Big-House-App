@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { getSession } from '@/lib/session';
+import { resolveSessionUser } from '@/lib/auth-guard';
 import { uploadComprobante } from '@/lib/storage';
 
 export type EstadoVencimiento = 'VENCIDO' | 'POR_VENCER' | 'AL_DIA' | 'PAGADO';
@@ -185,6 +185,11 @@ export async function getServicios(): Promise<{
 // 2. Registrar un nuevo servicio recurrente
 export async function createServicio(formData: FormData) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     const nombre_servicio = (formData.get('nombre_servicio') as string)?.trim();
     const montoRaw = formData.get('monto') as string;
     const fecha_vencimiento_raw = formData.get('fecha_vencimiento') as string;
@@ -247,6 +252,7 @@ export async function registrarPagoServicio(formData: FormData) {
     const fecha_pago_raw = formData.get('fecha_pago') as string;
     const observaciones = (formData.get('observaciones') as string)?.trim() || null;
     const comprobanteFile = formData.get('comprobante') as File | null;
+    const fecha_vencimiento_esperada = formData.get('fecha_vencimiento_esperada') as string | null;
 
     if (!servicio_id) {
       return { success: false, error: 'Identificador del servicio requerido' };
@@ -257,18 +263,12 @@ export async function registrarPagoServicio(formData: FormData) {
       return { success: false, error: 'Ingresa un monto pagado válido' };
     }
 
-    // Resolver usuario activo
-    let usuario_id: string;
-    const session = await getSession();
-    if (session?.userId) {
-      usuario_id = session.userId;
-    } else {
-      const usuarioBase = await prisma.usuarios.findFirst();
-      if (!usuarioBase) {
-        return { success: false, error: 'No hay usuarios registrados para asociar el pago' };
-      }
-      usuario_id = usuarioBase.id;
+    // Resolver usuario activo exclusivamente desde la sesión firmada (sin fallback)
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
     }
+    const usuario_id = auth.user.userId;
 
     // Procesar fecha de pago
     let fecha_pago: Date;
@@ -294,18 +294,72 @@ export async function registrarPagoServicio(formData: FormData) {
       }
     }
 
-    // Ejecutar Transacción Atómica
+    // Ejecutar Transacción Atómica con Control de Concurrencia Pesimista (FOR UPDATE)
     const resultadoTransaccion = await prisma.$transaction(async (tx) => {
-      // 1. Obtener el servicio actual
-      const servicio = await tx.servicios.findUnique({
-        where: { id: servicio_id },
-      });
+      // 1. Obtener y bloquear la fila del servicio (Pessimistic Locking: SELECT ... FOR UPDATE)
+      // Bloquea exclusivamente la fila del servicio en PostgreSQL para que peticiones concurrentes
+      // esperen a que esta transacción haga commit o rollback, impidiendo salidas dobles en gastos.
+      const serviciosBloqueados = await tx.$queryRaw<Array<{
+        id: string;
+        nombre_servicio: string;
+        fecha_vencimiento: Date;
+        periodicidad_meses: number | null;
+        dia_vencimiento: number | null;
+        estado: string;
+      }>>`
+        SELECT id, nombre_servicio, fecha_vencimiento, periodicidad_meses, dia_vencimiento, estado
+        FROM servicios
+        WHERE id = ${servicio_id}::uuid
+        FOR UPDATE
+      `;
+
+      const servicio = serviciosBloqueados[0];
 
       if (!servicio) {
         throw new Error('El servicio especificado no existe');
       }
 
-      // 2. Insertar en pagos_servicios
+      // 2. Control de Concurrencia Optimista por Ciclo de Factura:
+      // Si el cliente envió la fecha que estaba visualizando al confirmar el pago,
+      // comprobamos que coincida para asegurar que nadie pagó este mismo ciclo segundos antes.
+      if (fecha_vencimiento_esperada) {
+        const fechaEsperada = new Date(fecha_vencimiento_esperada);
+        const fechaActual = new Date(servicio.fecha_vencimiento);
+        const ymdEsperada = `${fechaEsperada.getUTCFullYear()}-${fechaEsperada.getUTCMonth()}-${fechaEsperada.getUTCDate()}`;
+        const ymdActual = `${fechaActual.getUTCFullYear()}-${fechaActual.getUTCMonth()}-${fechaActual.getUTCDate()}`;
+
+        if (ymdEsperada !== ymdActual) {
+          const err = new Error(
+            `Esta factura ya fue pagada o actualizada por otro habitante. El próximo vencimiento actual es el ${fechaActual.toLocaleDateString('es-CO')}.`
+          );
+          (err as any).code = 'CONCURRENCY_CYCLE_MISMATCH';
+          (err as any).proximoVencimiento = servicio.fecha_vencimiento.toISOString();
+          (err as any).estado = servicio.estado;
+          throw err;
+        }
+      }
+
+      // 3. Ventana de Idempotencia Anti-Doble Clic (60 segundos):
+      const unMinutoAtras = new Date(Date.now() - 60 * 1000);
+      const pagoDuplicado = await tx.pagos_servicios.findFirst({
+        where: {
+          servicio_id,
+          monto_pagado,
+          fecha_pago: {
+            gte: unMinutoAtras,
+          },
+        },
+      });
+
+      if (pagoDuplicado) {
+        const err = new Error(
+          'Ya se procesó un pago reciente con el mismo monto para este servicio. Por favor verifica el historial para evitar duplicados.'
+        );
+        (err as any).code = 'IDEMPOTENCY_DUPLICATE';
+        throw err;
+      }
+
+      // 4. Insertar en pagos_servicios
       const nuevoPago = await tx.pagos_servicios.create({
         data: {
           servicio_id,
@@ -317,7 +371,7 @@ export async function registrarPagoServicio(formData: FormData) {
         },
       });
 
-      // 3. Insertar en gastos (reflejar salida global en categoría 'SERVICIOS')
+      // 5. Insertar en gastos (reflejar salida global en categoría 'SERVICIOS')
       const descripcionGasto = observaciones
         ? `Pago ${servicio.nombre_servicio}: ${observaciones}`
         : `Pago de servicio: ${servicio.nombre_servicio}`;
@@ -333,7 +387,7 @@ export async function registrarPagoServicio(formData: FormData) {
         },
       });
 
-      // 4. Calcular nueva fecha de vencimiento
+      // 6. Calcular nueva fecha de vencimiento
       // Regla: Fecha base = fecha de este pago, suma periodicidad_meses, ajusta a dia_vencimiento
       const periodicidad = servicio.periodicidad_meses || 1;
       const diaVenc = servicio.dia_vencimiento;
@@ -343,7 +397,7 @@ export async function registrarPagoServicio(formData: FormData) {
         diaVenc
       );
 
-      // 5. Actualizar servicios con la nueva fecha y dejar el ciclo listo en 'PENDIENTE'
+      // 7. Actualizar servicios con la nueva fecha y dejar el ciclo listo en 'PENDIENTE'
       const servicioActualizado = await tx.servicios.update({
         where: { id: servicio_id },
         data: {
@@ -373,7 +427,10 @@ export async function registrarPagoServicio(formData: FormData) {
     console.error('Error en registrarPagoServicio:', error);
     return {
       success: false,
+      code: error?.code || 'PAYMENT_FAILED',
       error: error?.message || 'Error al procesar la transacción de pago',
+      proximoVencimiento: error?.proximoVencimiento as string | undefined,
+      estado: error?.estado as string | undefined,
     };
   }
 }
@@ -419,6 +476,11 @@ export async function getHistorialPagos(servicioId: string) {
 // 5. Actualizar un Servicio
 export async function updateServicio(servicioId: string, formData: FormData) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     const nombre_servicio = (formData.get('nombre_servicio') as string)?.trim();
     const montoRaw = formData.get('monto') as string;
     const periodicidad_meses = parseInt((formData.get('periodicidad_meses') as string) || '1', 10);
@@ -477,6 +539,11 @@ export async function updateServicio(servicioId: string, formData: FormData) {
 // 6. Eliminar un Servicio
 export async function deleteServicio(servicioId: string) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     await prisma.servicios.delete({
       where: { id: servicioId },
     });

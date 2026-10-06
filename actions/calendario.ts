@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { TipoPlantilla, EstadoEvento, CanalRecordatorio } from '@prisma/client';
+import { resolveSessionUser } from '@/lib/auth-guard';
 
 export type EventoData = {
   titulo: string;
@@ -16,7 +17,11 @@ export type EventoData = {
   ubicacion?: string;
   recurrencia?: string;
   detalles?: any;
-  creador_id: string;
+  /**
+   * @deprecated Ignorado por el servidor. El creador se resuelve siempre desde la sesión
+   * firmada para impedir que el cliente atribuya eventos a otro habitante.
+   */
+  creador_id?: string;
   participantes_ids?: string[];
   externos?: { nombre: string; contacto?: string }[];
   subtareas?: { descripcion: string; asignado_id?: string; completado?: boolean }[];
@@ -54,6 +59,12 @@ export async function obtenerEventosMes(fechaInicio: Date, fechaFin: Date) {
 
 export async function crearEvento(data: EventoData) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+    const creadorId = auth.user.userId;
+
     if (!data.titulo || !data.titulo.trim()) {
       throw new Error('El título del evento es obligatorio');
     }
@@ -86,7 +97,11 @@ export async function crearEvento(data: EventoData) {
     let inicio = new Date(data.fecha_inicio);
     let fin = new Date(data.fecha_fin);
 
-    if (data.todo_el_dia) {
+    // Si la cita médica venía con hora medianoche (por haber sido todo_el_día), fijar 10:00 AM - 11:00 AM
+    if (data.tipo_plantilla === TipoPlantilla.CITA_MEDICA && inicio.getHours() === 0 && inicio.getMinutes() === 0) {
+      inicio = new Date(new Date(inicio).setHours(10, 0, 0, 0));
+      fin = new Date(inicio.getTime() + 60 * 60 * 1000);
+    } else if (data.todo_el_dia) {
       inicio = new Date(inicio.setHours(0, 0, 0, 0));
       fin = new Date(fin.setHours(23, 59, 59, 999));
     }
@@ -129,7 +144,7 @@ export async function crearEvento(data: EventoData) {
         ubicacion: data.ubicacion?.trim() || null,
         recurrencia: data.recurrencia || null,
         detalles: data.detalles || undefined,
-        creador_id: data.creador_id,
+        creador_id: creadorId,
         participantes: {
           connect: Array.from(participantesSet).map((id) => ({ id })),
         },
@@ -170,6 +185,11 @@ export async function actualizarEvento(
 ) {
   try {
     // RN-01: Permisos de gestión colaborativa. Cualquier habitante autenticado puede modificar cualquier evento.
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     const eventoOriginal = await prisma.eventos.findUnique({
       where: { id },
       include: {
@@ -183,12 +203,24 @@ export async function actualizarEvento(
       throw new Error('El evento no existe');
     }
 
+    const plantillaEfectiva = data.tipo_plantilla || eventoOriginal.tipo_plantilla;
+    let esTodoElDia = data.todo_el_dia ?? eventoOriginal.todo_el_dia;
+    if (plantillaEfectiva === TipoPlantilla.CITA_MEDICA) {
+      esTodoElDia = false;
+      if (data.todo_el_dia !== undefined) {
+        data.todo_el_dia = false;
+      }
+    }
+
     let inicio = data.fecha_inicio ? new Date(data.fecha_inicio) : new Date(eventoOriginal.fecha_inicio);
     let fin = data.fecha_fin ? new Date(data.fecha_fin) : new Date(eventoOriginal.fecha_fin);
 
-    if (data.todo_el_dia ?? eventoOriginal.todo_el_dia) {
+    if (esTodoElDia) {
       inicio = new Date(new Date(inicio).setHours(0, 0, 0, 0));
       fin = new Date(new Date(fin).setHours(23, 59, 59, 999));
+    } else if (plantillaEfectiva === TipoPlantilla.CITA_MEDICA && inicio.getHours() === 0 && inicio.getMinutes() === 0) {
+      inicio = new Date(new Date(inicio).setHours(10, 0, 0, 0));
+      fin = new Date(inicio.getTime() + 60 * 60 * 1000);
     }
 
     // RF-03 Caso 1: Eventos con recurrencia - "Modificar solo este evento"
@@ -203,12 +235,12 @@ export async function actualizarEvento(
           estado: data.estado || eventoOriginal.estado,
           fecha_inicio: inicio,
           fecha_fin: fin,
-          todo_el_dia: data.todo_el_dia ?? eventoOriginal.todo_el_dia,
+          todo_el_dia: esTodoElDia,
           color: data.color || eventoOriginal.color,
           ubicacion: data.ubicacion !== undefined ? data.ubicacion?.trim() || null : eventoOriginal.ubicacion,
           recurrencia: null, // Desvinculado de la serie original
           detalles: data.detalles !== undefined ? data.detalles : eventoOriginal.detalles || undefined,
-          creador_id: data.creador_id || eventoOriginal.creador_id,
+          creador_id: eventoOriginal.creador_id, // Se conserva la autoría original; no se acepta del cliente
           participantes: {
             connect: (data.participantes_ids || eventoOriginal.participantes.map((p) => p.id)).map((uid) => ({ id: uid })),
           },
@@ -250,7 +282,7 @@ export async function actualizarEvento(
       ...(data.tipo_plantilla && { tipo_plantilla: data.tipo_plantilla }),
       ...(data.fecha_inicio && { fecha_inicio: inicio }),
       ...(data.fecha_fin && { fecha_fin: fin }),
-      ...(data.todo_el_dia !== undefined && { todo_el_dia: data.todo_el_dia }),
+      ...(data.todo_el_dia !== undefined ? { todo_el_dia: esTodoElDia } : (plantillaEfectiva === TipoPlantilla.CITA_MEDICA ? { todo_el_dia: false } : {})),
       ...(data.color && { color: data.color }),
       ...(data.ubicacion !== undefined && { ubicacion: data.ubicacion?.trim() || null }),
       ...(data.recurrencia !== undefined && { recurrencia: data.recurrencia }),
@@ -297,6 +329,11 @@ export async function actualizarEvento(
 
 export async function cancelarEventoLogico(id: string) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     const evento = await prisma.eventos.update({
       where: { id },
       data: { estado: EstadoEvento.CANCELADO },
@@ -317,6 +354,11 @@ export async function cancelarEventoLogico(id: string) {
 
 export async function eliminarEventoFisico(id: string) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     await prisma.eventos.delete({
       where: { id },
     });
@@ -331,6 +373,11 @@ export async function eliminarEventoFisico(id: string) {
 
 export async function toggleEstadoSubtarea(id: string, completado: boolean) {
   try {
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error, code: auth.code };
+    }
+
     const subtarea = await prisma.subtareas_evento.update({
       where: { id },
       data: { completado },

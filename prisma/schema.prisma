@@ -16,6 +16,10 @@ model gastos {
   servicio_id String?    @db.Uuid
   servicios   servicios? @relation(fields: [servicio_id], references: [id], onUpdate: NoAction, map: "fk_servicio_gasto")
   usuarios    usuarios   @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_gasto")
+
+  @@index([usuario_id])
+  @@index([servicio_id])
+  @@index([fecha])
 }
 
 model historial_cuidado {
@@ -26,6 +30,11 @@ model historial_cuidado {
   observaciones   String?
   tareas_cuidado  tareas_cuidado @relation(fields: [tarea_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_tarea_historial")
   usuarios        usuarios       @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_historial")
+
+  @@index([tarea_id])
+  @@index([usuario_id])
+  @@index([fecha_realizada])
+  @@index([tarea_id, fecha_realizada])
 }
 
 model ingresos {
@@ -36,6 +45,9 @@ model ingresos {
   fuente      String?  @db.VarChar(50)
   usuario_id  String   @db.Uuid
   usuarios    usuarios @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_ingreso")
+
+  @@index([usuario_id])
+  @@index([fecha])
 }
 
 model plantas {
@@ -59,6 +71,9 @@ model servicios {
   dia_vencimiento    Int?
   gastos             gastos[]
   pagos_servicios    pagos_servicios[]
+
+  @@index([fecha_vencimiento])
+  @@index([estado])
 }
 
 model tareas_cuidado {
@@ -69,6 +84,10 @@ model tareas_cuidado {
   proxima_fecha     DateTime            @db.Date
   historial_cuidado historial_cuidado[]
   plantas           plantas             @relation(fields: [planta_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_planta_tarea")
+
+  @@index([planta_id])
+  @@index([proxima_fecha])
+  @@index([planta_id, tipo_tarea])
 }
 
 model usuarios {
@@ -78,6 +97,7 @@ model usuarios {
   password_hash        String               @db.VarChar(255)
   fecha_registro       DateTime?            @default(now()) @db.Timestamp(6)
   pin_hash             String?              @db.VarChar(255)
+  pin_longitud         Int?                 @default(4)
   gastos               gastos[]
   historial_cuidado    historial_cuidado[]
   ingresos             ingresos[]
@@ -99,6 +119,10 @@ model pagos_servicios {
   observaciones   String?
   servicios       servicios @relation(fields: [servicio_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_servicio_pago")
   usuarios        usuarios  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_pago")
+
+  @@index([servicio_id])
+  @@index([usuario_id])
+  @@index([fecha_pago])
 }
 
 enum TipoPlantilla {
@@ -146,6 +170,10 @@ model eventos {
   externos        participantes_externos[]
   subtareas       subtareas_evento[]
   recordatorios   recordatorios_evento[]
+
+  @@index([fecha_inicio, fecha_fin])
+  @@index([creador_id])
+  @@index([estado])
 }
 
 model participantes_externos {
@@ -155,6 +183,8 @@ model participantes_externos {
   contacto        String?        @db.VarChar(100)
   
   evento          eventos        @relation(fields: [evento_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_evento_externo")
+
+  @@index([evento_id])
 }
 
 model subtareas_evento {
@@ -166,6 +196,9 @@ model subtareas_evento {
   
   evento          eventos        @relation(fields: [evento_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_evento_subtarea")
   asignado        usuarios?      @relation("SubtareasAsignadas", fields: [asignado_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "fk_usuario_subtarea")
+
+  @@index([evento_id])
+  @@index([asignado_id])
 }
 
 model recordatorios_evento {
@@ -177,6 +210,9 @@ model recordatorios_evento {
   enviado             Boolean        @default(false)
   
   evento              eventos        @relation(fields: [evento_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_evento_recordatorio")
+
+  @@index([evento_id])
+  @@index([enviado, fecha_programada])
 }
 
 model suscripciones_push {
@@ -188,4 +224,6 @@ model suscripciones_push {
   fecha_creacion      DateTime?      @default(now()) @db.Timestamp(6)
 
   usuario             usuarios       @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_suscripcion")
+
+  @@index([usuario_id])
 }

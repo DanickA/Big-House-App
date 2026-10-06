@@ -322,7 +322,7 @@ export function FormularioEvento({
         ubicacion: ubicacion.trim() || undefined,
         recurrencia: (plantilla === TipoPlantilla.CUMPLEANOS && recurrenciaAnual) ? 'ANUAL' : undefined,
         detalles: Object.keys(detallesPayload).length > 0 ? detallesPayload : undefined,
-        creador_id: usuarioActualId,
+        // creador_id se omite: el servidor lo resuelve desde la sesión firmada
         participantes_ids: participantesIdsFinal,
         externos: externosFinal,
         subtareas: subtareasFinal,
@@ -472,6 +472,9 @@ export function FormularioEvento({
                     className="w-full text-xs border border-gray-300 rounded-lg p-2.5 bg-white outline-none"
                   />
                 </div>
+                <p className="text-[11px] text-terracotta col-span-full">
+                  Nota: Este agasajado se registrará en el evento como contacto externo y no como usuario registrado de la aplicación.
+                </p>
               </div>
             )}
 

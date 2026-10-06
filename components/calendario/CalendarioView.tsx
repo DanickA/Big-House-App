@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { EventoUnificado } from '@/actions/eventos';
 import dynamic from 'next/dynamic';
 
@@ -44,11 +44,17 @@ export default function CalendarioView({
   const [cargando, setCargando] = useState(false);
   const [notificacion, setNotificacion] = useState<string | null>(null);
 
+  // Caché de meses en memoria para transiciones de 0 ms
+  const cacheMesesRef = useRef<Record<string, EventoUnificado[]>>({
+    [`${hoy.getMonth() + 1}-${hoy.getFullYear()}`]: initialEventos,
+  });
+
   // Estados del modal contextual
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [modoModal, setModoModal] = useState<'agenda' | 'formulario'>('agenda');
 
-  // Navegar meses
+  // Navegar meses con respuesta inmediata desde caché
   async function cambiarMes(delta: number) {
     let nuevoMes = mesActual + delta;
     let nuevoAnio = anioActual;
@@ -63,20 +69,46 @@ export default function CalendarioView({
 
     setMesActual(nuevoMes);
     setAnioActual(nuevoAnio);
-    setCargando(true);
-    const nuevosEventos = await onRefresh(nuevoMes + 1, nuevoAnio);
-    setEventos(nuevosEventos);
-    setCargando(false);
+
+    const cacheKey = `${nuevoMes + 1}-${nuevoAnio}`;
+    if (cacheMesesRef.current[cacheKey]) {
+      // 0ms percibidos: mostrar inmediatamente desde memoria
+      setEventos(cacheMesesRef.current[cacheKey]);
+      // Revalidación silenciosa en background sin bloquear la interfaz
+      onRefresh(nuevoMes + 1, nuevoAnio).then((nuevosEventos) => {
+        cacheMesesRef.current[cacheKey] = nuevosEventos;
+        setEventos(nuevosEventos);
+      });
+    } else {
+      setCargando(true);
+      const nuevosEventos = await onRefresh(nuevoMes + 1, nuevoAnio);
+      cacheMesesRef.current[cacheKey] = nuevosEventos;
+      setEventos(nuevosEventos);
+      setCargando(false);
+    }
   }
 
   async function irAHoy() {
     const d = new Date();
-    setMesActual(d.getMonth());
-    setAnioActual(d.getFullYear());
-    setCargando(true);
-    const nuevosEventos = await onRefresh(d.getMonth() + 1, d.getFullYear());
-    setEventos(nuevosEventos);
-    setCargando(false);
+    const m = d.getMonth();
+    const y = d.getFullYear();
+    setMesActual(m);
+    setAnioActual(y);
+
+    const cacheKey = `${m + 1}-${y}`;
+    if (cacheMesesRef.current[cacheKey]) {
+      setEventos(cacheMesesRef.current[cacheKey]);
+      onRefresh(m + 1, y).then((nuevosEventos) => {
+        cacheMesesRef.current[cacheKey] = nuevosEventos;
+        setEventos(nuevosEventos);
+      });
+    } else {
+      setCargando(true);
+      const nuevosEventos = await onRefresh(m + 1, y);
+      cacheMesesRef.current[cacheKey] = nuevosEventos;
+      setEventos(nuevosEventos);
+      setCargando(false);
+    }
   }
 
   function mostrarAviso(mensaje: string) {
@@ -84,9 +116,18 @@ export default function CalendarioView({
     setTimeout(() => setNotificacion(null), 3500);
   }
 
-  // Manejar toque en celda de día (Lienzo interactivo)
+  // Manejar toque en celda de día (abre la agenda del día si hay eventos, o formulario si está vacío)
   function handleDayClick(fecha: Date) {
     setSelectedDate(fecha);
+    setModoModal('agenda');
+    setIsModalOpen(true);
+  }
+
+  // Agendamiento directo en 1 toque (abre siempre directamente el formulario de creación)
+  function handleCrearEvento(fecha: Date, e?: React.MouseEvent) {
+    if (e) e.stopPropagation();
+    setSelectedDate(fecha);
+    setModoModal('formulario');
     setIsModalOpen(true);
   }
 
@@ -198,7 +239,7 @@ export default function CalendarioView({
 
           <button
             type="button"
-            onClick={() => handleDayClick(new Date())}
+            onClick={() => handleCrearEvento(new Date())}
             className="px-4 py-2 bg-terracotta hover:bg-terracotta-hover text-white rounded-xl text-xs font-semibold transition shadow-sm shadow-terracotta/20 flex items-center gap-1.5 cursor-pointer active:scale-95"
           >
             <Plus size={15} strokeWidth={2.5} />
@@ -258,10 +299,16 @@ export default function CalendarioView({
                     {fecha.getDate()}
                   </span>
 
-                  {/* Micro botón '+' al hover */}
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-terracotta hidden sm:inline-block">
-                    <Plus size={12} strokeWidth={2.5} />
-                  </span>
+                  {/* Micro botón '+' interactivo con stopPropagation */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleCrearEvento(fecha, e)}
+                    title={`Agendar actividad el ${fecha.getDate()} de ${MESES[mesActual]}`}
+                    aria-label={`Agendar actividad el ${fecha.getDate()}`}
+                    className="w-5 h-5 rounded-full bg-terracotta/10 hover:bg-terracotta text-terracotta hover:text-white transition-all flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 active:scale-85 shadow-2xs"
+                  >
+                    <Plus size={12} strokeWidth={2.6} />
+                  </button>
                 </div>
 
                 {/* Lista de píldoras de eventos visibles en móvil y desktop */}
@@ -278,12 +325,22 @@ export default function CalendarioView({
                           ocultarEnMovil ? 'hidden sm:flex' : 'flex'
                         } ${
                           esCancelado ? 'line-through opacity-50 italic' : ''
+                        } ${
+                          ev.origen !== 'MANUAL' ? 'border-l-2 border-white/80 ring-1 ring-white/20' : ''
                         }`}
                         style={{ backgroundColor: ev.color }}
-                        title={esCancelado ? `${ev.titulo} (Cancelado)` : ev.titulo}
+                        title={
+                          esCancelado
+                            ? `${ev.titulo} (Cancelado)`
+                            : ev.origen === 'PLANTA'
+                            ? `${ev.titulo} • Riego automático (Jardín Botánico)`
+                            : ev.origen === 'SERVICIO'
+                            ? `${ev.titulo} • Factura pendiente (Finanzas)`
+                            : ev.titulo
+                        }
                       >
-                        {ev.origen === 'PLANTA' && <Sprout size={9} className="shrink-0 hidden sm:inline-block" />}
-                        {ev.origen === 'SERVICIO' && <Receipt size={9} className="shrink-0 hidden sm:inline-block" />}
+                        {ev.origen === 'PLANTA' && <Sprout size={9} className="shrink-0" />}
+                        {ev.origen === 'SERVICIO' && <Receipt size={9} className="shrink-0" />}
                         <span className="truncate">{ev.titulo}</span>
                       </div>
                     );
@@ -317,10 +374,13 @@ export default function CalendarioView({
         eventosDelDia={eventosDelDiaSeleccionado}
         miembros={miembros}
         usuarioActualId={usuarioActualId}
+        modoInicial={modoModal}
         onClose={() => setIsModalOpen(false)}
         onSuccess={async (msg) => {
           mostrarAviso(msg);
           const actualizados = await onRefresh(mesActual + 1, anioActual);
+          const cacheKey = `${mesActual + 1}-${anioActual}`;
+          cacheMesesRef.current[cacheKey] = actualizados;
           setEventos(actualizados);
         }}
       />

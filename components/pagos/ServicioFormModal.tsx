@@ -14,6 +14,7 @@ import {
   Hash,
   Sparkles,
   Loader2,
+  ChevronDown,
 } from 'lucide-react';
 
 interface ServicioFormModalProps {
@@ -60,6 +61,7 @@ export default function ServicioFormModal({
   const [diaVencimiento, setDiaVencimiento] = useState<string>('');
   const [numeroCuenta, setNumeroCuenta] = useState('');
   const [numeroFactura, setNumeroFactura] = useState('');
+  const [mostrarSecundarios, setMostrarSecundarios] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -181,7 +183,7 @@ export default function ServicioFormModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal"
-            className="w-9 h-9 rounded-full bg-tertiary text-label-secondary hover:text-label-primary hover:bg-tertiary-hover transition flex items-center justify-center cursor-pointer border border-separator active:scale-90"
+            className="w-11 h-11 rounded-full bg-tertiary text-label-secondary hover:text-label-primary hover:bg-tertiary-hover transition flex items-center justify-center cursor-pointer border border-separator active:scale-90"
           >
             <X size={16} strokeWidth={2.5} />
           </button>
@@ -221,7 +223,7 @@ export default function ServicioFormModal({
                     type="button"
                     onClick={() => setNombre('')}
                     aria-label="Limpiar nombre del servicio"
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-label-tertiary hover:text-label-primary transition"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center text-label-tertiary hover:text-label-primary transition min-w-[44px] min-h-[44px]"
                   >
                     <X size={14} strokeWidth={2.5} />
                   </button>
@@ -239,7 +241,7 @@ export default function ServicioFormModal({
                     key={sug}
                     type="button"
                     onClick={() => setNombre(sug)}
-                    className="px-2.5 py-1 rounded-xl text-[11px] font-medium transition cursor-pointer active:scale-95 bg-tertiary hover:bg-tertiary-hover text-label-secondary hover:text-label-primary border border-separator"
+                    className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-medium transition cursor-pointer active:scale-95 bg-tertiary hover:bg-tertiary-hover text-label-secondary hover:text-label-primary border border-separator inline-flex items-center justify-center"
                   >
                     {sug.split(' ')[0]}
                   </button>
@@ -271,44 +273,21 @@ export default function ServicioFormModal({
               </div>
             </div>
 
-            {/* FECHA DE VENCIMIENTO INICIAL Y DÍA DE CORTE */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <GlassDatePicker
-                  label="Fecha de Vencimiento"
-                  value={fechaVencimiento}
-                  onChange={handleFechaChange}
-                  name="fecha_vencimiento"
-                  required
-                  shortcuts={[
-                    { label: 'Hoy', daysOffset: 0 },
-                    { label: '+7 días', daysOffset: 7 },
-                    { label: '+15 días', daysOffset: 15 },
-                    { label: '+30 días', daysOffset: 30 },
-                  ]}
-                />
-              </div>
-
-              <div>
-                <label className="block apple-subhead font-medium text-label-primary mb-1.5">
-                  Día fijo de corte (opcional)
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-label-secondary">
-                    <Hash size={15} strokeWidth={2.2} />
-                  </div>
-                  <input
-                    type="number"
-                    name="dia_vencimiento"
-                    min="1"
-                    max="31"
-                    value={diaVencimiento}
-                    onChange={(e) => setDiaVencimiento(e.target.value)}
-                    placeholder="Ej. 10"
-                    className="w-full pl-10 pr-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
-                  />
-                </div>
-              </div>
+            {/* FECHA DE VENCIMIENTO INICIAL */}
+            <div>
+              <GlassDatePicker
+                label="Fecha de Vencimiento *"
+                value={fechaVencimiento}
+                onChange={handleFechaChange}
+                name="fecha_vencimiento"
+                required
+                shortcuts={[
+                  { label: 'Hoy', daysOffset: 0 },
+                  { label: '+7 días', daysOffset: 7 },
+                  { label: '+15 días', daysOffset: 15 },
+                  { label: '+30 días', daysOffset: 30 },
+                ]}
+              />
             </div>
 
             {/* PERIODICIDAD / CICLO DE COBRO */}
@@ -327,7 +306,7 @@ export default function ServicioFormModal({
                     key={p.meses}
                     type="button"
                     onClick={() => setPeriodicidadMeses(p.meses)}
-                    className={`py-2 px-2.5 rounded-xl text-xs font-semibold transition text-center cursor-pointer active:scale-95 ${
+                    className={`py-2.5 px-3 min-h-[44px] rounded-xl text-xs font-semibold transition text-center cursor-pointer active:scale-95 inline-flex items-center justify-center ${
                       periodicidadMeses === p.meses
                         ? 'bg-terracotta text-white shadow-2xs'
                         : 'bg-tertiary hover:bg-tertiary-hover text-label-secondary border border-separator'
@@ -339,35 +318,85 @@ export default function ServicioFormModal({
               </div>
             </div>
 
-            {/* REFERENCIAS OPCIONALES (Nº DE CUENTA Y Nº DE FACTURA) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block apple-subhead font-medium text-label-primary mb-1.5">
-                  Nº de cuenta o contrato (opcional)
-                </label>
-                <input
-                  type="text"
-                  name="numero_cuenta"
-                  value={numeroCuenta}
-                  onChange={(e) => setNumeroCuenta(e.target.value)}
-                  placeholder="Ej. 104598234"
-                  className="w-full px-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+            {/* SECCIÓN COLAPSABLE: METADATOS SECUNDARIOS Y REFERENCIAS (PROGRESSIVE DISCLOSURE) */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setMostrarSecundarios(!mostrarSecundarios)}
+                className="w-full min-h-[44px] py-2.5 px-3.5 text-xs font-semibold text-label-secondary hover:text-label-primary bg-secondary/60 hover:bg-secondary dark:bg-tertiary/40 dark:hover:bg-tertiary/70 rounded-xl transition flex items-center justify-between cursor-pointer border border-separator shadow-2xs"
+              >
+                <span className="flex items-center gap-2">
+                  <Hash size={14} className="text-terracotta" />
+                  <span>
+                    {mostrarSecundarios
+                      ? 'Ocultar referencias adicionales'
+                      : 'Detalles y referencias adicionales (día de corte, cuenta, factura)'}
+                  </span>
+                </span>
+                <ChevronDown
+                  size={15}
+                  className={`transition-transform duration-200 ${
+                    mostrarSecundarios ? 'rotate-180' : ''
+                  }`}
                 />
-              </div>
+              </button>
 
-              <div>
-                <label className="block apple-subhead font-medium text-label-primary mb-1.5">
-                  Nº de factura o referencia (opcional)
-                </label>
-                <input
-                  type="text"
-                  name="numero_factura"
-                  value={numeroFactura}
-                  onChange={(e) => setNumeroFactura(e.target.value)}
-                  placeholder="Ej. FAC-2026-09"
-                  className="w-full px-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
-                />
-              </div>
+              {mostrarSecundarios && (
+                <div className="pt-3 space-y-4 animate-fade-in-up">
+                  {/* Día fijo de corte */}
+                  <div>
+                    <label className="block apple-subhead font-medium text-label-primary mb-1.5">
+                      Día fijo de corte (opcional)
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-label-secondary">
+                        <Hash size={15} strokeWidth={2.2} />
+                      </div>
+                      <input
+                        type="number"
+                        name="dia_vencimiento"
+                        min="1"
+                        max="31"
+                        value={diaVencimiento}
+                        onChange={(e) => setDiaVencimiento(e.target.value)}
+                        placeholder="Ej. 10"
+                        className="w-full pl-10 pr-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Referencias opcionales (Nº de cuenta y Nº de factura) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block apple-subhead font-medium text-label-primary mb-1.5">
+                        Nº de cuenta o contrato (opcional)
+                      </label>
+                      <input
+                        type="text"
+                        name="numero_cuenta"
+                        value={numeroCuenta}
+                        onChange={(e) => setNumeroCuenta(e.target.value)}
+                        placeholder="Ej. 104598234"
+                        className="w-full px-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block apple-subhead font-medium text-label-primary mb-1.5">
+                        Nº de factura o referencia (opcional)
+                      </label>
+                      <input
+                        type="text"
+                        name="numero_factura"
+                        value={numeroFactura}
+                        onChange={(e) => setNumeroFactura(e.target.value)}
+                        placeholder="Ej. FAC-2026-09"
+                        className="w-full px-4 py-3 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-sm text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* BOTONES SIMÉTRICOS (APPLE HIG) */}
@@ -376,14 +405,14 @@ export default function ServicioFormModal({
                 type="button"
                 onClick={onClose}
                 disabled={procesando}
-                className="flex-1 btn-apple-gray text-sm font-semibold justify-center"
+                className="flex-1 btn-apple-gray text-sm font-semibold justify-center min-h-[44px]"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={procesando}
-                className="flex-1 btn-apple-filled text-sm font-semibold justify-center gap-2"
+                className="flex-1 btn-apple-filled text-sm font-semibold justify-center gap-2 min-h-[44px]"
               >
                 {procesando ? (
                   <>

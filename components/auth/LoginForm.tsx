@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -8,7 +8,7 @@ import {
   loginConCredenciales,
   loginTradicional,
 } from '@/actions/auth';
-import { ShieldCheck, Key, UserPlus, ArrowRight, Delete, Check, Clock, Mail, Lock } from 'lucide-react';
+import { ShieldCheck, Key, UserPlus, ArrowRight, Delete, Check, Clock, Mail, Lock, Loader2 } from 'lucide-react';
 
 interface LoginFormProps {
   initialMiembros: MiembroSelector[];
@@ -27,31 +27,51 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
   const [usarPin, setUsarPin] = useState(true);
   const [procesando, setProcesando] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
+
+  const pinInputRef = useRef<HTMLInputElement>(null);
+  const expectedPinLength = 4; // Longitud estándar Apple HIG de 4 dígitos
+
+  // Recordar el último usuario para vista directa de desbloqueo de perfil
+  useEffect(() => {
+    try {
+      const lastUserId = localStorage.getItem('bighouse_last_user_id');
+      if (lastUserId && !miembroSeleccionado) {
+        const found = miembros.find((m) => m.id === lastUserId);
+        if (found) {
+          setMiembroSeleccionado(found);
+          setUsarPin(found.tienePin);
+        }
+      }
+    } catch {
+      // Ignorar si localStorage no está disponible
+    }
+  }, [miembros]);
+
+  useEffect(() => {
+    if (miembroSeleccionado && usarPin) {
+      const timer = setTimeout(() => {
+        pinInputRef.current?.focus();
+      }, 80);
+      return () => clearTimeout(timer);
+    }
+  }, [miembroSeleccionado, usarPin]);
 
   function handleSelectMiembro(m: MiembroSelector) {
     setMiembroSeleccionado(m);
     setUsarPin(m.tienePin);
     setPinOClave('');
     setErrorMsg(null);
+    setShake(false);
+    try {
+      localStorage.setItem('bighouse_last_user_id', m.id);
+    } catch {}
   }
 
-  function handlePinKey(num: string) {
-    if (pinOClave.length < 6) {
-      setPinOClave((prev) => prev + num);
-    }
-  }
-
-  function handlePinBackspace() {
-    setPinOClave((prev) => prev.slice(0, -1));
-  }
-
-  function handlePinClear() {
-    setPinOClave('');
-  }
-
-  async function handleLoginPerfil(e?: React.FormEvent) {
+  async function handleLoginPerfil(e?: React.FormEvent, overridePin?: string) {
     if (e) e.preventDefault();
-    if (!miembroSeleccionado || !pinOClave) {
+    const pinAUsar = (overridePin !== undefined ? overridePin : pinOClave).trim();
+    if (!miembroSeleccionado || !pinAUsar) {
       setErrorMsg('Por favor ingresa tu clave o PIN');
       return;
     }
@@ -59,15 +79,73 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
     setProcesando(true);
     setErrorMsg(null);
 
-    const res = await loginConCredenciales(miembroSeleccionado.id, pinOClave, usarPin);
+    const res = await loginConCredenciales(miembroSeleccionado.id, pinAUsar, usarPin);
     setProcesando(false);
 
     if (res.success) {
+      try {
+        localStorage.setItem('bighouse_last_user_id', miembroSeleccionado.id);
+      } catch {}
       router.push('/');
       router.refresh();
     } else {
-      setErrorMsg(res.error || 'Credenciales incorrectas');
-      setPinOClave('');
+      setErrorMsg(res.error || 'PIN o clave incorrecta');
+      setShake(true);
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate([40, 80, 40]);
+        } catch {}
+      }
+      setTimeout(() => {
+        setPinOClave('');
+        setShake(false);
+        if (pinInputRef.current) {
+          pinInputRef.current.value = '';
+          pinInputRef.current.focus();
+        }
+      }, 450);
+    }
+  }
+
+  function handlePinKey(num: string) {
+    if (procesando || shake || pinOClave.length >= expectedPinLength) return;
+    const nuevoPin = (pinOClave + num).slice(0, expectedPinLength);
+    setPinOClave(nuevoPin);
+    if (pinInputRef.current) {
+      pinInputRef.current.value = nuevoPin;
+    }
+    // Auto-envío determinista inmediato al ingresar el 4to dígito
+    if (nuevoPin.length === expectedPinLength) {
+      handleLoginPerfil(undefined, nuevoPin);
+    }
+  }
+
+  function handlePinInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (procesando || shake) return;
+    const cleanDigits = e.target.value.replace(/\D/g, '').slice(0, expectedPinLength);
+    setPinOClave(cleanDigits);
+    // Auto-envío determinista inmediato al ingresar el 4to dígito
+    if (cleanDigits.length === expectedPinLength) {
+      handleLoginPerfil(undefined, cleanDigits);
+    }
+  }
+
+  function handlePinBackspace() {
+    if (procesando || shake) return;
+    const nuevoPin = pinOClave.slice(0, -1);
+    setPinOClave(nuevoPin);
+    if (pinInputRef.current) {
+      pinInputRef.current.value = nuevoPin;
+      pinInputRef.current.focus();
+    }
+  }
+
+  function handlePinClear() {
+    if (procesando || shake) return;
+    setPinOClave('');
+    if (pinInputRef.current) {
+      pinInputRef.current.value = '';
+      pinInputRef.current.focus();
     }
   }
 
@@ -127,7 +205,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
             </h2>
             <Link
               href="/register"
-              className="text-xs font-semibold text-terracotta hover:opacity-85 bg-[#ce9b8c]/20 hover:bg-[#ce9b8c]/35 px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="text-xs font-semibold text-terracotta hover:opacity-85 bg-[#ce9b8c]/20 hover:bg-[#ce9b8c]/35 px-3.5 min-h-[44px] rounded-xl transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <UserPlus size={13} strokeWidth={2.2} />
               <span>Registrarse</span>
@@ -150,7 +228,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                       <p className="apple-subhead text-label-secondary">No hay miembros registrados aún en la casa.</p>
                       <Link
                         href="/register"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-terracotta text-white rounded-2xl text-sm font-semibold hover:bg-terracotta-hover transition shadow-md shadow-terracotta/20"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] bg-terracotta text-white rounded-2xl text-sm font-semibold hover:bg-terracotta-hover transition shadow-md shadow-terracotta/20"
                       >
                         <UserPlus size={14} />
                         <span>Registrar Primer Miembro</span>
@@ -189,7 +267,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                         setVista('tradicional');
                         setErrorMsg(null);
                       }}
-                      className="apple-footnote text-label-secondary hover:text-label-primary font-medium text-center transition cursor-pointer flex items-center justify-center gap-1"
+                      className="apple-footnote text-label-secondary hover:text-label-primary font-medium text-center transition cursor-pointer flex items-center justify-center gap-1 min-h-[44px]"
                     >
                       <span>Ingresar con correo y contraseña</span>
                       <ArrowRight size={12} />
@@ -209,7 +287,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                           {miembroSeleccionado.nombre}
                         </h2>
                         <p className="apple-footnote text-label-secondary">
-                          {usarPin ? 'Ingresa tu PIN de 4-6 dígitos' : 'Ingresa tu contraseña'}
+                          {usarPin ? `Ingresa tu PIN de ${expectedPinLength} dígitos` : 'Ingresa tu contraseña'}
                         </p>
                       </div>
                     </div>
@@ -217,69 +295,108 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                     <button
                       type="button"
                       onClick={() => setMiembroSeleccionado(null)}
-                      className="apple-footnote font-semibold text-label-secondary hover:text-label-primary bg-tertiary px-3 py-1.5 rounded-xl transition cursor-pointer"
+                      className="apple-footnote font-semibold text-label-secondary hover:text-label-primary bg-tertiary px-3.5 min-h-[44px] rounded-xl transition cursor-pointer inline-flex items-center"
                     >
                       Cambiar
                     </button>
                   </div>
 
                   {usarPin ? (
-                    /* Teclado Numérico de PIN */
-                    <div className="space-y-4">
-                      <div className="flex justify-center items-center gap-3 h-13 bg-white/70 dark:bg-tertiary/60 border border-separator rounded-2xl shadow-inner">
-                        {[0, 1, 2, 3, 4, 5].slice(0, Math.max(4, pinOClave.length)).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-3.5 h-3.5 rounded-full transition-all duration-200 ${
-                              i < pinOClave.length ? 'bg-terracotta scale-110 shadow-xs' : 'bg-[#DCD3C4] dark:bg-[#4C453E]'
-                            }`}
-                          />
-                        ))}
+                    /* Teclado Numérico de PIN con 4 Casillas Discretas (Apple HIG PinDigitSlots) */
+                    <div className="space-y-5">
+                      <div className={`relative max-w-[270px] mx-auto ${shake ? 'animate-apple-shake' : ''}`}>
+                        {/* Input nativo transparente para soporte óptimo de teclados móviles y físicos */}
+                        <input
+                          ref={pinInputRef}
+                          type="password"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={expectedPinLength}
+                          autoComplete="one-time-code"
+                          value={pinOClave}
+                          onChange={handlePinInputChange}
+                          disabled={procesando}
+                          aria-label="PIN de acceso de 4 dígitos"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+
+                        {/* 4 Casillas Discretas Estilo Apple HIG */}
+                        <div
+                          onClick={() => pinInputRef.current?.focus()}
+                          className="grid grid-cols-4 gap-3 cursor-pointer py-1"
+                        >
+                          {Array.from({ length: expectedPinLength }).map((_, i) => {
+                            const isFilled = i < pinOClave.length;
+                            const isCurrent = i === pinOClave.length;
+                            return (
+                              <div
+                                key={i}
+                                className={`h-15 sm:h-16 rounded-2xl flex items-center justify-center transition-all duration-150 border-2 select-none ${
+                                  shake
+                                    ? 'border-terracotta bg-terracotta/15 text-terracotta'
+                                    : isCurrent
+                                    ? 'border-terracotta ring-4 ring-terracotta/20 bg-secondary shadow-xs scale-102'
+                                    : isFilled
+                                    ? 'border-terracotta/60 bg-secondary shadow-xs'
+                                    : 'border-separator bg-secondary/50 dark:bg-tertiary/40'
+                                }`}
+                              >
+                                {isFilled ? (
+                                  <span className="w-3.5 h-3.5 rounded-full bg-terracotta shadow-xs" />
+                                ) : isCurrent ? (
+                                  <span className="w-1.5 h-5 rounded-full bg-terracotta/70 animate-pulse" />
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
+
+                      {/* Estado visual durante verificación determinista (sin botón redundante) */}
+                      {procesando && (
+                        <div className="flex items-center justify-center gap-2 text-xs font-semibold text-terracotta animate-pulse">
+                          <Loader2 size={15} className="animate-spin" />
+                          <span>Verificando PIN...</span>
+                        </div>
+                      )}
 
                       <div className="grid grid-cols-3 gap-2.5">
                         {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
                           <button
                             key={num}
                             type="button"
+                            disabled={procesando}
                             onClick={() => handlePinKey(num)}
-                            className="h-13 rounded-2xl bg-white/80 dark:bg-secondary hover:bg-white dark:hover:bg-tertiary border border-separator text-lg font-semibold tabular-nums text-label-primary transition shadow-2xs cursor-pointer active:scale-92"
+                            className="h-13 rounded-2xl bg-white/80 dark:bg-secondary hover:bg-white dark:hover:bg-tertiary border border-separator text-lg font-semibold tabular-nums text-label-primary transition shadow-2xs cursor-pointer active:scale-92 disabled:opacity-50"
                           >
                             {num}
                           </button>
                         ))}
                         <button
                           type="button"
+                          disabled={procesando}
                           onClick={handlePinClear}
-                          className="h-13 rounded-2xl bg-tertiary hover:opacity-85 text-xs font-semibold text-label-secondary transition cursor-pointer active:scale-92"
+                          className="h-13 rounded-2xl bg-tertiary hover:opacity-85 text-xs font-semibold text-label-secondary transition cursor-pointer active:scale-92 disabled:opacity-50"
                         >
                           Limpiar
                         </button>
                         <button
                           type="button"
+                          disabled={procesando}
                           onClick={() => handlePinKey('0')}
-                          className="h-13 rounded-2xl bg-white/80 dark:bg-secondary hover:bg-white dark:hover:bg-tertiary border border-separator text-lg font-semibold tabular-nums text-label-primary transition shadow-2xs cursor-pointer active:scale-92"
+                          className="h-13 rounded-2xl bg-white/80 dark:bg-secondary hover:bg-white dark:hover:bg-tertiary border border-separator text-lg font-semibold tabular-nums text-label-primary transition shadow-2xs cursor-pointer active:scale-92 disabled:opacity-50"
                         >
                           0
                         </button>
                         <button
                           type="button"
+                          disabled={procesando}
                           onClick={handlePinBackspace}
-                          className="h-13 rounded-2xl bg-tertiary hover:opacity-85 text-base font-semibold text-label-secondary transition cursor-pointer flex items-center justify-center active:scale-92"
+                          className="h-13 rounded-2xl bg-tertiary hover:opacity-85 text-base font-semibold text-label-secondary transition cursor-pointer flex items-center justify-center active:scale-92 disabled:opacity-50"
                         >
                           <Delete size={18} />
                         </button>
                       </div>
-
-                      <button
-                        type="button"
-                        disabled={procesando || pinOClave.length < 4}
-                        onClick={() => handleLoginPerfil()}
-                        className="w-full py-3.5 bg-terracotta hover:bg-terracotta-hover text-white font-semibold text-sm rounded-2xl transition shadow-lg shadow-terracotta/25 disabled:opacity-50 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
-                      >
-                        <Check size={16} strokeWidth={2.5} />
-                        <span>{procesando ? 'Verificando...' : 'Entrar al Hogar'}</span>
-                      </button>
 
                       <div className="text-center pt-1">
                         <button
@@ -289,7 +406,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                             setPinOClave('');
                             setErrorMsg(null);
                           }}
-                          className="apple-footnote text-label-secondary hover:text-terracotta font-medium underline cursor-pointer"
+                          className="apple-footnote text-label-secondary hover:text-terracotta font-medium underline cursor-pointer min-h-[44px] inline-flex items-center justify-center px-3"
                         >
                           Prefiero ingresar con mi contraseña
                         </button>
@@ -320,7 +437,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                       <button
                         type="submit"
                         disabled={procesando}
-                        className="w-full py-3.5 bg-terracotta hover:bg-terracotta-hover text-white font-semibold text-sm rounded-2xl transition shadow-lg shadow-terracotta/25 disabled:opacity-50 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+                        className="w-full py-3.5 min-h-[44px] bg-terracotta hover:bg-terracotta-hover text-white font-semibold text-sm rounded-2xl transition shadow-lg shadow-terracotta/25 disabled:opacity-50 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
                       >
                         <Check size={16} strokeWidth={2.5} />
                         <span>{procesando ? 'Iniciando sesión...' : 'Entrar al Hogar'}</span>
@@ -335,7 +452,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                               setPinOClave('');
                               setErrorMsg(null);
                             }}
-                            className="apple-footnote text-label-secondary hover:text-terracotta font-medium underline cursor-pointer"
+                            className="apple-footnote text-label-secondary hover:text-terracotta font-medium underline cursor-pointer min-h-[44px] inline-flex items-center justify-center px-3"
                           >
                             Usar PIN rápido
                           </button>

@@ -2,7 +2,20 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
-const connectionString = process.env.DATABASE_URL;
+function getNormalizedConnectionString(): string | undefined {
+  const url = process.env.DATABASE_URL;
+  if (!url) return undefined;
+
+  // Si la URL contiene sslmode=require sin uselibpqcompat, normalizamos a sslmode=verify-full
+  // para evitar la advertencia de depreciación de node-postgres (pg v8/v9) y garantizar SSL seguro.
+  if (url.includes('sslmode=require') && !url.includes('uselibpqcompat=')) {
+    return url.replace('sslmode=require', 'sslmode=verify-full');
+  }
+
+  return url;
+}
+
+const connectionString = getNormalizedConnectionString();
 
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);

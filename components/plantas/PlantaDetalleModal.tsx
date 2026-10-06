@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useOptimistic, startTransition } from 'react';
 import { createPortal } from 'react-dom';
 import { Planta } from './PlantaCard';
-import { getHistorialByPlanta, registrarCuidado } from '@/actions/plantas';
-import { Droplets, Sparkles, Scissors, Leaf, History, X, MapPin, CheckCircle2, User, AlertCircle } from 'lucide-react';
+import { getHistorialByPlanta, registrarCuidado, deshacerCuidado } from '@/actions/plantas';
+import { Droplets, Sparkles, Scissors, Leaf, History, X, MapPin, CheckCircle2, User, AlertCircle, Undo2, Loader2 } from 'lucide-react';
 import WaterProgressRing from '@/components/ui/WaterProgressRing';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import EmptyState from '@/components/ui/EmptyState';
@@ -24,6 +24,17 @@ type RegistroHistorial = {
   tareas_cuidado: { tipo_tarea: string };
 };
 
+type OptimisticAction =
+  | { type: 'CUIDADO'; tipoTarea: string; diasRestantes?: number }
+  | { type: 'DESHACER'; diasRestantes?: number | null };
+
+type UltimoCuidado = {
+  historialId: string;
+  tipoTarea: string;
+  plantaId: string;
+  diasRestantesPrevios?: number | null;
+};
+
 export default function PlantaDetalleModal({
   planta,
   pestanaInicial = 'acciones',
@@ -32,18 +43,56 @@ export default function PlantaDetalleModal({
 }: PlantaDetalleModalProps) {
   const [mounted, setMounted] = useState(false);
   const [pestanaActiva, setPestanaActiva] = useState<'acciones' | 'historial'>(pestanaInicial);
+  const [plantaLocal, setPlantaLocal] = useState<Planta | null>(planta);
   const [historial, setHistorial] = useState<RegistroHistorial[]>([]);
   const [cargandoHistorial, setCargandoHistorial] = useState(false);
   const [procesando, setProcesando] = useState(false);
+  const [deshaciendo, setDeshaciendo] = useState(false);
+  const [ultimoCuidado, setUltimoCuidado] = useState<UltimoCuidado | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Hook nativo de React 19 para actualización instantánea (0ms) del temporizador y anillo
+  const [optimisticPlanta, setOptimisticPlanta] = useOptimistic(
+    plantaLocal || planta,
+    (current: Planta | null, action: OptimisticAction): Planta | null => {
+      if (!current) return current;
+      if (action.type === 'CUIDADO' && action.tipoTarea === 'RIEGO') {
+        return {
+          ...current,
+          diasRestantes: action.diasRestantes ?? current.frecuencia_dias ?? 7,
+        };
+      }
+      if (action.type === 'DESHACER') {
+        return {
+          ...current,
+          diasRestantes: action.diasRestantes !== undefined ? action.diasRestantes : null,
+        };
+      }
+      return current;
+    }
+  );
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
+    setPlantaLocal(planta);
+  }, [planta]);
+
+  useEffect(() => {
     setPestanaActiva(pestanaInicial);
   }, [pestanaInicial]);
+
+  // Temporizador para auto-descartar el botón de deshacer tras 8 segundos
+  useEffect(() => {
+    if (ultimoCuidado) {
+      const timer = setTimeout(() => {
+        setUltimoCuidado(null);
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [ultimoCuidado]);
 
   useEffect(() => {
     if (planta) {
@@ -74,20 +123,133 @@ export default function PlantaDetalleModal({
 
   if (!planta || !mounted) return null;
 
-  async function handleEjecutarCuidado(tipoTarea: string) {
+  const plantaActual = optimisticPlanta || plantaLocal || planta;
+
+  function handleEjecutarCuidado(tipoTarea: string) {
     if (!planta) return;
     setErrorMsg(null);
     setProcesando(true);
 
-    const res = await registrarCuidado(planta.id, tipoTarea);
-    setProcesando(false);
+    const diasPrevios = plantaLocal?.diasRestantes ?? planta.diasRestantes;
 
-    if (res.success) {
-      onSuccess(`¡${tipoTarea} registrado con éxito!`);
-      await cargarHistorial();
-      setPestanaActiva('historial');
-    } else {
-      setErrorMsg(res.error || 'Error al registrar el cuidado');
+    startTransition(async () => {
+      // 1. Estado optimista inmediato: el anillo y contador cambian en 0ms
+      if (tipoTarea === 'RIEGO') {
+        setOptimisticPlanta({
+          type: 'CUIDADO',
+          tipoTarea: 'RIEGO',
+          diasRestantes: (plantaLocal || planta)?.frecuencia_dias ?? 7,
+        });
+      }
+
+      try {
+        const res = await registrarCuidado(planta.id, tipoTarea);
+        if (res.success && res.data) {
+          const meta = (res as any).meta;
+          const nuevoHistorialId = meta?.historialId || res.data.id;
+
+          // Habilitar mecanismo de reversión (Deshacer)
+          setUltimoCuidado({
+            historialId: nuevoHistorialId,
+            tipoTarea,
+            plantaId: planta.id,
+            diasRestantesPrevios: diasPrevios,
+          });
+
+          // Confirmar estado local permanente
+          if (tipoTarea === 'RIEGO') {
+            setPlantaLocal((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    diasRestantes: prev.frecuencia_dias ?? 7,
+                  }
+                : null
+            );
+          }
+          onSuccess(`¡${tipoTarea} registrado con éxito!`);
+          cargarHistorial();
+        } else {
+          setErrorMsg(res.error || 'Error al registrar el cuidado');
+        }
+      } catch (err: any) {
+        setErrorMsg(err?.message || 'Error inesperado al registrar el cuidado');
+      } finally {
+        setProcesando(false);
+      }
+    });
+  }
+
+  function handleDeshacerCuidado() {
+    if (!ultimoCuidado) return;
+    const { historialId, diasRestantesPrevios, tipoTarea } = ultimoCuidado;
+    setErrorMsg(null);
+    setDeshaciendo(true);
+
+    startTransition(async () => {
+      // Reversión optimista inmediata en 0ms
+      if (tipoTarea === 'RIEGO') {
+        setOptimisticPlanta({
+          type: 'DESHACER',
+          diasRestantes: diasRestantesPrevios,
+        });
+      }
+
+      try {
+        const res = await deshacerCuidado(historialId);
+        if (res.success) {
+          if (tipoTarea === 'RIEGO') {
+            setPlantaLocal((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    diasRestantes: diasRestantesPrevios !== undefined ? diasRestantesPrevios : null,
+                  }
+                : null
+            );
+          }
+          setUltimoCuidado(null);
+          onSuccess('Acción de cuidado deshecha');
+          cargarHistorial();
+        } else {
+          setErrorMsg(res.error || 'No se pudo deshacer la acción');
+        }
+      } catch (err: any) {
+        setErrorMsg(err?.message || 'Error al deshacer el cuidado');
+      } finally {
+        setDeshaciendo(false);
+      }
+    });
+  }
+
+  async function handleEliminarItemHistorial(item: RegistroHistorial) {
+    setErrorMsg(null);
+    setProcesando(true);
+    try {
+      const res = await deshacerCuidado(item.id);
+      if (res.success) {
+        onSuccess('Registro eliminado de la bitácora');
+        await cargarHistorial();
+        if (item.tareas_cuidado.tipo_tarea === 'RIEGO') {
+          const nuevaProxima = res.data?.nuevaProximaFecha;
+          if (nuevaProxima) {
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            const prox = new Date(nuevaProxima);
+            prox.setHours(0, 0, 0, 0);
+            const dias = Math.round((prox.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+            setPlantaLocal((prev) => (prev ? { ...prev, diasRestantes: dias } : null));
+          } else {
+            setPlantaLocal((prev) => (prev ? { ...prev, diasRestantes: 0 } : null));
+          }
+        }
+      } else {
+        setErrorMsg(res.error || 'No se pudo eliminar el registro');
+      }
+    } catch {
+      setErrorMsg('Error al eliminar el registro');
+    } finally {
+      setProcesando(false);
     }
   }
 
@@ -98,14 +260,14 @@ export default function PlantaDetalleModal({
 
       <div className="relative glass-modal w-full max-w-lg rounded-[2.5rem] overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col shadow-2xl animate-fade-in-up my-auto border border-white/80 dark:border-white/10">
         
-        {/* Cabecera con Imagen / Gradiente */}
-        <div className="h-48 relative bg-mint/15 dark:bg-tertiary shrink-0">
-          {planta.foto_url ? (
-            <img src={planta.foto_url} alt={planta.nombre_comun} className="w-full h-full object-cover" />
+        {/* Cabecera Compacta tipo Media Header (máximo 120px en móvil conforme a Apple HIG) */}
+        <div className="h-[116px] sm:h-36 relative bg-mint/15 dark:bg-tertiary shrink-0 overflow-hidden">
+          {plantaActual.foto_url ? (
+            <img src={plantaActual.foto_url} alt={plantaActual.nombre_comun} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center bg-mint/20 dark:bg-tertiary">
-              <span className="font-bold text-4xl text-mint">
-                {planta.nombre_comun.slice(0, 2).toUpperCase()}
+              <span className="font-bold text-3xl text-mint">
+                {plantaActual.nombre_comun.slice(0, 2).toUpperCase()}
               </span>
             </div>
           )}
@@ -114,27 +276,28 @@ export default function PlantaDetalleModal({
           <button 
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md text-white/90 hover:text-white hover:bg-black/60 transition flex items-center justify-center cursor-pointer border border-white/20 active:scale-90"
+            aria-label="Cerrar ficha"
+            className="absolute top-3 right-3 w-11 h-11 rounded-full bg-black/40 backdrop-blur-md text-white/90 hover:text-white hover:bg-black/60 transition flex items-center justify-center cursor-pointer border border-white/20 active:scale-90 z-10"
           >
             <X size={16} strokeWidth={2.5} />
           </button>
 
-          <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between text-white">
-            <div className="space-y-0.5 max-w-[280px]">
-              <h2 className="apple-title-3 font-semibold tracking-tight drop-shadow-sm truncate">
-                {planta.nombre_comun}
+          <div className="absolute bottom-2.5 left-4 right-4 flex items-end justify-between text-white z-10">
+            <div className="space-y-0.5 max-w-[240px] sm:max-w-[300px]">
+              <h2 className="apple-headline font-semibold tracking-tight drop-shadow-sm truncate text-white">
+                {plantaActual.nombre_comun}
               </h2>
-              <p className="apple-subhead text-stone-200 flex items-center gap-1 font-normal">
-                <MapPin size={12} className="text-mint" />
-                <span>{planta.ubicacion}</span>
+              <p className="apple-caption-1 text-stone-200 flex items-center gap-1 font-normal truncate">
+                <MapPin size={11} className="text-mint shrink-0" />
+                <span className="truncate">{plantaActual.ubicacion}</span>
               </p>
             </div>
 
             <WaterProgressRing
-              diasRestantes={planta.diasRestantes}
-              frecuenciaDias={planta.frecuencia_dias}
-              size={50}
-              strokeWidth={4}
+              diasRestantes={plantaActual.diasRestantes}
+              frecuenciaDias={plantaActual.frecuencia_dias}
+              size={40}
+              strokeWidth={3.5}
             />
           </div>
         </div>
@@ -171,7 +334,7 @@ export default function PlantaDetalleModal({
         </div>
 
         {/* Contenido Modular con Scroll */}
-        <div className="p-6 overflow-y-auto space-y-4 flex-1">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
           {errorMsg && (
             <div className="p-3.5 bg-terracotta/15 border border-terracotta/30 text-terracotta rounded-2xl flex items-center gap-2.5 text-xs font-semibold animate-fade-in-up">
               <AlertCircle size={16} strokeWidth={2.2} className="shrink-0" />
@@ -179,13 +342,46 @@ export default function PlantaDetalleModal({
             </div>
           )}
 
+          {/* Banner de Deshacer (Undo) Inmediato tras Registro */}
+          {ultimoCuidado && (
+            <div className="p-3 bg-mint/15 dark:bg-mint/10 border border-mint/35 text-mint rounded-2xl flex items-center justify-between gap-3 text-xs font-semibold animate-fade-in-up shadow-xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <CheckCircle2 size={16} className="shrink-0 text-mint" />
+                <span className="truncate">
+                  {ultimoCuidado.tipoTarea === 'RIEGO'
+                    ? 'Riego registrado hoy'
+                    : `${ultimoCuidado.tipoTarea} registrado`}
+                </span>
+              </div>
+              <button
+                type="button"
+                disabled={deshaciendo}
+                onClick={handleDeshacerCuidado}
+                className="px-3.5 py-2 min-h-[44px] min-w-[44px] rounded-xl bg-mint text-white dark:bg-mint dark:text-black hover:opacity-90 active:scale-95 transition-all text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer shadow-xs disabled:opacity-50"
+              >
+                {deshaciendo ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>Deshaciendo...</span>
+                  </>
+                ) : (
+                  <>
+                    <Undo2 size={13} strokeWidth={2.4} />
+                    <span>Deshacer</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
           {pestanaActiva === 'acciones' ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <p className="apple-footnote font-normal text-label-secondary">
-                Selecciona la labor realizada hoy para actualizar el ciclo de cuidado:
+                Registra la labor realizada hoy en 1 toque (zona ergonómica del pulgar):
               </p>
 
-              <div className="grid grid-cols-2 gap-3.5">
+              {/* 4 Acciones de Cuidado en Fila Horizontal Accesible en la Zona del Pulgar */}
+              <div className="grid grid-cols-4 gap-2">
                 {[
                   {
                     label: 'Regar',
@@ -217,12 +413,12 @@ export default function PlantaDetalleModal({
                     <button 
                       key={item.tipo}
                       type="button"
-                      disabled={procesando}
+                      disabled={procesando || deshaciendo}
                       onClick={() => handleEjecutarCuidado(item.tipo)}
-                      className={`min-h-[72px] p-4 rounded-2xl border ${item.color} flex flex-col items-center justify-center gap-2 text-xs transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-2xs`}
+                      className={`min-h-[58px] py-2.5 px-1 rounded-2xl border ${item.color} flex flex-col items-center justify-center gap-1.5 text-[11px] transition-all duration-150 active:scale-95 disabled:opacity-50 cursor-pointer shadow-2xs`}
                     >
-                      <Icon size={22} strokeWidth={2.2} />
-                      <span className="apple-caption-1">{item.label}</span>
+                      <Icon size={19} strokeWidth={2.2} />
+                      <span className="apple-caption-2 font-semibold truncate leading-none">{item.label}</span>
                     </button>
                   );
                 })}
@@ -256,7 +452,7 @@ export default function PlantaDetalleModal({
                   {historial.map((item) => (
                     <div
                       key={item.id}
-                      className="p-3.5 bg-secondary/80 dark:bg-tertiary/60 rounded-2xl border border-separator flex items-start gap-3 shadow-2xs"
+                      className="p-3.5 bg-secondary/80 dark:bg-tertiary/60 rounded-2xl border border-separator flex items-start gap-3 shadow-2xs group"
                     >
                       <div className="w-8 h-8 rounded-xl bg-mint/15 text-mint flex items-center justify-center shrink-0">
                         <CheckCircle2 size={16} strokeWidth={2.2} />
@@ -276,6 +472,16 @@ export default function PlantaDetalleModal({
                           {item.observaciones && <span className="italic">• {item.observaciones}</span>}
                         </p>
                       </div>
+                      <button
+                        type="button"
+                        disabled={procesando || deshaciendo}
+                        onClick={() => handleEliminarItemHistorial(item)}
+                        title="Deshacer este registro de cuidado"
+                        aria-label="Deshacer registro de cuidado"
+                        className="min-w-[44px] min-h-[44px] p-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-terracotta/15 hover:text-terracotta text-label-tertiary transition flex items-center justify-center shrink-0 cursor-pointer opacity-70 group-hover:opacity-100 disabled:opacity-40"
+                      >
+                        <Undo2 size={13} />
+                      </button>
                     </div>
                   ))}
                 </div>

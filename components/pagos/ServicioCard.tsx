@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { ServicioConEstado } from '@/actions/pagos';
 import PullDownMenu from '@/components/ui/PullDownMenu';
 import {
@@ -15,6 +16,9 @@ import {
   Hash,
   ArrowUpRight,
   Repeat,
+  Zap,
+  Check,
+  Loader2,
 } from 'lucide-react';
 
 interface ServicioCardProps {
@@ -23,6 +27,7 @@ interface ServicioCardProps {
   onVerHistorial: (servicio: ServicioConEstado) => void;
   onEdit: (servicio: ServicioConEstado) => void;
   onDelete: (servicio: ServicioConEstado) => void;
+  onQuickPay?: (servicio: ServicioConEstado) => Promise<void> | void;
 }
 
 export default function ServicioCard({
@@ -31,7 +36,21 @@ export default function ServicioCard({
   onVerHistorial,
   onEdit,
   onDelete,
+  onQuickPay,
 }: ServicioCardProps) {
+  const [confirmandoQuickPay, setConfirmandoQuickPay] = useState(false);
+  const [procesandoQuickPay, setProcesandoQuickPay] = useState(false);
+
+  async function handleEjecutarQuickPay() {
+    if (!onQuickPay || procesandoQuickPay) return;
+    setProcesandoQuickPay(true);
+    try {
+      await onQuickPay(servicio);
+    } finally {
+      setProcesandoQuickPay(false);
+      setConfirmandoQuickPay(false);
+    }
+  }
   const fVenc = new Date(servicio.fecha_vencimiento);
   const fechaFormateada = fVenc.toLocaleDateString('es-CO', {
     day: 'numeric',
@@ -78,6 +97,16 @@ export default function ServicioCard({
   const menuGroups = [
     {
       items: [
+        ...(servicio.monto > 0 && onQuickPay
+          ? [
+              {
+                id: 'quick-pay',
+                label: `Pago rápido (${montoFormateado})`,
+                icon: Zap,
+                onClick: () => setConfirmandoQuickPay(true),
+              },
+            ]
+          : []),
         {
           id: 'editar',
           label: 'Editar servicio...',
@@ -192,30 +221,80 @@ export default function ServicioCard({
         </div>
       </div>
 
-      {/* Pie: Acción Primaria de Pago y Recibos */}
-      <div className="pt-2 border-t border-separator flex items-center justify-between gap-2.5">
-        <button
-          type="button"
-          onClick={() => onVerHistorial(servicio)}
-          className="btn-apple-gray text-xs font-semibold px-3 flex items-center gap-1.5"
-        >
-          <History size={14} />
-          <span>Recibos</span>
-        </button>
+      {/* Pie con Altura Estrictamente Bloqueada (Garantía CLS = 0 al confirmar) */}
+      <div className="pt-2 border-t border-separator min-h-[52px] flex items-center">
+        {confirmandoQuickPay ? (
+          <div className="w-full flex items-center justify-between gap-2 bg-[#ce9b8c]/20 dark:bg-terracotta/20 border border-terracotta/30 rounded-xl px-2.5 py-1 animate-fade-in">
+            <span className="text-xs font-semibold text-label-primary truncate flex items-center gap-1.5">
+              <Zap size={13} className="text-terracotta fill-terracotta shrink-0" />
+              <span className="truncate">¿Pagar {montoFormateado}?</span>
+            </span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                disabled={procesandoQuickPay}
+                onClick={handleEjecutarQuickPay}
+                className="btn-apple-filled py-1.5 px-3 text-xs font-bold min-h-[44px] flex items-center gap-1 shadow-xs active:scale-95"
+              >
+                {procesandoQuickPay ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Check size={12} strokeWidth={2.8} />
+                )}
+                <span>Confirmar</span>
+              </button>
+              <button
+                type="button"
+                disabled={procesandoQuickPay}
+                onClick={() => setConfirmandoQuickPay(false)}
+                className="btn-apple-gray py-1.5 px-2.5 text-xs font-medium min-h-[44px] cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => onVerHistorial(servicio)}
+              className="btn-apple-gray text-xs font-semibold px-2.5 py-2 flex items-center gap-1 min-h-[44px]"
+              title="Ver recibos y comprobantes anteriores"
+            >
+              <History size={13} />
+              <span className="hidden sm:inline">Recibos</span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => onRegistrarPago(servicio)}
-          className={`flex-1 ${
-            servicio.estadoVencimiento === 'VENCIDO'
-              ? 'btn-apple-filled'
-              : 'btn-apple-tinted'
-          } text-xs font-semibold flex items-center justify-center gap-2`}
-        >
-          <CreditCard size={15} strokeWidth={2.2} />
-          <span>Registrar pago</span>
-          <ArrowUpRight size={14} strokeWidth={2.2} />
-        </button>
+            {servicio.monto > 0 && onQuickPay && (
+              <button
+                type="button"
+                onClick={() => setConfirmandoQuickPay(true)}
+                className="btn-apple-filled text-xs font-semibold px-3 py-2 flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition min-h-[44px]"
+                title="Pago rápido del monto presupuestado exacto"
+              >
+                <Zap size={13} className="fill-white" />
+                <span>Pago Rápido</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => onRegistrarPago(servicio)}
+              className={`${
+                servicio.monto > 0 && onQuickPay
+                  ? 'btn-apple-tinted px-2.5'
+                  : servicio.estadoVencimiento === 'VENCIDO'
+                  ? 'flex-1 btn-apple-filled'
+                  : 'flex-1 btn-apple-tinted'
+              } text-xs font-semibold py-2 flex items-center justify-center gap-1 min-h-[44px]`}
+              title="Personalizar monto, fecha o adjuntar comprobante"
+            >
+              <CreditCard size={13} strokeWidth={2.2} />
+              <span>{servicio.monto > 0 && onQuickPay ? 'Detalles' : 'Registrar pago'}</span>
+              <ArrowUpRight size={13} strokeWidth={2.2} />
+            </button>
+          </div>
+        )}
       </div>
 
     </div>

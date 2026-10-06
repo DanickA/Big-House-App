@@ -17,6 +17,7 @@ import {
   Receipt,
 } from 'lucide-react';
 import WaterProgressRing from '@/components/ui/WaterProgressRing';
+import FocusActionBanner from '@/components/lobby/FocusActionBanner';
 
 export default async function HomeLobby() {
   const [resumen, session, resServicios, resEventos] = await Promise.all([
@@ -32,7 +33,8 @@ export default async function HomeLobby() {
     month: 'long',
   });
 
-  const plantaUrgente = resumen.plantas.find((p) => p.requiereRiego);
+  const plantasUrgentes = resumen.plantas.filter((p) => p.requiereRiego);
+  const plantaUrgente = plantasUrgentes[0];
   const proximoEvento = resEventos.proximos?.[0];
 
   return (
@@ -57,6 +59,12 @@ export default async function HomeLobby() {
             Resumen activo del hogar y tareas del día.
           </p>
         </header>
+
+        {/* Contenedor Prioritario de Acciones del Día (Focus Action Banner / Carousel) */}
+        <FocusActionBanner
+          initialPlantasUrgentes={plantasUrgentes}
+          cuentasVencidasCount={resServicios.resumen.cuentasVencidas}
+        />
 
         {/* Bento Grid Glassmorphic de 4 Módulos */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

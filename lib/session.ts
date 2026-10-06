@@ -7,13 +7,13 @@ export type SessionPayload = {
   email: string;
 };
 
-const SECRET_KEY = process.env.SESSION_SECRET || 'bighouseapp_secret_key_super_segura_para_hogar_app_2026';
-const key = new TextEncoder().encode(SECRET_KEY);
+import { getAuthSecret } from './auth-secret';
 
 const COOKIE_NAME = 'hogar_session';
 const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 días en ms
 
 export async function encryptSession(payload: SessionPayload): Promise<string> {
+  const key = getAuthSecret();
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -23,6 +23,7 @@ export async function encryptSession(payload: SessionPayload): Promise<string> {
 
 export async function decryptSession(token: string): Promise<SessionPayload | null> {
   try {
+    const key = getAuthSecret();
     const { payload } = await jwtVerify(token, key, {
       algorithms: ['HS256'],
     });

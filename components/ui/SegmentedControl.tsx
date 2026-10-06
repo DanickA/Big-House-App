@@ -54,7 +54,7 @@ export default function SegmentedControl<T extends string | number>({
             } ${
               isSm
                 ? 'py-1.5 px-3 apple-caption-2 min-h-[36px]'
-                : 'py-2 px-3.5 apple-footnote min-h-[40px]'
+                : 'py-2 px-3.5 apple-footnote min-h-[44px]'
             } ${
               isSelected
                 ? 'bg-white dark:bg-secondary text-label-primary shadow-xs font-semibold border border-white/80 dark:border-white/10'

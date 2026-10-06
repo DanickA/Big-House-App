@@ -161,7 +161,7 @@ export default function PlantaFormModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal"
-            className="w-9 h-9 rounded-full bg-tertiary text-label-secondary hover:text-label-primary hover:bg-tertiary-hover transition flex items-center justify-center cursor-pointer border border-separator active:scale-90"
+            className="w-11 h-11 rounded-full bg-tertiary text-label-secondary hover:text-label-primary hover:bg-tertiary-hover transition flex items-center justify-center cursor-pointer border border-separator active:scale-90"
           >
             <X size={16} strokeWidth={2.5} />
           </button>
@@ -252,7 +252,7 @@ export default function PlantaFormModal({
                     type="button"
                     onClick={() => setNombre('')}
                     aria-label="Limpiar nombre"
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-label-tertiary hover:text-label-primary transition"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center text-label-tertiary hover:text-label-primary transition min-w-[44px] min-h-[44px]"
                   >
                     <X size={14} strokeWidth={2.5} />
                   </button>
@@ -290,7 +290,7 @@ export default function PlantaFormModal({
                     key={lugar}
                     type="button"
                     onClick={() => setUbicacion(lugar)}
-                    className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition cursor-pointer active:scale-95 ${
+                    className={`px-3 py-2 min-h-[44px] rounded-xl text-xs font-medium transition cursor-pointer active:scale-95 inline-flex items-center justify-center ${
                       ubicacion === lugar
                         ? 'bg-mint text-white shadow-2xs'
                         : 'bg-tertiary hover:bg-tertiary-hover text-label-secondary border border-separator'
@@ -348,31 +348,37 @@ export default function PlantaFormModal({
                 </div>
               </div>
 
-              {/* Stepper Táctil Apple HIG */}
-              <div className="flex items-center justify-between gap-3 bg-secondary dark:bg-secondary p-2 rounded-2xl border border-separator">
-                <button
-                  type="button"
-                  onClick={handleDecrementarFrecuencia}
-                  aria-label="Disminuir frecuencia de riego"
-                  className="touch-target w-10 h-10 rounded-xl bg-tertiary hover:bg-tertiary-hover text-label-primary flex items-center justify-center transition cursor-pointer active:scale-90"
-                >
-                  <Minus size={16} strokeWidth={2.5} />
-                </button>
-
-                <div className="text-center">
-                  <span className="apple-title-3 font-bold text-label-primary tabular-nums">
+              {/* Selector Continuo Táctil (Frequency Slider Picker con marcas - Apple HIG) */}
+              <div className="bg-secondary/90 dark:bg-secondary p-4 rounded-2xl border border-separator space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="apple-caption-1 font-semibold text-label-secondary">
+                    Intervalo seleccionado:
+                  </span>
+                  <span className="apple-headline font-bold text-mint tabular-nums">
                     Cada {frecuenciaDias} {frecuenciaDias === 1 ? 'día' : 'días'}
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleIncrementarFrecuencia}
-                  aria-label="Aumentar frecuencia de riego"
-                  className="touch-target w-10 h-10 rounded-xl bg-tertiary hover:bg-tertiary-hover text-label-primary flex items-center justify-center transition cursor-pointer active:scale-90"
-                >
-                  <Plus size={16} strokeWidth={2.5} />
-                </button>
+                <div className="relative pt-1 pb-1">
+                  <input
+                    type="range"
+                    min="1"
+                    max="30"
+                    step="1"
+                    value={frecuenciaDias}
+                    onChange={(e) => setFrecuenciaDias(parseInt(e.target.value, 10))}
+                    aria-label="Frecuencia de riego en días"
+                    className="w-full h-2.5 bg-tertiary rounded-lg appearance-none cursor-pointer accent-mint focus:outline-none"
+                  />
+                  {/* Marcas de referencia continua */}
+                  <div className="flex justify-between items-center text-[10px] font-semibold text-label-tertiary pt-2 px-0.5 select-none">
+                    <span onClick={() => setFrecuenciaDias(1)} className="cursor-pointer hover:text-mint">1d</span>
+                    <span onClick={() => setFrecuenciaDias(3)} className="cursor-pointer hover:text-mint">3d</span>
+                    <span onClick={() => setFrecuenciaDias(7)} className="cursor-pointer hover:text-mint font-bold text-mint">7d (Semanal)</span>
+                    <span onClick={() => setFrecuenciaDias(15)} className="cursor-pointer hover:text-mint">15d</span>
+                    <span onClick={() => setFrecuenciaDias(30)} className="cursor-pointer hover:text-mint">30d</span>
+                  </div>
+                </div>
               </div>
 
               {/* Píldoras Rápidas Predefinidas */}
@@ -382,7 +388,7 @@ export default function PlantaFormModal({
                     key={item.dias}
                     type="button"
                     onClick={() => setFrecuenciaDias(item.dias)}
-                    className={`py-2 px-2.5 rounded-xl text-xs font-semibold transition text-center cursor-pointer active:scale-95 ${
+                    className={`py-2.5 px-3 min-h-[44px] rounded-xl text-xs font-semibold transition text-center cursor-pointer active:scale-95 inline-flex items-center justify-center ${
                       frecuenciaDias === item.dias
                         ? 'bg-mint text-white shadow-2xs'
                         : 'bg-tertiary hover:bg-tertiary-hover text-label-secondary border border-separator'
@@ -400,14 +406,14 @@ export default function PlantaFormModal({
                 type="button"
                 onClick={onClose}
                 disabled={procesando}
-                className="flex-1 btn-apple-gray text-sm font-semibold justify-center"
+                className="flex-1 btn-apple-gray text-sm font-semibold justify-center min-h-[44px]"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={procesando}
-                className="flex-1 btn-apple-filled-mint text-sm font-semibold justify-center gap-2"
+                className="flex-1 btn-apple-filled-mint text-sm font-semibold justify-center gap-2 min-h-[44px]"
               >
                 {procesando ? (
                   <>

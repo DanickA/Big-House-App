@@ -10,22 +10,45 @@ export type MiembroSelector = {
   nombre: string;
   email: string;
   tienePin: boolean;
+  pinLongitud: number;
 };
 
 // 1. Obtener lista de miembros para el selector visual de login
 export async function getMiembrosParaSelector(): Promise<{ success: boolean; data: MiembroSelector[] }> {
   try {
-    const usuarios = await prisma.usuarios.findMany({
-      select: {
-        id: true,
-        nombre: true,
-        email: true,
-        pin_hash: true,
-      },
-      orderBy: {
-        nombre: 'asc',
-      },
-    });
+    let usuarios: any[];
+    try {
+      usuarios = await prisma.usuarios.findMany({
+        select: {
+          id: true,
+          nombre: true,
+          email: true,
+          pin_hash: true,
+          pin_longitud: true,
+        },
+        orderBy: {
+          nombre: 'asc',
+        },
+      });
+    } catch (queryErr: any) {
+      // Fallback defensivo si el servidor dev está corriendo con un cliente Prisma en memoria previo a la migración
+      if (queryErr?.message?.includes('pin_longitud')) {
+        const fallbackUsuarios = await prisma.usuarios.findMany({
+          select: {
+            id: true,
+            nombre: true,
+            email: true,
+            pin_hash: true,
+          },
+          orderBy: {
+            nombre: 'asc',
+          },
+        });
+        usuarios = fallbackUsuarios.map((u) => ({ ...u, pin_longitud: 4 }));
+      } else {
+        throw queryErr;
+      }
+    }
 
     return {
       success: true,
@@ -34,6 +57,7 @@ export async function getMiembrosParaSelector(): Promise<{ success: boolean; dat
         nombre: u.nombre,
         email: u.email,
         tienePin: !!u.pin_hash,
+        pinLongitud: u.pin_longitud || 4,
       })),
     };
   } catch (error) {
@@ -73,6 +97,7 @@ export async function registroNuevoMiembro(formData: FormData) {
 
     const password_hash = await bcrypt.hash(password, 10);
     const pin_hash = pin ? await bcrypt.hash(pin, 10) : null;
+    const pin_longitud = pin ? pin.length : null;
 
     const nuevoUsuario = await prisma.usuarios.create({
       data: {
@@ -80,6 +105,7 @@ export async function registroNuevoMiembro(formData: FormData) {
         email,
         password_hash,
         pin_hash,
+        pin_longitud,
       },
     });
 

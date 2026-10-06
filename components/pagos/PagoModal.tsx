@@ -170,19 +170,30 @@ export default function PagoModal({
       setErrorMsg(null);
       setConflictoConcurrencia(null);
       setMostrarFormularioCompleto(!servicio.monto || servicio.monto <= 0);
+    } else {
+      setServicioLocal(null);
+      setErrorMsg(null);
+      setConflictoConcurrencia(null);
     }
   }, [servicio]);
 
   useEffect(() => {
     if (servicio) {
       document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = 'unset';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
     } else {
       document.body.style.overflow = 'unset';
     }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [servicio]);
+  }, [servicio, onClose]);
 
   async function cargarHistorial() {
     if (!servicioActual) return;
@@ -200,7 +211,7 @@ export default function PagoModal({
     }
   }, [servicioActual, pestanaActiva]);
 
-  if (!servicioActual || !mounted) return null;
+  if (!servicio || !servicioActual || !mounted) return null;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -252,8 +263,7 @@ export default function PagoModal({
 
       if (res.success) {
         onSuccess(`¡Pago de "${servicioActual.nombre_servicio}" registrado exitosamente!`);
-        await cargarHistorial();
-        setPestanaActiva('historial');
+        onClose();
       } else if (res.code === 'CONCURRENCY_CYCLE_MISMATCH') {
         // Manejo reactivo de conflicto concurrente: actualizar ciclo y consultar historial
         if (res.proximoVencimiento) {
@@ -312,8 +322,7 @@ export default function PagoModal({
 
       if (res.success) {
         onSuccess(`¡Pago express de "${servicioActual.nombre_servicio}" registrado exitosamente!`);
-        await cargarHistorial();
-        setPestanaActiva('historial');
+        onClose();
       } else if (res.code === 'CONCURRENCY_CYCLE_MISMATCH') {
         if (res.proximoVencimiento) {
           setServicioLocal((prev) =>
@@ -356,11 +365,25 @@ export default function PagoModal({
   });
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-black/65 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-hidden">
+    <div
+      className="fixed inset-0 z-[9999] bg-black/65 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-hidden"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       {/* Clic fuera para cerrar */}
-      <div className="fixed inset-0 -z-10" onClick={onClose} />
+      <div
+        className="absolute inset-0 z-0"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-      <div className="relative glass-modal w-full max-w-xl rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[calc(100vh-3.5rem)] border-t sm:border border-white/80 dark:border-white/10 animate-fade-in-up">
+      <div
+        className="relative z-10 glass-modal w-full max-w-xl rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[calc(100vh-3.5rem)] border-t sm:border border-white/80 dark:border-white/10 animate-fade-in-up"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Asa táctil superior estilo Apple HIG Bottom Sheet */}
         <div className="sm:hidden w-10 h-1.5 bg-separator-opaque rounded-full mx-auto my-2 shrink-0" />
         
@@ -370,12 +393,12 @@ export default function PagoModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal"
-            className="absolute top-4 right-4 sm:right-6 w-11 h-11 rounded-full bg-tertiary text-label-secondary hover:text-label-primary hover:bg-tertiary-hover transition flex items-center justify-center cursor-pointer border border-separator active:scale-90"
+            className="absolute top-4 right-4 sm:right-6 z-20 w-11 h-11 rounded-full bg-tertiary text-label-secondary hover:text-label-primary hover:bg-tertiary-hover transition flex items-center justify-center cursor-pointer border border-separator active:scale-90"
           >
             <X size={16} strokeWidth={2.5} />
           </button>
 
-          <div className="flex items-center gap-3.5 pr-8">
+          <div className="flex items-center gap-3.5 pr-14">
             <div className="w-12 h-12 rounded-2xl bg-terracotta/15 border border-terracotta/30 text-terracotta flex items-center justify-center shadow-2xs shrink-0">
               <Receipt size={24} strokeWidth={2.2} />
             </div>
@@ -773,7 +796,7 @@ export default function PagoModal({
         </div>
 
         {/* Barra de Confirmación Anclada en la Base (Sticky Bottom Bar conforme a Apple HIG) */}
-        {pestanaActiva === 'pago' && (
+        {pestanaActiva === 'pago' ? (
           <div className="sticky bottom-0 bg-secondary/95 backdrop-blur-xl border-t border-separator p-4 sm:p-5 pb-safe z-20 shrink-0 flex gap-3 shadow-lg">
             <button
               type="button"
@@ -842,6 +865,16 @@ export default function PagoModal({
                 Registrar monto
               </button>
             )}
+          </div>
+        ) : (
+          <div className="sticky bottom-0 bg-secondary/95 backdrop-blur-xl border-t border-separator p-4 sm:p-5 pb-safe z-20 shrink-0 flex justify-end shadow-lg">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full sm:w-auto px-6 py-2.5 btn-apple-gray text-sm font-semibold justify-center cursor-pointer min-h-[44px]"
+            >
+              Cerrar
+            </button>
           </div>
         )}
 

@@ -353,6 +353,7 @@ export default function FinanzasView({
         onClose={() => setServicioSeleccionado(null)}
         onSuccess={(msg) => {
           notificarExito(msg);
+          setServicioSeleccionado(null);
           mutate();
         }}
       />

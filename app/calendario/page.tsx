@@ -3,7 +3,8 @@ import { getUsuarios } from '@/actions/usuarios';
 import { getSession } from '@/lib/session';
 import CalendarioView from '@/components/calendario/CalendarioView';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Calendar, Sprout, Receipt } from 'lucide-react';
+import MiniCockpitHUD from '@/components/ui/MiniCockpitHUD';
 
 export default async function CalendarioPage() {
   const hoy = new Date();
@@ -20,6 +21,12 @@ export default async function CalendarioPage() {
 
   const usuarioActualId = session?.userId || miembros[0]?.id || '';
 
+  const totalRiegosMes = initialEventos.filter((e) => e.origen === 'PLANTA').length;
+  const totalServiciosMes = initialEventos.filter((e) => e.origen === 'SERVICIO').length;
+  const totalEventosPropios = initialEventos.filter(
+    (e) => e.origen !== 'PLANTA' && e.origen !== 'SERVICIO'
+  ).length;
+
   // Función de servidor para refrescar meses de forma instantánea
   async function refreshMes(mes: number, anio: number) {
     'use server';
@@ -34,8 +41,7 @@ export default async function CalendarioPage() {
       <div className="ambient-glow-terracotta bottom-[-50px] left-[-50px]" />
 
       <div className="relative z-10 max-w-5xl mx-auto space-y-6 animate-fade-in-up">
-        
-        {/* Enlace de regreso al Lobby */}
+        {/* Enlace de regreso al Lobby y Título */}
         <div>
           <Link
             href="/"
@@ -52,6 +58,30 @@ export default async function CalendarioPage() {
           </p>
         </div>
 
+        {/* Mini-Cockpit HUD de Cabecera */}
+        <MiniCockpitHUD
+          metrics={[
+            {
+              label: 'citas y eventos propios',
+              value: totalEventosPropios,
+              icon: 'calendar',
+              color: 'brand-deep',
+            },
+            {
+              label: 'riegos programados este mes',
+              value: totalRiegosMes,
+              icon: 'sprout',
+              color: 'mint',
+            },
+            {
+              label: 'vencimientos de servicios',
+              value: totalServiciosMes,
+              icon: 'receipt',
+              color: 'terracotta',
+            },
+          ]}
+        />
+
         {/* Vista Interactiva del Calendario */}
         <CalendarioView
           initialEventos={initialEventos}
@@ -59,7 +89,6 @@ export default async function CalendarioPage() {
           usuarioActualId={usuarioActualId}
           onRefresh={refreshMes}
         />
-
       </div>
     </div>
   );

@@ -22,7 +22,9 @@ import {
   CheckCircle2,
   User,
   AlertCircle,
+  Users,
 } from 'lucide-react';
+import MiniCockpitHUD from '@/components/ui/MiniCockpitHUD';
 
 interface UsuariosViewProps {
   initialUsuarios: UsuarioItem[];
@@ -129,6 +131,30 @@ export default function UsuariosView({ initialUsuarios }: UsuariosViewProps) {
             <span>Agregar miembro</span>
           </button>
         </div>
+
+        {/* Mini-Cockpit HUD de Cabecera */}
+        <MiniCockpitHUD
+          metrics={[
+            {
+              label: usuarios.length === 1 ? 'habitante del hogar' : 'habitantes del hogar',
+              value: usuarios.length,
+              icon: 'users',
+              color: 'sand',
+            },
+            {
+              label: 'con acceso PIN activo',
+              value: usuarios.filter((u) => u.tienePin).length,
+              icon: 'key',
+              color: 'mint',
+            },
+            {
+              label: 'con acceso tradicional',
+              value: usuarios.filter((u) => !u.tienePin).length,
+              icon: 'shield',
+              color: 'sand',
+            },
+          ]}
+        />
 
         {/* Listado de Tarjetas de Miembros */}
         {usuarios.length === 0 ? (

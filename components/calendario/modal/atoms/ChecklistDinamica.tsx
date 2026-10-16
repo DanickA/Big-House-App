@@ -78,7 +78,7 @@ export default function ChecklistDinamica({
       } else {
         itemsParseados.forEach((item) => onAddItem(item));
       }
-      mostrarFeedback(`✨ Se agregaron ${itemsParseados.length} ${tipoItemPlural}`);
+      mostrarFeedback(`Se agregaron ${itemsParseados.length} ${tipoItemPlural}`);
     } else if (itemsParseados.length === 1) {
       onAddItem(itemsParseados[0]);
     }
@@ -103,7 +103,7 @@ export default function ChecklistDinamica({
         itemsDetectados.forEach((item) => onAddItem(item));
       }
       setNuevoTexto('');
-      mostrarFeedback(`✨ Se importaron ${itemsDetectados.length} ${tipoItemPlural}`);
+      mostrarFeedback(`Se importaron ${itemsDetectados.length} ${tipoItemPlural}`);
       requestAnimationFrame(() => {
         inputRef.current?.focus();
       });
@@ -121,7 +121,7 @@ export default function ChecklistDinamica({
       }
       setTextoMasivo('');
       setModoPegadoMasivo(false);
-      mostrarFeedback(`✨ Se importaron ${itemsDetectados.length} ${tipoItemPlural}`);
+      mostrarFeedback(`Se importaron ${itemsDetectados.length} ${tipoItemPlural}`);
       requestAnimationFrame(() => {
         inputRef.current?.focus();
       });

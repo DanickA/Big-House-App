@@ -398,7 +398,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                         </button>
                       </div>
 
-                      <div className="text-center pt-1">
+                      <div className="text-center pt-1 flex flex-col items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => {
@@ -409,6 +409,18 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                           className="apple-footnote text-label-secondary hover:text-terracotta font-medium underline cursor-pointer min-h-[44px] inline-flex items-center justify-center px-3"
                         >
                           Prefiero ingresar con mi contraseña
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMiembroSeleccionado(null);
+                            setVista('tradicional');
+                            setErrorMsg(null);
+                          }}
+                          className="apple-caption-1 text-label-tertiary hover:text-label-primary font-medium cursor-pointer min-h-[44px] inline-flex items-center justify-center gap-1 px-3"
+                        >
+                          <span>Ingresar con correo y contraseña</span>
+                          <ArrowRight size={11} />
                         </button>
                       </div>
                     </div>
@@ -443,8 +455,8 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                         <span>{procesando ? 'Iniciando sesión...' : 'Entrar al Hogar'}</span>
                       </button>
 
-                      {miembroSeleccionado.tienePin && (
-                        <div className="text-center pt-1">
+                      <div className="text-center pt-1 flex flex-col items-center gap-1.5">
+                        {miembroSeleccionado.tienePin && (
                           <button
                             type="button"
                             onClick={() => {
@@ -456,8 +468,20 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                           >
                             Usar PIN rápido
                           </button>
-                        </div>
-                      )}
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMiembroSeleccionado(null);
+                            setVista('tradicional');
+                            setErrorMsg(null);
+                          }}
+                          className="apple-caption-1 text-label-tertiary hover:text-label-primary font-medium cursor-pointer min-h-[44px] inline-flex items-center justify-center gap-1 px-3"
+                        >
+                          <span>Ingresar con correo y contraseña</span>
+                          <ArrowRight size={11} />
+                        </button>
+                      </div>
                     </form>
                   )}
                 </div>
@@ -518,6 +542,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                   type="button"
                   onClick={() => {
                     setVista('selector');
+                    setMiembroSeleccionado(null);
                     setErrorMsg(null);
                   }}
                   className="apple-footnote text-label-secondary hover:text-terracotta font-medium cursor-pointer"

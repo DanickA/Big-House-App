@@ -1,71 +1,39 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { resolveSessionUser } from '@/lib/auth-guard';
-import { uploadComprobante } from '@/lib/storage';
+import { toActionResponse, calcularProximaFechaVencimientoPura } from '@/modules/shared';
+import {
+  GetServiciosUseCase,
+  CreateServicioUseCase,
+  UpdateServicioUseCase,
+  DeleteServicioUseCase,
+  GetHistorialPagosUseCase,
+  RegistrarPagoServicioUseCase,
+  ServicioConEstado,
+  ResumenServicios,
+  EstadoVencimiento,
+} from '@/modules/finanzas';
 
-export type EstadoVencimiento = 'VENCIDO' | 'POR_VENCER' | 'AL_DIA' | 'PAGADO';
+export type { EstadoVencimiento, ServicioConEstado, ResumenServicios };
 
-export type ServicioConEstado = {
-  id: string;
-  nombre_servicio: string;
-  numero_cuenta: string | null;
-  numero_factura: string | null;
-  monto: number;
-  fecha_vencimiento: string; // ISO string
-  estado: string;
-  periodicidad_meses: number;
-  dia_vencimiento: number | null;
-  diasRestantes: number;
-  estadoVencimiento: EstadoVencimiento;
-  ultimoPago?: {
-    fecha_pago: string;
-    monto_pagado: number;
-    comprobante_url: string | null;
-  } | null;
-};
-
-export type ResumenServicios = {
-  totalServicios: number;
-  totalPresupuestoMensual: number;
-  totalProximosVencimientos: number;
-  cuentasVencidas: number;
-  cuentasPorVencer: number;
-  cuentasAlDia: number;
-};
+const getServiciosUC = new GetServiciosUseCase();
+const createServicioUC = new CreateServicioUseCase();
+const updateServicioUC = new UpdateServicioUseCase();
+const deleteServicioUC = new DeleteServicioUseCase();
+const getHistorialPagosUC = new GetHistorialPagosUseCase();
+const registrarPagoServicioUC = new RegistrarPagoServicioUseCase();
 
 /**
  * Calcula la próxima fecha de vencimiento después de registrar un pago.
- * Regla de negocio:
- * 1. Fecha base: Tomamos la fecha del pago realizado (o fecha actual).
- * 2. Avance del ciclo: Sumamos la cantidad de periodicidad_meses.
- * 3. Ajuste de corte: Si el servicio tiene un dia_vencimiento fijado, se fija ese día
- *    específico en el mes resultante (protegiendo meses más cortos como febrero o meses de 30 días).
+ * Preservado con async para compatibilidad con llamadas existentes desde Server Actions o tests.
  */
 export async function calcularProximaFechaVencimiento(
   fechaPago: Date,
   periodicidadMeses: number = 1,
   diaVencimiento?: number | null
 ): Promise<Date> {
-  const meses = Math.max(1, periodicidadMeses || 1);
-  const base = new Date(fechaPago);
-  base.setHours(0, 0, 0, 0);
-
-  const targetYear = base.getFullYear();
-  const targetMonth = base.getMonth() + meses;
-
-  // Si tiene un día de vencimiento asignado, usarlo; de lo contrario el día de la fecha de pago
-  const diaDeseado =
-    diaVencimiento && diaVencimiento >= 1 && diaVencimiento <= 31
-      ? diaVencimiento
-      : base.getDate();
-
-  // Obtener el último día del mes destino para evitar desbordamientos
-  const ultimoDiaMesDestino = new Date(targetYear, targetMonth + 1, 0).getDate();
-  const diaFinal = Math.min(diaDeseado, ultimoDiaMesDestino);
-
-  return new Date(targetYear, targetMonth, diaFinal);
+  return calcularProximaFechaVencimientoPura(fechaPago, periodicidadMeses, diaVencimiento);
 }
 
 // 1. Obtener todos los servicios con cálculo dinámico de días y badges de estado
@@ -75,97 +43,8 @@ export async function getServicios(): Promise<{
   resumen: ResumenServicios;
   error?: string;
 }> {
-  try {
-    const rawServicios = await prisma.servicios.findMany({
-      include: {
-        pagos_servicios: {
-          orderBy: { fecha_pago: 'desc' },
-          take: 1,
-        },
-      },
-      orderBy: {
-        fecha_vencimiento: 'asc',
-      },
-    });
-
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-
-    let totalPresupuestoMensual = 0;
-    let totalProximosVencimientos = 0;
-    let cuentasVencidas = 0;
-    let cuentasPorVencer = 0;
-    let cuentasAlDia = 0;
-
-    const servicios: ServicioConEstado[] = rawServicios.map((s) => {
-      const montoNum = Number(s.monto);
-      const periodicidad = s.periodicidad_meses || 1;
-
-      // Normalizar costo mensual equivalente
-      totalPresupuestoMensual += montoNum / periodicidad;
-      totalProximosVencimientos += montoNum;
-
-      const fVenc = new Date(s.fecha_vencimiento);
-      fVenc.setHours(0, 0, 0, 0);
-
-      const diffTime = fVenc.getTime() - hoy.getTime();
-      const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      let estadoVencimiento: EstadoVencimiento = 'AL_DIA';
-      if (s.estado === 'PAGADO') {
-        estadoVencimiento = 'PAGADO';
-      } else if (diasRestantes < 0) {
-        estadoVencimiento = 'VENCIDO';
-        cuentasVencidas++;
-      } else if (diasRestantes <= 4) {
-        estadoVencimiento = 'POR_VENCER';
-        cuentasPorVencer++;
-      } else {
-        estadoVencimiento = 'AL_DIA';
-        cuentasAlDia++;
-      }
-
-      const ultimoPagoRaw = s.pagos_servicios[0];
-      const ultimoPago = ultimoPagoRaw
-        ? {
-            fecha_pago: (ultimoPagoRaw.fecha_pago || new Date()).toISOString(),
-            monto_pagado: Number(ultimoPagoRaw.monto_pagado),
-            comprobante_url: ultimoPagoRaw.comprobante_url,
-          }
-        : null;
-
-      return {
-        id: s.id,
-        nombre_servicio: s.nombre_servicio,
-        numero_cuenta: s.numero_cuenta,
-        numero_factura: s.numero_factura,
-        monto: montoNum,
-        fecha_vencimiento: fVenc.toISOString(),
-        estado: s.estado,
-        periodicidad_meses: periodicidad,
-        dia_vencimiento: s.dia_vencimiento,
-        diasRestantes,
-        estadoVencimiento,
-        ultimoPago,
-      };
-    });
-
-    const resumen: ResumenServicios = {
-      totalServicios: servicios.length,
-      totalPresupuestoMensual: Math.round(totalPresupuestoMensual * 100) / 100,
-      totalProximosVencimientos: Math.round(totalProximosVencimientos * 100) / 100,
-      cuentasVencidas,
-      cuentasPorVencer,
-      cuentasAlDia,
-    };
-
-    return {
-      success: true,
-      servicios,
-      resumen,
-    };
-  } catch (error: any) {
-    console.error('Error al obtener servicios:', error);
+  const result = await getServiciosUC.execute();
+  if (!result.success) {
     return {
       success: false,
       servicios: [],
@@ -177,384 +56,146 @@ export async function getServicios(): Promise<{
         cuentasPorVencer: 0,
         cuentasAlDia: 0,
       },
-      error: error?.message || 'No se pudieron obtener los servicios',
+      error: result.error.message,
     };
   }
+  return {
+    success: true,
+    servicios: result.data.servicios,
+    resumen: result.data.resumen,
+  };
 }
 
 // 2. Registrar un nuevo servicio recurrente
 export async function createServicio(formData: FormData) {
-  try {
-    const auth = await resolveSessionUser();
-    if (!auth.ok) {
-      return { success: false, error: auth.error, code: auth.code };
-    }
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
 
-    const nombre_servicio = (formData.get('nombre_servicio') as string)?.trim();
-    const montoRaw = formData.get('monto') as string;
-    const fecha_vencimiento_raw = formData.get('fecha_vencimiento') as string;
-    const periodicidad_meses = parseInt((formData.get('periodicidad_meses') as string) || '1', 10);
-    const numero_cuenta = (formData.get('numero_cuenta') as string)?.trim() || null;
-    const numero_factura = (formData.get('numero_factura') as string)?.trim() || null;
-    const dia_vencimiento_raw = formData.get('dia_vencimiento') as string;
+  const nombre_servicio = formData.get('nombre_servicio') as string;
+  const monto = parseFloat(formData.get('monto') as string);
+  const fecha_vencimiento_raw = formData.get('fecha_vencimiento') as string;
+  const periodicidad_meses = parseInt((formData.get('periodicidad_meses') as string) || '1', 10);
+  const numero_cuenta = formData.get('numero_cuenta') as string | null;
+  const numero_factura = formData.get('numero_factura') as string | null;
+  const dia_vencimiento_raw = formData.get('dia_vencimiento') as string | null;
 
-    if (!nombre_servicio) {
-      return { success: false, error: 'El nombre del servicio es obligatorio' };
-    }
+  const result = await createServicioUC.execute({
+    nombre_servicio,
+    monto,
+    fecha_vencimiento_raw,
+    periodicidad_meses,
+    numero_cuenta,
+    numero_factura,
+    dia_vencimiento_raw,
+  });
 
-    const monto = parseFloat(montoRaw);
-    if (isNaN(monto) || monto <= 0) {
-      return { success: false, error: 'Ingresa un monto válido mayor a 0' };
-    }
-
-    if (!fecha_vencimiento_raw) {
-      return { success: false, error: 'Selecciona una fecha de vencimiento inicial' };
-    }
-
-    const [year, month, day] = fecha_vencimiento_raw.split('-').map(Number);
-    const fecha_vencimiento = new Date(year, month - 1, day);
-    fecha_vencimiento.setHours(0, 0, 0, 0);
-
-    let dia_vencimiento = dia_vencimiento_raw ? parseInt(dia_vencimiento_raw, 10) : day;
-    if (isNaN(dia_vencimiento) || dia_vencimiento < 1 || dia_vencimiento > 31) {
-      dia_vencimiento = day;
-    }
-
-    const nuevoServicio = await prisma.servicios.create({
-      data: {
-        nombre_servicio,
-        monto,
-        fecha_vencimiento,
-        periodicidad_meses: isNaN(periodicidad_meses) || periodicidad_meses < 1 ? 1 : periodicidad_meses,
-        dia_vencimiento,
-        numero_cuenta,
-        numero_factura,
-        estado: 'PENDIENTE',
-      },
-    });
-
+  if (result.success) {
     revalidatePath('/finanzas');
     revalidatePath('/servicios');
     revalidatePath('/');
-
-    return { success: true, data: nuevoServicio };
-  } catch (error: any) {
-    console.error('Error al crear servicio:', error);
-    return { success: false, error: error?.message || 'No se pudo crear el servicio' };
   }
+
+  return toActionResponse(result);
 }
 
-// 3. Registrar Pago con Transacción Atómica (prisma.$transaction)
-export async function registrarPagoServicio(formData: FormData) {
-  try {
-    const servicio_id = formData.get('servicio_id') as string;
-    const monto_pagado_raw = formData.get('monto_pagado') as string;
-    const fecha_pago_raw = formData.get('fecha_pago') as string;
-    const observaciones = (formData.get('observaciones') as string)?.trim() || null;
-    const comprobanteFile = formData.get('comprobante') as File | null;
-    const fecha_vencimiento_esperada = formData.get('fecha_vencimiento_esperada') as string | null;
+export type RegistrarPagoResponse = {
+  success: boolean;
+  data?: { pagoId: string; proximoVencimiento: string };
+  error?: string;
+  code?: string;
+  proximoVencimiento?: string;
+  estado?: string;
+};
 
-    if (!servicio_id) {
-      return { success: false, error: 'Identificador del servicio requerido' };
-    }
+// 3. Registrar Pago con Transacción Atómica
+export async function registrarPagoServicio(formData: FormData): Promise<RegistrarPagoResponse> {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
 
-    const monto_pagado = parseFloat(monto_pagado_raw);
-    if (isNaN(monto_pagado) || monto_pagado <= 0) {
-      return { success: false, error: 'Ingresa un monto pagado válido' };
-    }
+  const servicio_id = formData.get('servicio_id') as string;
+  const monto_pagado = parseFloat(formData.get('monto_pagado') as string);
+  const fecha_pago_raw = formData.get('fecha_pago') as string | null;
+  const observaciones = formData.get('observaciones') as string | null;
+  const comprobanteFile = formData.get('comprobante') as File | null;
+  const fecha_vencimiento_esperada = formData.get('fecha_vencimiento_esperada') as string | null;
 
-    // Resolver usuario activo exclusivamente desde la sesión firmada (sin fallback)
-    const auth = await resolveSessionUser();
-    if (!auth.ok) {
-      return { success: false, error: auth.error, code: auth.code };
-    }
-    const usuario_id = auth.user.userId;
+  const result = await registrarPagoServicioUC.execute({
+    servicio_id,
+    monto_pagado,
+    usuario_id: auth.user.userId,
+    fecha_pago_raw,
+    observaciones,
+    comprobanteFile,
+    fecha_vencimiento_esperada,
+  });
 
-    // Procesar fecha de pago
-    let fecha_pago: Date;
-    if (fecha_pago_raw) {
-      const [y, m, d] = fecha_pago_raw.split('-').map(Number);
-      fecha_pago = new Date(y, m - 1, d);
-    } else {
-      fecha_pago = new Date();
-    }
-    fecha_pago.setHours(12, 0, 0, 0);
-
-    // Subir comprobante (a Cloudinary o local en public/uploads/comprobantes) si existe
-    let comprobante_url: string | null = null;
-    if (comprobanteFile && comprobanteFile.size > 0) {
-      try {
-        comprobante_url = await uploadComprobante(comprobanteFile);
-      } catch (uploadErr: any) {
-        console.error('Error al subir comprobante:', uploadErr);
-        return {
-          success: false,
-          error: `Error al subir el comprobante (${uploadErr?.message || 'Error de almacenamiento'}). Verifica la configuración de Cloudinary.`,
-        };
-      }
-    }
-
-    // Ejecutar Transacción Atómica con Control de Concurrencia Pesimista (FOR UPDATE)
-    const resultadoTransaccion = await prisma.$transaction(async (tx) => {
-      // 1. Obtener y bloquear la fila del servicio (Pessimistic Locking: SELECT ... FOR UPDATE)
-      // Bloquea exclusivamente la fila del servicio en PostgreSQL para que peticiones concurrentes
-      // esperen a que esta transacción haga commit o rollback, impidiendo salidas dobles en gastos.
-      const serviciosBloqueados = await tx.$queryRaw<Array<{
-        id: string;
-        nombre_servicio: string;
-        fecha_vencimiento: Date;
-        periodicidad_meses: number | null;
-        dia_vencimiento: number | null;
-        estado: string;
-      }>>`
-        SELECT id, nombre_servicio, fecha_vencimiento, periodicidad_meses, dia_vencimiento, estado
-        FROM servicios
-        WHERE id = ${servicio_id}::uuid
-        FOR UPDATE
-      `;
-
-      const servicio = serviciosBloqueados[0];
-
-      if (!servicio) {
-        throw new Error('El servicio especificado no existe');
-      }
-
-      // 2. Control de Concurrencia Optimista por Ciclo de Factura:
-      // Si el cliente envió la fecha que estaba visualizando al confirmar el pago,
-      // comprobamos que coincida para asegurar que nadie pagó este mismo ciclo segundos antes.
-      if (fecha_vencimiento_esperada) {
-        const fechaEsperada = new Date(fecha_vencimiento_esperada);
-        const fechaActual = new Date(servicio.fecha_vencimiento);
-        const ymdEsperada = `${fechaEsperada.getUTCFullYear()}-${fechaEsperada.getUTCMonth()}-${fechaEsperada.getUTCDate()}`;
-        const ymdActual = `${fechaActual.getUTCFullYear()}-${fechaActual.getUTCMonth()}-${fechaActual.getUTCDate()}`;
-
-        if (ymdEsperada !== ymdActual) {
-          const err = new Error(
-            `Esta factura ya fue pagada o actualizada por otro habitante. El próximo vencimiento actual es el ${fechaActual.toLocaleDateString('es-CO')}.`
-          );
-          (err as any).code = 'CONCURRENCY_CYCLE_MISMATCH';
-          (err as any).proximoVencimiento = servicio.fecha_vencimiento.toISOString();
-          (err as any).estado = servicio.estado;
-          throw err;
-        }
-      }
-
-      // 3. Ventana de Idempotencia Anti-Doble Clic (60 segundos):
-      const unMinutoAtras = new Date(Date.now() - 60 * 1000);
-      const pagoDuplicado = await tx.pagos_servicios.findFirst({
-        where: {
-          servicio_id,
-          monto_pagado,
-          fecha_pago: {
-            gte: unMinutoAtras,
-          },
-        },
-      });
-
-      if (pagoDuplicado) {
-        const err = new Error(
-          'Ya se procesó un pago reciente con el mismo monto para este servicio. Por favor verifica el historial para evitar duplicados.'
-        );
-        (err as any).code = 'IDEMPOTENCY_DUPLICATE';
-        throw err;
-      }
-
-      // 4. Insertar en pagos_servicios
-      const nuevoPago = await tx.pagos_servicios.create({
-        data: {
-          servicio_id,
-          usuario_id,
-          monto_pagado,
-          fecha_pago,
-          comprobante_url,
-          observaciones,
-        },
-      });
-
-      // 5. Insertar en gastos (reflejar salida global en categoría 'SERVICIOS')
-      const descripcionGasto = observaciones
-        ? `Pago ${servicio.nombre_servicio}: ${observaciones}`
-        : `Pago de servicio: ${servicio.nombre_servicio}`;
-
-      await tx.gastos.create({
-        data: {
-          descripcion: descripcionGasto.slice(0, 200),
-          monto: monto_pagado,
-          fecha: fecha_pago,
-          categoria: 'SERVICIOS',
-          usuario_id,
-          servicio_id,
-        },
-      });
-
-      // 6. Calcular nueva fecha de vencimiento
-      // Regla: Fecha base = fecha de este pago, suma periodicidad_meses, ajusta a dia_vencimiento
-      const periodicidad = servicio.periodicidad_meses || 1;
-      const diaVenc = servicio.dia_vencimiento;
-      const nuevaFechaVencimiento = await calcularProximaFechaVencimiento(
-        fecha_pago,
-        periodicidad,
-        diaVenc
-      );
-
-      // 7. Actualizar servicios con la nueva fecha y dejar el ciclo listo en 'PENDIENTE'
-      const servicioActualizado = await tx.servicios.update({
-        where: { id: servicio_id },
-        data: {
-          fecha_vencimiento: nuevaFechaVencimiento,
-          estado: 'PENDIENTE',
-        },
-      });
-
-      return {
-        pago: nuevoPago,
-        servicio: servicioActualizado,
-      };
-    });
-
+  if (result.success) {
     revalidatePath('/finanzas');
     revalidatePath('/servicios');
     revalidatePath('/');
-
-    return {
-      success: true,
-      data: {
-        pagoId: resultadoTransaccion.pago.id,
-        proximoVencimiento: resultadoTransaccion.servicio.fecha_vencimiento.toISOString(),
-      },
-    };
-  } catch (error: any) {
-    console.error('Error en registrarPagoServicio:', error);
-    return {
-      success: false,
-      code: error?.code || 'PAYMENT_FAILED',
-      error: error?.message || 'Error al procesar la transacción de pago',
-      proximoVencimiento: error?.proximoVencimiento as string | undefined,
-      estado: error?.estado as string | undefined,
-    };
   }
+
+  return toActionResponse(result) as RegistrarPagoResponse;
 }
 
 // 4. Obtener Historial Cronológico de Pagos de un Servicio
 export async function getHistorialPagos(servicioId: string) {
-  try {
-    const historial = await prisma.pagos_servicios.findMany({
-      where: { servicio_id: servicioId },
-      include: {
-        usuarios: {
-          select: {
-            id: true,
-            nombre: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        fecha_pago: 'desc',
-      },
-    });
-
-    const pagosSerializados = historial.map((p) => ({
-      id: p.id,
-      monto_pagado: Number(p.monto_pagado),
-      fecha_pago: (p.fecha_pago || new Date()).toISOString(),
-      comprobante_url: p.comprobante_url,
-      observaciones: p.observaciones,
-      usuario: {
-        nombre: p.usuarios.nombre,
-        email: p.usuarios.email,
-      },
-    }));
-
-    return { success: true, data: pagosSerializados };
-  } catch (error: any) {
-    console.error('Error al obtener historial de pagos:', error);
-    return { success: false, error: 'No se pudo cargar el historial de pagos', data: [] };
-  }
+  const result = await getHistorialPagosUC.execute(servicioId);
+  return toActionResponse(result);
 }
 
 // 5. Actualizar un Servicio
 export async function updateServicio(servicioId: string, formData: FormData) {
-  try {
-    const auth = await resolveSessionUser();
-    if (!auth.ok) {
-      return { success: false, error: auth.error, code: auth.code };
-    }
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
 
-    const nombre_servicio = (formData.get('nombre_servicio') as string)?.trim();
-    const montoRaw = formData.get('monto') as string;
-    const periodicidad_meses = parseInt((formData.get('periodicidad_meses') as string) || '1', 10);
-    const numero_cuenta = (formData.get('numero_cuenta') as string)?.trim() || null;
-    const numero_factura = (formData.get('numero_factura') as string)?.trim() || null;
-    const dia_vencimiento_raw = formData.get('dia_vencimiento') as string;
-    const fecha_vencimiento_raw = formData.get('fecha_vencimiento') as string;
+  const nombre_servicio = formData.get('nombre_servicio') as string;
+  const monto = parseFloat(formData.get('monto') as string);
+  const periodicidad_meses = parseInt((formData.get('periodicidad_meses') as string) || '1', 10);
+  const numero_cuenta = formData.get('numero_cuenta') as string | null;
+  const numero_factura = formData.get('numero_factura') as string | null;
+  const dia_vencimiento_raw = formData.get('dia_vencimiento') as string | null;
+  const fecha_vencimiento_raw = formData.get('fecha_vencimiento') as string | null;
 
-    if (!nombre_servicio) {
-      return { success: false, error: 'El nombre es obligatorio' };
-    }
+  const result = await updateServicioUC.execute({
+    id: servicioId,
+    nombre_servicio,
+    monto,
+    periodicidad_meses,
+    numero_cuenta,
+    numero_factura,
+    dia_vencimiento_raw,
+    fecha_vencimiento_raw,
+  });
 
-    const monto = parseFloat(montoRaw);
-    if (isNaN(monto) || monto <= 0) {
-      return { success: false, error: 'Monto inválido' };
-    }
-
-    const dataToUpdate: any = {
-      nombre_servicio,
-      monto,
-      periodicidad_meses: isNaN(periodicidad_meses) || periodicidad_meses < 1 ? 1 : periodicidad_meses,
-      numero_cuenta,
-      numero_factura,
-    };
-
-    if (dia_vencimiento_raw) {
-      const dv = parseInt(dia_vencimiento_raw, 10);
-      if (!isNaN(dv) && dv >= 1 && dv <= 31) {
-        dataToUpdate.dia_vencimiento = dv;
-      }
-    }
-
-    if (fecha_vencimiento_raw) {
-      const [y, m, d] = fecha_vencimiento_raw.split('-').map(Number);
-      const fv = new Date(y, m - 1, d);
-      fv.setHours(0, 0, 0, 0);
-      dataToUpdate.fecha_vencimiento = fv;
-    }
-
-    const servicioActualizado = await prisma.servicios.update({
-      where: { id: servicioId },
-      data: dataToUpdate,
-    });
-
+  if (result.success) {
     revalidatePath('/finanzas');
     revalidatePath('/servicios');
     revalidatePath('/');
-
-    return { success: true, data: servicioActualizado };
-  } catch (error: any) {
-    console.error('Error al actualizar servicio:', error);
-    return { success: false, error: 'No se pudo actualizar el servicio' };
   }
+
+  return toActionResponse(result);
 }
 
 // 6. Eliminar un Servicio
 export async function deleteServicio(servicioId: string) {
-  try {
-    const auth = await resolveSessionUser();
-    if (!auth.ok) {
-      return { success: false, error: auth.error, code: auth.code };
-    }
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
 
-    await prisma.servicios.delete({
-      where: { id: servicioId },
-    });
-
+  const result = await deleteServicioUC.execute(servicioId);
+  if (result.success) {
     revalidatePath('/finanzas');
     revalidatePath('/servicios');
     revalidatePath('/');
-
-    return { success: true };
-  } catch (error: any) {
-    console.error('Error al eliminar servicio:', error);
-    return { success: false, error: 'No se pudo eliminar el servicio' };
   }
+
+  return toActionResponse(result);
 }

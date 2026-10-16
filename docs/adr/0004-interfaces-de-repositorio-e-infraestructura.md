@@ -1,0 +1,3 @@
+# Aislamiento de Persistencia con Interfaces de Repositorio
+
+El acceso a la base de datos se realizaba mediante consultas directas a Prisma dentro de las funciones de acción, acoplando la lógica de negocio a la API del ORM y requiriendo mocks complejos en pruebas automatizadas. Decidimos definir interfaces de repositorio (`IRepository`) en la capa de dominio/aplicación e implementar adaptadores concretos con Prisma en la capa de infraestructura. Esto permite ejecutar pruebas unitarias ultrarrápidas con implementaciones simuladas en memoria y aísla el modelo de dominio frente a particularidades de la base de datos.

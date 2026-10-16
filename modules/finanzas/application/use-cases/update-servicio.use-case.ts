@@ -1,0 +1,61 @@
+import { IServicioRepository, UpdateServicioData } from '../../domain/servicio.repository.interface';
+import { Servicio } from '../../domain/servicio.entity';
+import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
+import { defaultServicioRepository } from '../../infrastructure/prisma-servicio.repository';
+
+export interface UpdateServicioDTO {
+  id: string;
+  nombre_servicio: string;
+  monto: number;
+  periodicidad_meses?: number;
+  numero_cuenta?: string | null;
+  numero_factura?: string | null;
+  dia_vencimiento_raw?: string | null;
+  fecha_vencimiento_raw?: string | null;
+}
+
+export class UpdateServicioUseCase {
+  constructor(private readonly repo: IServicioRepository = defaultServicioRepository) {}
+
+  async execute(dto: UpdateServicioDTO): Promise<Result<Servicio, AppError>> {
+    try {
+      const nombre_servicio = dto.nombre_servicio?.trim();
+      if (!nombre_servicio) {
+        return err(new ValidationError('El nombre es obligatorio'));
+      }
+
+      const monto = dto.monto;
+      if (isNaN(monto) || monto <= 0) {
+        return err(new ValidationError('Monto inválido'));
+      }
+
+      const dataToUpdate: UpdateServicioData = {
+        nombre_servicio,
+        monto,
+        periodicidad_meses: dto.periodicidad_meses && dto.periodicidad_meses >= 1 ? dto.periodicidad_meses : 1,
+        numero_cuenta: dto.numero_cuenta?.trim() || null,
+        numero_factura: dto.numero_factura?.trim() || null,
+      };
+
+      if (dto.dia_vencimiento_raw) {
+        const dv = parseInt(dto.dia_vencimiento_raw, 10);
+        if (!isNaN(dv) && dv >= 1 && dv <= 31) {
+          dataToUpdate.dia_vencimiento = dv;
+        }
+      }
+
+      if (dto.fecha_vencimiento_raw) {
+        const [y, m, d] = dto.fecha_vencimiento_raw.split('-').map(Number);
+        const fv = new Date(y, m - 1, d);
+        fv.setHours(0, 0, 0, 0);
+        dataToUpdate.fecha_vencimiento = fv;
+      }
+
+      const actualizado = await this.repo.update(dto.id, dataToUpdate);
+      return ok(actualizado);
+    } catch (error: any) {
+      if (error instanceof AppError) return err(error);
+      return err(new UnexpectedError('No se pudo actualizar el servicio', { original: error?.message }));
+    }
+  }
+}

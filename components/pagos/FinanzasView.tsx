@@ -14,6 +14,7 @@ import dynamic from 'next/dynamic';
 import ServicioCard from '@/components/pagos/ServicioCard';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import EmptyState from '@/components/ui/EmptyState';
+import MiniCockpitHUD from '@/components/ui/MiniCockpitHUD';
 
 const ServicioFormModal = dynamic(() => import('@/components/pagos/ServicioFormModal'), { ssr: false });
 const PagoModal = dynamic(() => import('@/components/pagos/PagoModal'), { ssr: false });
@@ -188,71 +189,40 @@ export default function FinanzasView({
           </button>
         </header>
 
-        {/* Métricas Bento Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-          
-          {/* Métrica 1: Presupuesto Mensual */}
-          <div className="glass-card p-5 rounded-[2rem] border border-white/80 dark:border-white/10 space-y-2 shadow-xs">
-            <div className="flex items-center justify-between text-label-secondary">
-              <span className="apple-caption-1 font-medium text-label-secondary">
-                Gasto Mensual Estimado
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-[#ce9b8c]/25 dark:bg-terracotta/15 text-terracotta flex items-center justify-center">
-                <DollarSign size={16} />
-              </div>
-            </div>
-            <p className="apple-title-1 font-bold text-terracotta tracking-tight tabular-nums">
-              {presupuestoFormateado}
-            </p>
-            <p className="apple-caption-2 text-label-secondary font-normal">
-              Normalizado según periodicidad mensual/bimestral
-            </p>
-          </div>
-
-          {/* Métrica 2: Cuentas que requieren atención */}
-          <div className="glass-card p-5 rounded-[2rem] border border-white/80 dark:border-white/10 space-y-2 shadow-xs">
-            <div className="flex items-center justify-between text-label-secondary">
-              <span className="apple-caption-1 font-medium text-label-secondary">
-                Por Pagar / Urgentes
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-[#ce9b8c]/25 dark:bg-terracotta/20 text-terracotta flex items-center justify-center">
-                <AlertTriangle size={16} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <p className="apple-title-1 font-bold text-terracotta tracking-tight tabular-nums">
-                {resumen.cuentasVencidas + resumen.cuentasPorVencer}
-              </p>
-              <span className="apple-caption-1 font-medium text-label-secondary">
-                ({resumen.cuentasVencidas} vencidas)
-              </span>
-            </div>
-            <p className="apple-caption-2 text-label-secondary font-normal">
-              {resumen.cuentasVencidas > 0
-                ? 'Requieren atención inmediata'
-                : 'Sin cuentas en mora'}
-            </p>
-          </div>
-
-          {/* Métrica 3: Cuentas al día (Acento Menta) */}
-          <div className="glass-card p-5 rounded-[2rem] border border-white/80 dark:border-white/10 space-y-2 shadow-xs">
-            <div className="flex items-center justify-between text-label-secondary">
-              <span className="apple-caption-1 font-medium text-label-secondary">
-                Cuentas al Día
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-[#c7e1d7]/60 dark:bg-mint/20 text-mint flex items-center justify-center">
-                <CheckCircle2 size={16} />
-              </div>
-            </div>
-            <p className="apple-title-1 font-bold text-mint tracking-tight tabular-nums">
-              {resumen.cuentasAlDia}
-            </p>
-            <p className="apple-caption-2 text-label-secondary font-normal">
-              De {resumen.totalServicios} servicios registrados
-            </p>
-          </div>
-
-        </div>
+        {/* Mini-Cockpit HUD de Cabecera */}
+        <MiniCockpitHUD
+          metrics={[
+            {
+              label: 'gasto mensual estimado',
+              value: presupuestoFormateado,
+              icon: 'dollar',
+              color: 'terracotta',
+            },
+            {
+              label:
+                resumen.cuentasVencidas > 0
+                  ? `${resumen.cuentasVencidas} ${resumen.cuentasVencidas === 1 ? 'cuenta vencida' : 'cuentas vencidas'}`
+                  : resumen.cuentasPorVencer > 0
+                  ? `${resumen.cuentasPorVencer} por vencer`
+                  : 'al día',
+              value: resumen.cuentasVencidas + resumen.cuentasPorVencer,
+              icon: 'alert',
+              color:
+                resumen.cuentasVencidas > 0
+                  ? 'terracotta'
+                  : resumen.cuentasPorVencer > 0
+                  ? 'sand'
+                  : 'mint',
+              highlight: resumen.cuentasVencidas + resumen.cuentasPorVencer > 0,
+            },
+            {
+              label: `de ${resumen.totalServicios} servicios al día`,
+              value: resumen.cuentasAlDia,
+              icon: 'check',
+              color: 'mint',
+            },
+          ]}
+        />
 
         {/* Barra de Filtros Segmentada Apple HIG */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">

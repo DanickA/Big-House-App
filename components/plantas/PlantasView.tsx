@@ -6,7 +6,8 @@ import useSWR from 'swr';
 import { getPlantas, deletePlanta, registrarCuidado, deshacerCuidado } from '@/actions/plantas';
 import dynamic from 'next/dynamic';
 import PlantaCard, { Planta } from '@/components/plantas/PlantaCard';
-import { ArrowLeft, Plus, CheckCircle2, AlertCircle, Undo2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, CheckCircle2, AlertCircle, Undo2, Loader2, Sprout, Droplets } from 'lucide-react';
+import MiniCockpitHUD, { CockpitMetric } from '@/components/ui/MiniCockpitHUD';
 
 const PlantaFormModal = dynamic(() => import('@/components/plantas/PlantaFormModal'), { ssr: false });
 const PlantaDetalleModal = dynamic(() => import('@/components/plantas/PlantaDetalleModal'), { ssr: false });
@@ -203,6 +204,37 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
             <span>Agregar planta</span>
           </button>
         </header>
+
+        {/* Mini-Cockpit HUD de Cabecera */}
+        <MiniCockpitHUD
+          metrics={[
+            {
+              label: plantas.length === 1 ? 'planta registrada' : 'plantas registradas',
+              value: plantas.length,
+              icon: 'sprout',
+              color: 'mint',
+            },
+            {
+              label:
+                plantas.filter((p) => (p.diasRestantes ?? 0) <= 0).length === 1
+                  ? 'riego pendiente'
+                  : 'riegos pendientes',
+              value: plantas.filter((p) => (p.diasRestantes ?? 0) <= 0).length,
+              icon: 'droplets',
+              color:
+                plantas.filter((p) => (p.diasRestantes ?? 0) <= 0).length > 0
+                  ? 'terracotta'
+                  : 'mint',
+              highlight: plantas.filter((p) => (p.diasRestantes ?? 0) <= 0).length > 0,
+            },
+            {
+              label: 'al día con el riego',
+              value: plantas.filter((p) => (p.diasRestantes ?? 0) > 0).length,
+              icon: 'check',
+              color: 'mint',
+            },
+          ]}
+        />
 
         {/* Cuadrícula Bento de Plantas */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">

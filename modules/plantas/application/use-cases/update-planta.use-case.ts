@@ -1,0 +1,85 @@
+import { IPlantaRepository, UpdatePlantaData } from '../../domain/planta.repository.interface';
+import { ICuidadoRepository } from '../../domain/cuidado.repository.interface';
+import { IImageStorageService } from '../../domain/image-storage.service.interface';
+import { Planta } from '../../domain/planta.entity';
+import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
+import { defaultPlantaRepository } from '../../infrastructure/prisma-planta.repository';
+import { defaultCuidadoRepository } from '../../infrastructure/prisma-cuidado.repository';
+import { defaultImageStorageService } from '../../infrastructure/storage-image-adapter.service';
+
+export interface UpdatePlantaDTO {
+  id: string;
+  nombre_comun: string;
+  ubicacion: string;
+  especie?: string | null;
+  foto?: File | null;
+  frecuencia_riego?: number | null;
+}
+
+export class UpdatePlantaUseCase {
+  constructor(
+    private readonly plantaRepo: IPlantaRepository = defaultPlantaRepository,
+    private readonly cuidadoRepo: ICuidadoRepository = defaultCuidadoRepository,
+    private readonly storage: IImageStorageService = defaultImageStorageService
+  ) {}
+
+  async execute(dto: UpdatePlantaDTO): Promise<Result<Planta, AppError>> {
+    try {
+      const nombre_comun = dto.nombre_comun?.trim();
+      const ubicacion = dto.ubicacion?.trim();
+
+      if (!nombre_comun || !ubicacion) {
+        return err(new ValidationError('El nombre y la ubicación son obligatorios'));
+      }
+
+      const datosActualizados: UpdatePlantaData = {
+        nombre_comun,
+        ubicacion,
+        especie: dto.especie?.trim() || null,
+      };
+
+      if (dto.foto && dto.foto.size > 0) {
+        try {
+          datosActualizados.foto_url = await this.storage.uploadImage(dto.foto);
+        } catch (uploadErr: any) {
+          return err(
+            new UnexpectedError(
+              `Error al subir la foto (${uploadErr?.message || 'Error en almacenamiento'}). Por favor verifica la configuración de Cloudinary en Vercel.`
+            )
+          );
+        }
+      }
+
+      const plantaActualizada = await this.plantaRepo.update(dto.id, datosActualizados);
+
+      if (dto.frecuencia_riego && dto.frecuencia_riego > 0) {
+        const freq = dto.frecuencia_riego;
+        const tareaExistente = await this.cuidadoRepo.findTarea(dto.id, 'RIEGO');
+
+        if (tareaExistente) {
+          const ultimoRiego = await this.cuidadoRepo.findUltimoCuidadoAnterior(tareaExistente.id, '');
+
+          let nuevaProximaFecha = new Date();
+          if (ultimoRiego?.fecha_realizada) {
+            nuevaProximaFecha = new Date(ultimoRiego.fecha_realizada);
+          }
+          nuevaProximaFecha.setHours(0, 0, 0, 0);
+          nuevaProximaFecha.setDate(nuevaProximaFecha.getDate() + freq);
+
+          await this.cuidadoRepo.updateTareaProximaFecha(tareaExistente.id, nuevaProximaFecha, freq);
+        } else {
+          const proximaFecha = new Date();
+          proximaFecha.setHours(0, 0, 0, 0);
+          proximaFecha.setDate(proximaFecha.getDate() + freq);
+
+          await this.cuidadoRepo.createTarea(dto.id, 'RIEGO', freq, proximaFecha);
+        }
+      }
+
+      return ok(plantaActualizada);
+    } catch (error: any) {
+      if (error instanceof AppError) return err(error);
+      return err(new UnexpectedError('No se pudo actualizar la información', { original: error?.message }));
+    }
+  }
+}

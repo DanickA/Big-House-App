@@ -1,0 +1,3 @@
+# Coordinación Transaccional con Unit of Work
+
+Operaciones complejas como la liquidación de servicios requieren mutaciones atómicas que involucran múltiples entidades (pagos, egresos, actualización de corte) y bloqueos pesimistas en base de datos. Decidimos implementar el patrón `Unit of Work` (`IUnitOfWork`) en lugar de acoplar los Casos de Uso directamente a `prisma.$transaction`. Esto permite orquestar transacciones atómicas a través de instancias transaccionales de los repositorios, manteniendo la lógica de negocio desacoplada de la API concreta de Prisma y permitiendo su simulación en pruebas unitarias.

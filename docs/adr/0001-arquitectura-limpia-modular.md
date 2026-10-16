@@ -1,0 +1,3 @@
+# Arquitectura Limpia Modular con Server Actions Delgados
+
+La lógica de negocio y transacciones de base de datos residían directamente dentro de los Server Actions de Next.js, acoplando el dominio al framework y dificultando las pruebas aisladas. Decidimos desacoplar el sistema extrayendo la lógica a Casos de Uso y Repositorios independientes dentro de módulos por dominio (`modules/`), reduciendo los Server Actions a controladores de entrada delgados que validan sesión y despachan al caso de uso. Esto garantiza alta testeabilidad, separación estricta de responsabilidades y portabilidad de la lógica frente a futuros cambios de interfaz o framework.

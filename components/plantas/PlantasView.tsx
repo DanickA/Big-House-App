@@ -133,7 +133,7 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
   }
 
   return (
-    <div className="relative min-h-screen bg-system text-label-primary p-6 md:p-10">
+    <div className="relative min-h-screen bg-system text-label-primary p-6 md:p-10 overflow-hidden">
       {/* Luces Ambientales de Fondo */}
       <div className="ambient-glow-mint top-[-50px] right-[-50px]" />
       <div className="ambient-glow-terracotta bottom-[-50px] left-[-50px]" />
@@ -246,7 +246,7 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
               setPlantaAEditar(null);
               setIsFormOpen(true);
             }}
-            className="h-72 rounded-[2rem] border-2 border-dashed border-mint/40 dark:border-separator bg-white/40 dark:bg-tertiary/30 hover:bg-white/70 dark:hover:bg-tertiary/60 backdrop-blur-xs transition-all duration-300 flex flex-col items-center justify-center p-6 text-center group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1"
+            className="hidden sm:flex h-72 rounded-[2rem] border-2 border-dashed border-mint/40 dark:border-separator bg-white/40 dark:bg-tertiary/30 hover:bg-white/70 dark:hover:bg-tertiary/60 backdrop-blur-xs transition-all duration-300 flex-col items-center justify-center p-6 text-center group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1"
           >
             <div className="w-14 h-14 rounded-2xl bg-[#c7e1d7]/50 dark:bg-mint/15 border border-[#6eb5a5]/30 flex items-center justify-center text-mint group-hover:scale-110 transition shadow-2xs">
               <Plus size={24} strokeWidth={2.5} />

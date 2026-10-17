@@ -52,7 +52,7 @@ export default function UserMenuDropdown({ user, onLogout }: UserMenuDropdownPro
         <span className="w-7 h-7 rounded-xl bg-terracotta text-white text-xs font-bold flex items-center justify-center shadow-xs">
           {user.nombre.charAt(0).toUpperCase()}
         </span>
-        <span className="apple-footnote font-semibold text-label-primary max-w-[80px] sm:max-w-[120px] truncate">
+        <span className="apple-footnote font-semibold text-label-primary hidden md:inline-block md:max-w-[90px] lg:max-w-[120px] truncate">
           {user.nombre}
         </span>
         <ChevronDown

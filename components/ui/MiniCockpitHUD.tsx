@@ -83,7 +83,7 @@ export default function MiniCockpitHUD({ metrics, className = '' }: MiniCockpitH
     <div
       role="region"
       aria-label="Panel de micro-métricas HUD"
-      className={`glass-card p-2 sm:p-2.5 rounded-2xl border border-separator/80 shadow-2xs flex items-center gap-2 overflow-x-auto no-scrollbar ${className}`}
+      className={`glass-card p-2 sm:p-2.5 rounded-2xl border border-separator/80 shadow-2xs grid grid-cols-1 sm:grid-cols-3 gap-2 ${className}`}
     >
       {metrics.map((metric, idx) => {
         const IconComponent =
@@ -96,7 +96,7 @@ export default function MiniCockpitHUD({ metrics, className = '' }: MiniCockpitH
         return (
           <div
             key={idx}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition shrink-0 ${
+            className={`flex items-center gap-2 px-3 py-2 sm:py-1.5 rounded-xl transition min-w-0 ${
               metric.highlight
                 ? `${colorStyle.bg} ${colorStyle.border} border shadow-2xs`
                 : 'bg-white/50 dark:bg-tertiary/40 border border-separator/40'
@@ -108,11 +108,11 @@ export default function MiniCockpitHUD({ metrics, className = '' }: MiniCockpitH
               <IconComponent size={13} strokeWidth={2.2} />
             </div>
 
-            <div className="flex items-baseline gap-1.5">
-              <span className="apple-footnote font-bold text-label-primary tabular-nums">
+            <div className="flex items-baseline gap-1.5 min-w-0 flex-1">
+              <span className="apple-footnote font-bold text-label-primary tabular-nums shrink-0">
                 {metric.value}
               </span>
-              <span className="apple-caption-2 text-label-secondary font-medium whitespace-nowrap">
+              <span className="apple-caption-2 text-label-secondary font-medium truncate">
                 {metric.label}
               </span>
             </div>

@@ -29,7 +29,7 @@ export default function HeaderNav({ user }: HeaderNavProps) {
       <div className="max-w-6xl mx-auto glass-card rounded-[1.75rem] px-4 sm:px-6 h-15 flex items-center justify-between">
         
         {/* Logo de la Aplicación */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2.5 lg:gap-6">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-xl bg-terracotta text-white font-bold text-sm flex items-center justify-center group-hover:scale-105 transition shadow-2xs">
               H
@@ -47,7 +47,7 @@ export default function HeaderNav({ user }: HeaderNavProps) {
             <Link
               href="/"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-2.5 lg:px-3.5 py-1.5 rounded-xl text-xs lg:text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname === '/'
                   ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
                   : 'text-label-secondary hover:text-label-primary font-medium'
@@ -60,7 +60,7 @@ export default function HeaderNav({ user }: HeaderNavProps) {
             <Link
               href="/calendario"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-2.5 lg:px-3.5 py-1.5 rounded-xl text-xs lg:text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/calendario')
                   ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
                   : 'text-label-secondary hover:text-label-primary font-medium'
@@ -73,7 +73,7 @@ export default function HeaderNav({ user }: HeaderNavProps) {
             <Link
               href="/plantas"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-2.5 lg:px-3.5 py-1.5 rounded-xl text-xs lg:text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/plantas')
                   ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
                   : 'text-label-secondary hover:text-label-primary font-medium'
@@ -86,7 +86,7 @@ export default function HeaderNav({ user }: HeaderNavProps) {
             <Link
               href="/finanzas"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-2.5 lg:px-3.5 py-1.5 rounded-xl text-xs lg:text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/finanzas') || pathname.startsWith('/servicios')
                   ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
                   : 'text-label-secondary hover:text-label-primary font-medium'
@@ -99,7 +99,7 @@ export default function HeaderNav({ user }: HeaderNavProps) {
             <Link
               href="/usuarios"
               prefetch={true}
-              className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
+              className={`px-2.5 lg:px-3.5 py-1.5 rounded-xl text-xs lg:text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/usuarios')
                   ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
                   : 'text-label-secondary hover:text-label-primary font-medium'

@@ -875,3 +875,12 @@ button,
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* Utilidad de Scroll Oculto (Scrollable sin barra visible) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

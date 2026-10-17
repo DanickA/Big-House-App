@@ -40,8 +40,10 @@ export default function PullDownMenu({
     vertical: 'top' | 'bottom';
     horizontal: 'left' | 'right';
   }>({ vertical: 'bottom', horizontal: align });
+  const [popoverCoords, setPopoverCoords] = useState<{ top: number; left: number } | null>(null);
 
   const menuRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -53,34 +55,60 @@ export default function PullDownMenu({
     return () => window.removeEventListener('resize', checkViewport);
   }, []);
 
-  // Detección de colisiones de bordes del Viewport al abrir en desktop
+  // Cálculo de posición Fixed con soporte de Portal y colisiones de bordes
+  const updatePosition = () => {
+    if (!menuRef.current) return;
+    const rect = menuRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const estimatedHeight = popoverRef.current ? popoverRef.current.offsetHeight : 220;
+    const vertical = spaceBelow < estimatedHeight && spaceAbove > spaceBelow ? 'top' : 'bottom';
+
+    const popoverWidth = 224; // w-56 = 14rem = 224px
+
+    let top = vertical === 'bottom' ? rect.bottom + 8 : rect.top - estimatedHeight - 8;
+    let left = align === 'right' ? rect.right - popoverWidth : rect.left;
+
+    // Ajuste contra desbordamientos fuera de la ventana
+    if (left + popoverWidth > window.innerWidth - 12) {
+      left = window.innerWidth - popoverWidth - 12;
+    }
+    if (left < 12) {
+      left = 12;
+    }
+    if (top < 12) {
+      top = 12;
+    }
+
+    setPopoverCoords({ top, left });
+    setPopoverPlacement({ vertical, horizontal: align });
+  };
+
   useEffect(() => {
-    if (isOpen && !isMobile && menuRef.current) {
-      const rect = menuRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      const estimatedHeight = 220;
-      const vertical = spaceBelow < estimatedHeight && spaceAbove > spaceBelow ? 'top' : 'bottom';
-
-      const spaceRight = window.innerWidth - rect.right;
-      const spaceLeft = rect.left;
-      const estimatedWidth = 230;
-
-      let horizontal = align;
-      if (align === 'right' && rect.right < estimatedWidth) {
-        horizontal = 'left';
-      } else if (align === 'left' && spaceRight < estimatedWidth && spaceLeft > spaceRight) {
-        horizontal = 'right';
-      }
-
-      setPopoverPlacement({ vertical, horizontal });
+    if (isOpen && !isMobile) {
+      updatePosition();
+      const onScrollOrResize = () => {
+        updatePosition();
+      };
+      window.addEventListener('resize', onScrollOrResize);
+      window.addEventListener('scroll', onScrollOrResize, true);
+      return () => {
+        window.removeEventListener('resize', onScrollOrResize);
+        window.removeEventListener('scroll', onScrollOrResize, true);
+      };
     }
   }, [isOpen, isMobile, align]);
 
-  // Cerrar con Escape o clic fuera
+  // Cerrar con Escape o clic fuera (evaluando trigger y portal)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     }
@@ -192,17 +220,21 @@ export default function PullDownMenu({
       )}
 
       {/* 2. POPOVER DESKTOP ADAPTATIVO CON DETECCIÓN DE COLISIONES DE BORDES (>= 640px) */}
-      {isOpen && !isMobile && (
+      {isOpen && !isMobile && mounted && popoverCoords && createPortal(
         <div
+          ref={popoverRef}
           role="menu"
           aria-label={ariaLabel}
+          style={{
+            position: 'fixed',
+            top: `${popoverCoords.top}px`,
+            left: `${popoverCoords.left}px`,
+            zIndex: 9999,
+          }}
           className={`
-            absolute
-            ${popoverPlacement.vertical === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}
-            ${popoverPlacement.horizontal === 'right' ? 'right-0' : 'left-0'}
-            w-56 max-w-[90vw] z-50
+            w-56 max-w-[90vw]
             rounded-2xl bg-secondary/95 backdrop-blur-2xl
-            border border-separator shadow-xl p-1.5
+            border border-separator shadow-2xl p-1.5
             animate-fade-in-up select-none
           `}
         >
@@ -248,7 +280,8 @@ export default function PullDownMenu({
               </div>
             </React.Fragment>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

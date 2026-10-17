@@ -120,7 +120,8 @@ export default function PlantaCard({
         </div>
       )}
 
-      {/* Gradiente Glassmorphic Multicapa */}
+      {/* Gradientes Glassmorphic Multicapa */}
+      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/50 via-black/20 to-transparent pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/10 pointer-events-none" />
 
       {/* Barra Superior: Menú Pull-Down HIG + Anillo de Riego */}
@@ -178,7 +179,7 @@ export default function PlantaCard({
       </div>
 
       {/* Información Inferior de la Planta */}
-      <div className="absolute bottom-4 left-4 right-4 text-white space-y-1.5 z-10">
+      <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-1.5 z-10">
         <div>
           <h2 className="apple-headline font-semibold text-white leading-snug drop-shadow-sm tracking-tight truncate">
             {planta.nombre_comun}
@@ -190,14 +191,14 @@ export default function PlantaCard({
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-1 text-stone-200">
-          <span className="flex items-center gap-1 bg-black/35 backdrop-blur-xs px-2.5 py-1 rounded-xl border border-white/10 truncate max-w-[140px] apple-caption-2 font-normal">
+        <div className="flex items-center justify-between gap-1.5 pt-1 text-stone-200">
+          <span className="flex items-center gap-1 bg-black/35 backdrop-blur-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl border border-white/10 min-w-0 flex-1 max-w-fit apple-caption-2 font-normal">
             <MapPin size={11} className="text-khaki shrink-0" />
             <span className="truncate">{planta.ubicacion}</span>
           </span>
 
           {planta.frecuencia_dias ? (
-            <span className="flex items-center gap-1 bg-black/35 backdrop-blur-xs px-2.5 py-1 rounded-xl border border-white/10 apple-caption-2 font-medium tabular-nums shrink-0">
+            <span className="flex items-center gap-1 bg-black/35 backdrop-blur-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl border border-white/10 apple-caption-2 font-medium tabular-nums shrink-0">
               <Droplets size={11} className="text-mint shrink-0" />
               <span>{planta.frecuencia_dias}d</span>
             </span>

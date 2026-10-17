@@ -10,12 +10,25 @@ import {
   DeleteServicioUseCase,
   GetHistorialPagosUseCase,
   RegistrarPagoServicioUseCase,
+  GetFondoComunMesUseCase,
+  RegistrarAporteFondoUseCase,
+  DeleteAporteFondoUseCase,
   ServicioConEstado,
   ResumenServicios,
   EstadoVencimiento,
+  AporteFondoComun,
+  ResumenFondoComunMes,
+  PagoHistorialItem,
 } from '@/modules/finanzas';
 
-export type { EstadoVencimiento, ServicioConEstado, ResumenServicios };
+export type {
+  EstadoVencimiento,
+  ServicioConEstado,
+  ResumenServicios,
+  AporteFondoComun,
+  ResumenFondoComunMes,
+  PagoHistorialItem,
+};
 
 const getServiciosUC = new GetServiciosUseCase();
 const createServicioUC = new CreateServicioUseCase();
@@ -23,6 +36,9 @@ const updateServicioUC = new UpdateServicioUseCase();
 const deleteServicioUC = new DeleteServicioUseCase();
 const getHistorialPagosUC = new GetHistorialPagosUseCase();
 const registrarPagoServicioUC = new RegistrarPagoServicioUseCase();
+const getFondoComunMesUC = new GetFondoComunMesUseCase();
+const registrarAporteFondoUC = new RegistrarAporteFondoUseCase();
+const deleteAporteFondoUC = new DeleteAporteFondoUseCase();
 
 /**
  * Calcula la próxima fecha de vencimiento después de registrar un pago.
@@ -36,14 +52,14 @@ export async function calcularProximaFechaVencimiento(
   return calcularProximaFechaVencimientoPura(fechaPago, periodicidadMeses, diaVencimiento);
 }
 
-// 1. Obtener todos los servicios con cálculo dinámico de días y badges de estado
-export async function getServicios(): Promise<{
+// 1. Obtener todos los servicios con cálculo dinámico de días, estado y proyección mensual opcional
+export async function getServicios(periodoMes?: string): Promise<{
   success: boolean;
   servicios: ServicioConEstado[];
   resumen: ResumenServicios;
   error?: string;
 }> {
-  const result = await getServiciosUC.execute();
+  const result = await getServiciosUC.execute(periodoMes);
   if (!result.success) {
     return {
       success: false,
@@ -55,6 +71,9 @@ export async function getServicios(): Promise<{
         cuentasVencidas: 0,
         cuentasPorVencer: 0,
         cuentasAlDia: 0,
+        totalRealPagadoMes: 0,
+        totalPorPagarMes: 0,
+        diferenciaPresupuestoGlobal: 0,
       },
       error: result.error.message,
     };
@@ -80,6 +99,7 @@ export async function createServicio(formData: FormData) {
   const numero_cuenta = formData.get('numero_cuenta') as string | null;
   const numero_factura = formData.get('numero_factura') as string | null;
   const dia_vencimiento_raw = formData.get('dia_vencimiento') as string | null;
+  const responsable_id = formData.get('responsable_id') as string | null;
 
   const result = await createServicioUC.execute({
     nombre_servicio,
@@ -89,6 +109,7 @@ export async function createServicio(formData: FormData) {
     numero_cuenta,
     numero_factura,
     dia_vencimiento_raw,
+    responsable_id,
   });
 
   if (result.success) {
@@ -102,7 +123,12 @@ export async function createServicio(formData: FormData) {
 
 export type RegistrarPagoResponse = {
   success: boolean;
-  data?: { pagoId: string; proximoVencimiento: string };
+  data?: {
+    pagoId: string;
+    proximoVencimiento: string;
+    montoPresupuestado?: number;
+    diferenciaPresupuesto?: number;
+  };
   error?: string;
   code?: string;
   proximoVencimiento?: string;
@@ -162,6 +188,7 @@ export async function updateServicio(servicioId: string, formData: FormData) {
   const numero_factura = formData.get('numero_factura') as string | null;
   const dia_vencimiento_raw = formData.get('dia_vencimiento') as string | null;
   const fecha_vencimiento_raw = formData.get('fecha_vencimiento') as string | null;
+  const responsable_id = formData.get('responsable_id') as string | null;
 
   const result = await updateServicioUC.execute({
     id: servicioId,
@@ -172,6 +199,7 @@ export async function updateServicio(servicioId: string, formData: FormData) {
     numero_factura,
     dia_vencimiento_raw,
     fecha_vencimiento_raw,
+    responsable_id,
   });
 
   if (result.success) {
@@ -194,6 +222,72 @@ export async function deleteServicio(servicioId: string) {
   if (result.success) {
     revalidatePath('/finanzas');
     revalidatePath('/servicios');
+    revalidatePath('/');
+  }
+
+  return toActionResponse(result);
+}
+
+// 7. Obtener Fondo Común del Mes (Presupuesto = Suma de aportes del mes)
+export async function getFondoComunMes(periodoMes?: string): Promise<{
+  success: boolean;
+  data?: ResumenFondoComunMes;
+  error?: string;
+}> {
+  const result = await getFondoComunMesUC.execute(periodoMes);
+  if (!result.success) {
+    return {
+      success: false,
+      error: result.error.message,
+    };
+  }
+  return {
+    success: true,
+    data: result.data,
+  };
+}
+
+// 8. Registrar un Aporte al Fondo Común con soporte/comprobante
+export async function registrarAporteFondo(formData: FormData) {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
+
+  const usuario_id = (formData.get('usuario_id') as string) || auth.user.userId;
+  const monto = parseFloat(formData.get('monto') as string);
+  const periodo_mes = formData.get('periodo_mes') as string | null;
+  const fecha_raw = formData.get('fecha') as string | null;
+  const descripcion = formData.get('descripcion') as string | null;
+  const comprobanteFile = formData.get('comprobante') as File | null;
+
+  const result = await registrarAporteFondoUC.execute({
+    usuario_id,
+    monto,
+    periodo_mes,
+    fecha_raw,
+    descripcion,
+    comprobanteFile,
+  });
+
+  if (result.success) {
+    revalidatePath('/finanzas');
+    revalidatePath('/');
+  }
+
+  return toActionResponse(result);
+}
+
+// 9. Eliminar un Aporte del Fondo Común
+export async function deleteAporteFondo(aporteId: string) {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
+
+  const result = await deleteAporteFondoUC.execute(aporteId);
+  if (result.success) {
+    revalidatePath('/finanzas');
     revalidatePath('/');
   }
 

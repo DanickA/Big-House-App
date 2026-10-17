@@ -11,6 +11,7 @@ export interface CreateServicioDTO {
   dia_vencimiento_raw?: string | null;
   numero_cuenta?: string | null;
   numero_factura?: string | null;
+  responsable_id?: string | null;
 }
 
 export class CreateServicioUseCase {
@@ -52,13 +53,15 @@ export class CreateServicioUseCase {
         dia_vencimiento,
         numero_cuenta: dto.numero_cuenta?.trim() || null,
         numero_factura: dto.numero_factura?.trim() || null,
+        responsable_id: dto.responsable_id?.trim() || null,
         estado: 'PENDIENTE',
       });
 
       return ok(nuevoServicio);
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof AppError) return err(error);
-      return err(new UnexpectedError('No se pudo crear el servicio', { original: error?.message }));
+      const message = error instanceof Error ? error.message : 'Error inesperado';
+      return err(new UnexpectedError('No se pudo crear el servicio', { original: message }));
     }
   }
 }

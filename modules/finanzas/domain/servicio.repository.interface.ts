@@ -8,6 +8,7 @@ export interface CreateServicioData {
   dia_vencimiento?: number | null;
   numero_cuenta?: string | null;
   numero_factura?: string | null;
+  responsable_id?: string | null;
   estado?: string;
 }
 
@@ -19,13 +20,17 @@ export interface UpdateServicioData {
   dia_vencimiento?: number | null;
   numero_cuenta?: string | null;
   numero_factura?: string | null;
+  responsable_id?: string | null;
   estado?: string;
 }
 
 export interface IServicioRepository {
   findById(id: string): Promise<Servicio | null>;
   findAndLockById(id: string): Promise<Servicio | null>;
-  findServiciosConEstado(): Promise<{ servicios: ServicioConEstado[]; resumen: ResumenServicios }>;
+  findServiciosConEstado(periodoMes?: string): Promise<{
+    servicios: ServicioConEstado[];
+    resumen: ResumenServicios;
+  }>;
   create(data: CreateServicioData): Promise<Servicio>;
   update(id: string, data: UpdateServicioData): Promise<Servicio>;
   delete(id: string): Promise<void>;

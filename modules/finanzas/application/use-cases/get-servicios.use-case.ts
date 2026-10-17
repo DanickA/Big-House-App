@@ -6,12 +6,15 @@ import { defaultServicioRepository } from '../../infrastructure/prisma-servicio.
 export class GetServiciosUseCase {
   constructor(private readonly repo: IServicioRepository = defaultServicioRepository) {}
 
-  async execute(): Promise<Result<{ servicios: ServicioConEstado[]; resumen: ResumenServicios }, AppError>> {
+  async execute(
+    periodoMes?: string
+  ): Promise<Result<{ servicios: ServicioConEstado[]; resumen: ResumenServicios }, AppError>> {
     try {
-      const data = await this.repo.findServiciosConEstado();
+      const data = await this.repo.findServiciosConEstado(periodoMes);
       return ok(data);
-    } catch (error: any) {
-      return err(new UnexpectedError('No se pudieron obtener los servicios', { original: error?.message }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado';
+      return err(new UnexpectedError('No se pudieron obtener los servicios', { original: message }));
     }
   }
 }

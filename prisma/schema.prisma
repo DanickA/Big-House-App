@@ -38,13 +38,14 @@ model historial_cuidado {
 }
 
 model ingresos {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  descripcion String   @db.VarChar(200)
-  monto       Decimal  @db.Decimal(12, 2)
-  fecha       DateTime @db.Date
-  fuente      String?  @db.VarChar(50)
-  usuario_id  String   @db.Uuid
-  usuarios    usuarios @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_ingreso")
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  descripcion     String   @db.VarChar(200)
+  monto           Decimal  @db.Decimal(12, 2)
+  fecha           DateTime @db.Date
+  fuente          String?  @db.VarChar(50)
+  comprobante_url String?
+  usuario_id      String   @db.Uuid
+  usuarios        usuarios @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_ingreso")
 
   @@index([usuario_id])
   @@index([fecha])
@@ -69,11 +70,14 @@ model servicios {
   estado             String            @default("PENDIENTE") @db.VarChar(20)
   periodicidad_meses Int?              @default(1)
   dia_vencimiento    Int?
+  responsable_id     String?           @db.Uuid
+  responsable        usuarios?         @relation("ResponsableServicio", fields: [responsable_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "fk_responsable_servicio")
   gastos             gastos[]
   pagos_servicios    pagos_servicios[]
 
   @@index([fecha_vencimiento])
   @@index([estado])
+  @@index([responsable_id])
 }
 
 model tareas_cuidado {
@@ -91,34 +95,36 @@ model tareas_cuidado {
 }
 
 model usuarios {
-  id                   String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nombre               String               @db.VarChar(100)
-  email                String               @unique @db.VarChar(150)
-  password_hash        String               @db.VarChar(255)
-  fecha_registro       DateTime?            @default(now()) @db.Timestamp(6)
-  pin_hash             String?              @db.VarChar(255)
-  pin_longitud         Int?                 @default(4)
-  gastos               gastos[]
-  historial_cuidado    historial_cuidado[]
-  ingresos             ingresos[]
-  pagos_servicios      pagos_servicios[]
+  id                    String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre                String               @db.VarChar(100)
+  email                 String               @unique @db.VarChar(150)
+  password_hash         String               @db.VarChar(255)
+  fecha_registro        DateTime?            @default(now()) @db.Timestamp(6)
+  pin_hash              String?              @db.VarChar(255)
+  pin_longitud          Int?                 @default(4)
+  gastos                gastos[]
+  historial_cuidado     historial_cuidado[]
+  ingresos              ingresos[]
+  pagos_servicios       pagos_servicios[]
+  servicios_responsable servicios[]          @relation("ResponsableServicio")
   
-  eventos_creados      eventos[]            @relation("CreadorEvento")
-  eventos_participados eventos[]            @relation("ParticipantesEvento")
-  subtareas_asignadas  subtareas_evento[]   @relation("SubtareasAsignadas")
-  suscripciones_push   suscripciones_push[]
+  eventos_creados       eventos[]            @relation("CreadorEvento")
+  eventos_participados  eventos[]            @relation("ParticipantesEvento")
+  subtareas_asignadas   subtareas_evento[]   @relation("SubtareasAsignadas")
+  suscripciones_push    suscripciones_push[]
 }
 
 model pagos_servicios {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  servicio_id     String    @db.Uuid
-  usuario_id      String    @db.Uuid
-  monto_pagado    Decimal   @db.Decimal(12, 2)
-  fecha_pago      DateTime? @default(now()) @db.Timestamp(6)
-  comprobante_url String?
-  observaciones   String?
-  servicios       servicios @relation(fields: [servicio_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_servicio_pago")
-  usuarios        usuarios  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_pago")
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  servicio_id         String    @db.Uuid
+  usuario_id          String    @db.Uuid
+  monto_pagado        Decimal   @db.Decimal(12, 2)
+  monto_presupuestado Decimal?  @db.Decimal(12, 2)
+  fecha_pago          DateTime? @default(now()) @db.Timestamp(6)
+  comprobante_url     String?
+  observaciones       String?
+  servicios           servicios @relation(fields: [servicio_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_servicio_pago")
+  usuarios            usuarios  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_pago")
 
   @@index([servicio_id])
   @@index([usuario_id])

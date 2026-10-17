@@ -1,7 +1,19 @@
 import { IServicioRepository } from '../../domain/servicio.repository.interface';
 import { IPagoRepository } from '../../domain/pago.repository.interface';
 import { IFileStorageService } from '../../domain/file-storage.service.interface';
-import { IUnitOfWork, Result, ok, err, AppError, ValidationError, NotFoundError, ConcurrencyError, DuplicateError, UnexpectedError, calcularProximaFechaVencimientoPura } from '@/modules/shared';
+import {
+  IUnitOfWork,
+  Result,
+  ok,
+  err,
+  AppError,
+  ValidationError,
+  NotFoundError,
+  ConcurrencyError,
+  DuplicateError,
+  UnexpectedError,
+  calcularProximaFechaVencimientoPura,
+} from '@/modules/shared';
 import { defaultServicioRepository, PrismaServicioRepository } from '../../infrastructure/prisma-servicio.repository';
 import { defaultPagoRepository, PrismaPagoRepository } from '../../infrastructure/prisma-pago.repository';
 import { defaultStorageService } from '../../infrastructure/storage-adapter.service';
@@ -20,6 +32,8 @@ export interface RegistrarPagoServicioDTO {
 export interface RegistrarPagoResultData {
   pagoId: string;
   proximoVencimiento: string;
+  montoPresupuestado?: number;
+  diferenciaPresupuesto?: number;
 }
 
 export class RegistrarPagoServicioUseCase {
@@ -60,15 +74,17 @@ export class RegistrarPagoServicioUseCase {
       if (dto.comprobanteFile && dto.comprobanteFile.size > 0) {
         try {
           comprobante_url = await this.storageService.uploadComprobante(dto.comprobanteFile);
-        } catch (uploadErr: any) {
+        } catch (uploadErr) {
+          const msg = uploadErr instanceof Error ? uploadErr.message : 'Error de almacenamiento';
           return err(
             new UnexpectedError(
-              `Error al subir el comprobante (${uploadErr?.message || 'Error de almacenamiento'}). Verifica la configuración de Cloudinary.`
+              `Error al subir el comprobante (${msg}). Verifica la configuración de Cloudinary.`
             )
           );
         }
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const resultado = await this.uow.run<RegistrarPagoResultData>(async (tx: any) => {
         const txServicioRepo = tx ? new PrismaServicioRepository(tx) : this.servicioRepo;
         const txPagoRepo = tx ? new PrismaPagoRepository(tx) : this.pagoRepo;
@@ -105,17 +121,20 @@ export class RegistrarPagoServicioUseCase {
           );
         }
 
-        // 4. Insertar pago
+        const montoPresupuestadoSnapshot = Number(servicio.monto || 0);
+
+        // 4. Insertar pago conservando el snapshot del presupuesto estimado
         const nuevoPago = await txPagoRepo.createPago({
           servicio_id,
           usuario_id,
           monto_pagado,
+          monto_presupuestado: montoPresupuestadoSnapshot > 0 ? montoPresupuestadoSnapshot : null,
           fecha_pago,
           comprobante_url,
           observaciones: dto.observaciones || null,
         });
 
-        // 5. Insertar gasto
+        // 5. Insertar asiento de egreso
         const descripcionGasto = dto.observaciones
           ? `Pago ${servicio.nombre_servicio}: ${dto.observaciones}`
           : `Pago de servicio: ${servicio.nombre_servicio}`;
@@ -129,7 +148,7 @@ export class RegistrarPagoServicioUseCase {
           servicio_id,
         });
 
-        // 6. Calcular nueva fecha de vencimiento
+        // 6. Calcular nueva fecha de vencimiento sin alterar el monto presupuestado del servicio
         const periodicidad = servicio.periodicidad_meses || 1;
         const diaVenc = servicio.dia_vencimiento;
         const nuevaFechaVencimiento = calcularProximaFechaVencimientoPura(
@@ -138,7 +157,7 @@ export class RegistrarPagoServicioUseCase {
           diaVenc
         );
 
-        // 7. Actualizar servicio
+        // 7. Actualizar servicio al próximo ciclo
         const servicioActualizado = await txServicioRepo.update(servicio_id, {
           fecha_vencimiento: nuevaFechaVencimiento,
           estado: 'PENDIENTE',
@@ -147,13 +166,17 @@ export class RegistrarPagoServicioUseCase {
         return {
           pagoId: nuevoPago.id,
           proximoVencimiento: servicioActualizado.fecha_vencimiento.toISOString(),
+          montoPresupuestado: montoPresupuestadoSnapshot,
+          diferenciaPresupuesto:
+            montoPresupuestadoSnapshot > 0 ? monto_pagado - montoPresupuestadoSnapshot : 0,
         };
       });
 
       return ok(resultado);
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof AppError) return err(error);
-      return err(new UnexpectedError(error?.message || 'Error al procesar la transacción de pago'));
+      const message = error instanceof Error ? error.message : 'Error al procesar la transacción de pago';
+      return err(new UnexpectedError(message));
     }
   }
 }

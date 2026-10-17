@@ -13,12 +13,23 @@ Entorno único y compartido donde conviven los habitantes y residen todos los se
 _Avoid_: Familia, tenant, grupo, organización
 
 **Servicio**:
-Factura o compromiso recurrente del hogar (agua, electricidad, internet, etc.) con ciclo y fecha de corte.
-_Avoid_: Cuenta, recibo, factura periódica
+Factura o compromiso financiero recurrente del hogar (servicios públicos, internet, administración, etc.) sujeto a periodicidad, fecha de corte y un monto presupuestado de referencia.
+_Avoid_: Cuenta, recibo, gasto general, factura periódica
 
 **Pago de Servicio**:
-Operación atómica que registra la cancelación de un ciclo de servicio, almacena el comprobante, asienta el egreso y reprograma el vencimiento.
-_Avoid_: Abono, liquidación
+Operación que asienta la cancelación de un ciclo de servicio con su costo real facturado, adjunta el comprobante de pago y reprograma el próximo vencimiento.
+_Avoid_: Abono, liquidación, gasto variable
+
+**Fondo Común**:
+Bolsa económica colectiva del hogar destinada a solventar los compromisos periódicos presupuestados del mes.
+_Avoid_: Caja chica, cuenta compartida, billetera virtual
+
+**Aporte al Fondo**:
+Transferencia de dinero realizada por un habitante a la bolsa común para un período mensual determinado, respaldada por un comprobante de pago o transferencia.
+_Avoid_: Donación, préstamo, cuota de socio
+
+**Presupuesto vs Real**:
+Comparativa analítica entre el costo estimado de los compromisos del mes y el valor real efectivamente liquidado en los recibos.
 
 **Planta**:
 Espécimen botánico del hogar sujeto a tareas periódicas de mantenimiento y riego.

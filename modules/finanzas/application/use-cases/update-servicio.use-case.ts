@@ -12,6 +12,7 @@ export interface UpdateServicioDTO {
   numero_factura?: string | null;
   dia_vencimiento_raw?: string | null;
   fecha_vencimiento_raw?: string | null;
+  responsable_id?: string | null;
 }
 
 export class UpdateServicioUseCase {
@@ -37,6 +38,10 @@ export class UpdateServicioUseCase {
         numero_factura: dto.numero_factura?.trim() || null,
       };
 
+      if (dto.responsable_id !== undefined) {
+        dataToUpdate.responsable_id = dto.responsable_id?.trim() || null;
+      }
+
       if (dto.dia_vencimiento_raw) {
         const dv = parseInt(dto.dia_vencimiento_raw, 10);
         if (!isNaN(dv) && dv >= 1 && dv <= 31) {
@@ -53,9 +58,10 @@ export class UpdateServicioUseCase {
 
       const actualizado = await this.repo.update(dto.id, dataToUpdate);
       return ok(actualizado);
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof AppError) return err(error);
-      return err(new UnexpectedError('No se pudo actualizar el servicio', { original: error?.message }));
+      const message = error instanceof Error ? error.message : 'Error inesperado';
+      return err(new UnexpectedError('No se pudo actualizar el servicio', { original: message }));
     }
   }
 }

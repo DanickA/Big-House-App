@@ -4,6 +4,7 @@ export interface CreatePagoData {
   servicio_id: string;
   usuario_id: string;
   monto_pagado: number;
+  monto_presupuestado?: number | null;
   fecha_pago: Date;
   comprobante_url?: string | null;
   observaciones?: string | null;

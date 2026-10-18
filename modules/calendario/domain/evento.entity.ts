@@ -97,6 +97,7 @@ export interface Evento {
   recurrencia: string | null;
   detalles: DetallesEvento | null;
   creador_id: string;
+  google_event_id?: string | null;
 }
 
 export interface EventoUnificado {
@@ -112,6 +113,7 @@ export interface EventoUnificado {
   ubicacion: string | null;
   recurrencia?: string | null;
   origen: 'MANUAL' | 'PLANTA' | 'SERVICIO';
+  google_event_id?: string | null;
   creador?: { nombre: string } | null;
   participantes?: { id: string; nombre: string }[];
   metadata?: Record<string, string | number>;

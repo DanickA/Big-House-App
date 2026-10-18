@@ -57,6 +57,10 @@ model plantas {
   especie        String?          @db.VarChar(100)
   ubicacion      String           @db.VarChar(100)
   foto_url       String?
+  nivel_luz      String?          @default("INDIRECTA") @db.VarChar(30)
+  nivel_agua     String?          @default("MODERADA") @db.VarChar(30)
+  estado_salud   String?          @default("SANA") @db.VarChar(30)
+  notas_cuidado  String?
   tareas_cuidado tareas_cuidado[]
 }
 
@@ -112,6 +116,7 @@ model usuarios {
   eventos_participados  eventos[]            @relation("ParticipantesEvento")
   subtareas_asignadas   subtareas_evento[]   @relation("SubtareasAsignadas")
   suscripciones_push    suscripciones_push[]
+  conexion_google       conexiones_google?
 }
 
 model pagos_servicios {
@@ -169,6 +174,7 @@ model eventos {
   detalles        Json?
   creador_id      String         @db.Uuid
   fecha_creacion  DateTime?      @default(now()) @db.Timestamp(6)
+  google_event_id String?        @unique @db.VarChar(255)
 
   creador         usuarios       @relation("CreadorEvento", fields: [creador_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_creador_evento")
   participantes   usuarios[]     @relation("ParticipantesEvento")
@@ -180,6 +186,7 @@ model eventos {
   @@index([fecha_inicio, fecha_fin])
   @@index([creador_id])
   @@index([estado])
+  @@index([google_event_id])
 }
 
 model participantes_externos {
@@ -230,6 +237,22 @@ model suscripciones_push {
   fecha_creacion      DateTime?      @default(now()) @db.Timestamp(6)
 
   usuario             usuarios       @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_suscripcion")
+
+  @@index([usuario_id])
+}
+
+model conexiones_google {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuario_id     String    @unique @db.Uuid
+  access_token   String    @db.Text
+  refresh_token  String    @db.Text
+  token_expira   DateTime  @db.Timestamp(6)
+  calendar_id    String    @default("primary") @db.VarChar(100)
+  sync_token     String?   @db.Text
+  ultima_sync    DateTime? @db.Timestamp(6)
+  fecha_creacion DateTime? @default(now()) @db.Timestamp(6)
+
+  usuario        usuarios  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario_conexion_google")
 
   @@index([usuario_id])
 }

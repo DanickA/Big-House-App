@@ -59,39 +59,41 @@ export default function BottomTabBar() {
 
   return (
     <nav
-      aria-label="Navegación Móvil del Hogar"
-      className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-secondary/80 backdrop-blur-2xl border-t border-separator pb-safe h-[calc(49px+env(safe-area-inset-bottom,0px))] flex items-center justify-around px-2 select-none"
+      aria-label="Navegación Móvil y Tablet del Hogar"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-secondary/80 backdrop-blur-2xl border-t border-separator pb-safe h-[calc(49px+env(safe-area-inset-bottom,0px))] flex items-center justify-center px-2 select-none"
     >
-      {TAB_ITEMS.map((tab) => {
-        // Si hay una ruta pendiente seleccionada optimísticamente, úsala para retroalimentación instantánea
-        const active = optimisticHref ? tab.isActive(optimisticHref) : tab.isActive(pathname);
-        const Icon = tab.icon;
+      <div className="w-full max-w-xl flex items-center justify-around h-full">
+        {TAB_ITEMS.map((tab) => {
+          // Si hay una ruta pendiente seleccionada optimísticamente, úsala para retroalimentación instantánea
+          const active = optimisticHref ? tab.isActive(optimisticHref) : tab.isActive(pathname);
+          const Icon = tab.icon;
 
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            prefetch={true}
-            onTouchStart={() => {
-              router.prefetch(tab.href);
-              if (tab.href !== pathname) setOptimisticHref(tab.href);
-            }}
-            onMouseEnter={() => router.prefetch(tab.href)}
-            onClick={() => {
-              if (tab.href !== pathname) setOptimisticHref(tab.href);
-            }}
-            aria-current={active ? 'page' : undefined}
-            className={`flex-1 h-full min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-[10.5px] transition-colors duration-150 cursor-pointer active:scale-95 touch-manipulation ${
-              active
-                ? 'text-terracotta font-semibold'
-                : 'text-label-tertiary hover:text-label-primary font-medium'
-            }`}
-          >
-            <Icon size={19} strokeWidth={active ? 2.4 : 1.8} />
-            <span className="tracking-tight leading-none">{tab.label}</span>
-          </Link>
-        );
-      })}
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              prefetch={true}
+              onTouchStart={() => {
+                router.prefetch(tab.href);
+                if (tab.href !== pathname) setOptimisticHref(tab.href);
+              }}
+              onMouseEnter={() => router.prefetch(tab.href)}
+              onClick={() => {
+                if (tab.href !== pathname) setOptimisticHref(tab.href);
+              }}
+              aria-current={active ? 'page' : undefined}
+              className={`flex-1 h-full min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-[10.5px] transition-colors duration-150 cursor-pointer active:scale-95 touch-manipulation ${
+                active
+                  ? 'text-terracotta font-semibold'
+                  : 'text-label-tertiary hover:text-label-primary font-medium'
+              }`}
+            >
+              <Icon size={19} strokeWidth={active ? 2.4 : 1.8} />
+              <span className="tracking-tight leading-none">{tab.label}</span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

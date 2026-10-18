@@ -49,6 +49,10 @@ export async function createPlanta(formData: FormData) {
   const especie = (formData.get('especie') as string) || null;
   const foto = formData.get('foto') as File | null;
   const frecuencia_riego = parseInt((formData.get('frecuencia_riego') as string) || '7', 10);
+  const nivel_luz = (formData.get('nivel_luz') as string) || 'INDIRECTA';
+  const nivel_agua = (formData.get('nivel_agua') as string) || 'MODERADA';
+  const estado_salud = (formData.get('estado_salud') as string) || 'SANA';
+  const notas_cuidado = (formData.get('notas_cuidado') as string) || null;
 
   const result = await createPlantaUC.execute({
     nombre_comun,
@@ -56,6 +60,10 @@ export async function createPlanta(formData: FormData) {
     especie,
     foto,
     frecuencia_riego,
+    nivel_luz,
+    nivel_agua,
+    estado_salud,
+    notas_cuidado,
   });
 
   if (result.success) {
@@ -85,6 +93,11 @@ export async function updatePlanta(id: string, formData: FormData) {
   const foto = formData.get('foto') as File | null;
   const frecuencia_riego_raw = formData.get('frecuencia_riego') as string;
   const frecuencia_riego = frecuencia_riego_raw ? parseInt(frecuencia_riego_raw, 10) : null;
+  const nivel_luz = (formData.get('nivel_luz') as string) || undefined;
+  const nivel_agua = (formData.get('nivel_agua') as string) || undefined;
+  const estado_salud = (formData.get('estado_salud') as string) || undefined;
+  const notas_cuidado_raw = formData.get('notas_cuidado');
+  const notas_cuidado = notas_cuidado_raw !== null ? (notas_cuidado_raw as string) : undefined;
 
   const result = await updatePlantaUC.execute({
     id,
@@ -93,6 +106,10 @@ export async function updatePlanta(id: string, formData: FormData) {
     especie,
     foto,
     frecuencia_riego,
+    nivel_luz,
+    nivel_agua,
+    estado_salud,
+    notas_cuidado,
   });
 
   if (result.success) {

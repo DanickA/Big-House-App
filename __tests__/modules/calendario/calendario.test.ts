@@ -207,5 +207,22 @@ describe('Calendario Module - Clean Architecture Use Cases', () => {
       const post = await repo.findById(original.id);
       expect(post.estado).toBe(EstadoEvento.CANCELADO);
     });
+
+    it('debe propagar google_event_id en findEventosUnificados para eventos sincronizados con Google Calendar', async () => {
+      const creado = await repo.create({
+        titulo: 'Evento desde Google Calendar',
+        tipo_plantilla: TipoPlantilla.EVENTO,
+        fecha_inicio: new Date('2026-10-18T14:00:00Z'),
+        fecha_fin: new Date('2026-10-18T15:00:00Z'),
+        todo_el_dia: false,
+        color: '#6EB5A5',
+        creador_id: 'user-1',
+      });
+      repo.eventos.get(creado.id).google_event_id = 'gcal-evt-999';
+
+      const unificados = await repo.findEventosUnificados(10, 2026);
+      expect(unificados).toHaveLength(1);
+      expect(unificados[0].titulo).toBe('Evento desde Google Calendar');
+    });
   });
 });

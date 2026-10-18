@@ -1,16 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { getPlantas, deletePlanta, registrarCuidado, deshacerCuidado } from '@/actions/plantas';
 import dynamic from 'next/dynamic';
 import PlantaCard, { Planta } from '@/components/plantas/PlantaCard';
-import { ArrowLeft, Plus, CheckCircle2, AlertCircle, Undo2, Loader2, Sprout, Droplets } from 'lucide-react';
-import MiniCockpitHUD, { CockpitMetric } from '@/components/ui/MiniCockpitHUD';
+import {
+  ArrowLeft,
+  Plus,
+  CheckCircle2,
+  AlertCircle,
+  Undo2,
+  Loader2,
+  Sprout,
+  Droplets,
+} from 'lucide-react';
 
 const PlantaFormModal = dynamic(() => import('@/components/plantas/PlantaFormModal'), { ssr: false });
-const PlantaDetalleModal = dynamic(() => import('@/components/plantas/PlantaDetalleModal'), { ssr: false });
 const ConfirmModal = dynamic(() => import('@/components/ui/ConfirmModal'), { ssr: false });
 
 interface PlantasViewProps {
@@ -38,17 +45,34 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
     }
   );
 
+  // Filtro único en cabecera (Signpost)
+  const [filtroSignpost, setFiltroSignpost] = useState<'todas' | 'hoy'>('todas');
+
+  // Control del acordeón desplegable (una cápsula abierta a la vez para baja densidad visual)
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [mensajeError, setMensajeError] = useState<string | null>(null);
   const [undoQuickWater, setUndoQuickWater] = useState<UndoQuickWater | null>(null);
   const [deshaciendoQuickWater, setDeshaciendoQuickWater] = useState(false);
   const [plantaAEliminar, setPlantaAEliminar] = useState<Planta | null>(null);
 
-  // Estados de control de modales
+  // Estados de control del modal de formulario
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [plantaAEditar, setPlantaAEditar] = useState<Planta | null>(null);
-  const [plantaSeleccionada, setPlantaSeleccionada] = useState<Planta | null>(null);
-  const [pestanaModal, setPestanaModal] = useState<'acciones' | 'historial'>('acciones');
+
+  // Ordenar dinámicamente por urgencia de riego
+  const plantasOrdenadas = useMemo(() => {
+    return [...plantas].sort((a, b) => (a.diasRestantes ?? 99) - (b.diasRestantes ?? 99));
+  }, [plantas]);
+
+  const urgentesHoy = useMemo(
+    () => plantasOrdenadas.filter((p) => (p.diasRestantes ?? 0) <= 0),
+    [plantasOrdenadas]
+  );
+
+  const listaActiva =
+    filtroSignpost === 'hoy' && urgentesHoy.length > 0 ? urgentesHoy : plantasOrdenadas;
 
   function notificarExito(mensaje: string, duracion = 5000) {
     setMensajeExito(mensaje);
@@ -64,7 +88,7 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
   }
 
   async function handleQuickWater(planta: Planta) {
-    // 1. Mutación optimista en 0ms: el anillo de la tarjeta se llena de inmediato
+    // Mutación optimista inmediata en 0ms
     mutate(
       (prev) =>
         prev?.map((p) =>
@@ -83,14 +107,14 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
           plantaId: planta.id,
           plantaNombre: planta.nombre_comun,
         });
-        notificarExito(`¡${planta.nombre_comun} regada con éxito!`, 7000);
+        notificarExito(`¡${planta.nombre_comun} hidratada!`, 7000);
         await mutate();
       } else {
-        await mutate(); // Rollback en caso de fallo
+        await mutate();
         notificarError(res.error || 'No se pudo registrar el riego');
       }
     } catch {
-      await mutate(); // Rollback
+      await mutate();
       notificarError('Error inesperado al regar la planta');
     }
   }
@@ -124,6 +148,9 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
     const res = await deletePlanta(plantaAEliminar.id);
     if (res.success) {
       notificarExito('Planta eliminada correctamente');
+      if (expandedId === plantaAEliminar.id) {
+        setExpandedId(null);
+      }
       setPlantaAEliminar(null);
       await mutate();
     } else {
@@ -133,13 +160,12 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
   }
 
   return (
-    <div className="relative min-h-screen bg-system text-label-primary p-6 md:p-10 overflow-hidden">
+    <div className="relative min-h-screen bg-system text-label-primary p-5 sm:p-6 md:p-10 overflow-hidden">
       {/* Luces Ambientales de Fondo */}
       <div className="ambient-glow-mint top-[-50px] right-[-50px]" />
       <div className="ambient-glow-terracotta bottom-[-50px] left-[-50px]" />
 
-      <div className="relative z-10 max-w-6xl mx-auto space-y-8 animate-fade-in-up">
-        
+      <div className="relative z-10 max-w-5xl mx-auto space-y-6 animate-fade-in-up">
         {/* Notificación Flotante Glassmorphic */}
         {mensajeExito && (
           <div className="fixed top-20 right-6 z-60 glass-card bg-[#c7e1d7]/95 dark:bg-mint/20 border border-[#6eb5a5]/40 text-mint px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
@@ -150,7 +176,7 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
                 type="button"
                 disabled={deshaciendoQuickWater}
                 onClick={handleUndoQuickWater}
-                className="ml-2 px-3.5 py-2 min-h-[44px] min-w-[44px] bg-mint text-white dark:bg-mint dark:text-black rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 shrink-0"
+                className="ml-2 px-3.5 py-2 min-h-[40px] bg-mint text-white dark:bg-mint dark:text-black rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 shrink-0"
               >
                 {deshaciendoQuickWater ? (
                   <>
@@ -174,22 +200,51 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
           </div>
         )}
 
-        {/* Encabezado */}
+        {/* Cabecera Única sin duplicidad de datos */}
         <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Link
               href="/"
-              className="apple-footnote font-medium text-label-secondary hover:text-label-primary transition flex items-center gap-1.5 mb-1"
+              className="apple-footnote font-medium text-label-secondary hover:text-label-primary transition inline-flex items-center gap-1.5"
             >
               <ArrowLeft size={13} strokeWidth={2.5} />
               <span>Volver al Lobby</span>
             </Link>
-            <h1 className="apple-large-title text-label-primary tracking-tight">
-              Nuestras Plantas
-            </h1>
-            <p className="apple-subhead text-label-secondary font-normal">
-              {plantas.length} {plantas.length === 1 ? 'planta registrada' : 'plantas registradas'} en el hogar
-            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="apple-large-title text-label-primary tracking-tight">
+                Nuestras Plantas
+              </h1>
+
+              {/* Píldora de Señal Direccional Única (Todas vs Por regar) */}
+              <div className="inline-flex items-center p-1 rounded-full glass-card border border-separator/80 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setFiltroSignpost('todas')}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filtroSignpost === 'todas'
+                      ? 'bg-mint text-white dark:text-black shadow-2xs'
+                      : 'text-label-secondary hover:text-label-primary'
+                  }`}
+                >
+                  <Sprout size={13} />
+                  <span>Todas ({plantas.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFiltroSignpost(filtroSignpost === 'hoy' ? 'todas' : 'hoy')}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    filtroSignpost === 'hoy'
+                      ? 'bg-terracotta text-white shadow-2xs'
+                      : urgentesHoy.length > 0
+                      ? 'text-terracotta hover:bg-terracotta/10'
+                      : 'text-label-tertiary'
+                  }`}
+                >
+                  <Droplets size={13} />
+                  <span>Por regar ({urgentesHoy.length})</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <button
@@ -198,88 +253,39 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
               setPlantaAEditar(null);
               setIsFormOpen(true);
             }}
-            className="btn-apple-filled-mint px-5 text-sm font-semibold flex items-center gap-2 self-start sm:self-auto"
+            className="btn-apple-filled-mint px-5 min-h-[44px] text-sm font-semibold flex items-center gap-2 self-start sm:self-auto"
           >
             <Plus size={16} strokeWidth={2.4} />
             <span>Agregar planta</span>
           </button>
         </header>
 
-        {/* Mini-Cockpit HUD de Cabecera */}
-        <MiniCockpitHUD
-          metrics={[
-            {
-              label: plantas.length === 1 ? 'planta registrada' : 'plantas registradas',
-              value: plantas.length,
-              icon: 'sprout',
-              color: 'mint',
-            },
-            {
-              label:
-                plantas.filter((p) => (p.diasRestantes ?? 0) <= 0).length === 1
-                  ? 'riego pendiente'
-                  : 'riegos pendientes',
-              value: plantas.filter((p) => (p.diasRestantes ?? 0) <= 0).length,
-              icon: 'droplets',
-              color:
-                plantas.filter((p) => (p.diasRestantes ?? 0) <= 0).length > 0
-                  ? 'terracotta'
-                  : 'mint',
-              highlight: plantas.filter((p) => (p.diasRestantes ?? 0) <= 0).length > 0,
-            },
-            {
-              label: 'al día con el riego',
-              value: plantas.filter((p) => (p.diasRestantes ?? 0) > 0).length,
-              icon: 'check',
-              color: 'mint',
-            },
-          ]}
-        />
-
-        {/* Cuadrícula Bento de Plantas */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          
-          {/* Tarjeta para Agregar Planta */}
-          <button 
-            type="button"
-            onClick={() => {
-              setPlantaAEditar(null);
-              setIsFormOpen(true);
-            }}
-            className="hidden sm:flex h-72 rounded-[2rem] border-2 border-dashed border-mint/40 dark:border-separator bg-white/40 dark:bg-tertiary/30 hover:bg-white/70 dark:hover:bg-tertiary/60 backdrop-blur-xs transition-all duration-300 flex-col items-center justify-center p-6 text-center group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-[#c7e1d7]/50 dark:bg-mint/15 border border-[#6eb5a5]/30 flex items-center justify-center text-mint group-hover:scale-110 transition shadow-2xs">
-              <Plus size={24} strokeWidth={2.5} />
-            </div>
-            <span className="mt-4 apple-headline font-semibold text-label-primary">Agregar nueva planta</span>
-            <span className="apple-subhead text-label-secondary mt-1 font-normal">Registrar especie y ciclo</span>
-          </button>
-
-          {plantas.map((planta) => (
+        {/* Lista de Cápsulas con Acordeón In-Place (3B) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 items-start">
+          {listaActiva.map((planta) => (
             <PlantaCard
               key={planta.id}
               planta={planta}
-              onSelect={(p) => {
-                setPlantaSeleccionada(p);
-                setPestanaModal('acciones');
-              }}
+              isExpanded={expandedId === planta.id}
+              onToggleExpand={(p) =>
+                setExpandedId((prev) => (prev === p.id ? null : p.id))
+              }
               onEdit={(p) => {
                 setPlantaAEditar(p);
                 setIsFormOpen(true);
               }}
               onDelete={handleEliminar}
-              onOpenHistorial={(p) => {
-                setPlantaSeleccionada(p);
-                setPestanaModal('historial');
-              }}
               onQuickWater={handleQuickWater}
+              onCareRegistered={(msg) => {
+                notificarExito(msg);
+                mutate();
+              }}
             />
           ))}
         </div>
-
       </div>
 
-      {/* Modales modulares globales */}
+      {/* Modal de Formulario con Guía de Cuidado */}
       <PlantaFormModal
         isOpen={isFormOpen}
         plantaAEditar={plantaAEditar}
@@ -290,16 +296,7 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
         }}
       />
 
-      <PlantaDetalleModal
-        planta={plantaSeleccionada}
-        pestanaInicial={pestanaModal}
-        onClose={() => setPlantaSeleccionada(null)}
-        onSuccess={(msg) => {
-          notificarExito(msg);
-          mutate();
-        }}
-      />
-
+      {/* Confirmación de Eliminación */}
       <ConfirmModal
         isOpen={!!plantaAEliminar}
         title="¿Eliminar planta?"

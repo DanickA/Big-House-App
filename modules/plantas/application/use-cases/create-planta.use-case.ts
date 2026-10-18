@@ -11,6 +11,10 @@ export interface CreatePlantaDTO {
   especie?: string | null;
   foto?: File | null;
   frecuencia_riego?: number;
+  nivel_luz?: string | null;
+  nivel_agua?: string | null;
+  estado_salud?: string | null;
+  notas_cuidado?: string | null;
 }
 
 export class CreatePlantaUseCase {
@@ -49,6 +53,10 @@ export class CreatePlantaUseCase {
         especie: dto.especie?.trim() || null,
         foto_url,
         frecuencia_dias,
+        nivel_luz: dto.nivel_luz?.trim() || 'INDIRECTA',
+        nivel_agua: dto.nivel_agua?.trim() || 'MODERADA',
+        estado_salud: dto.estado_salud?.trim() || 'SANA',
+        notas_cuidado: dto.notas_cuidado?.trim() || null,
       });
 
       return ok(nueva);

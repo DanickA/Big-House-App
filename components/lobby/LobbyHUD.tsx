@@ -13,8 +13,6 @@ import {
   ArrowUpRight,
   Droplets,
   Activity,
-  CreditCard,
-  UserCheck,
   Undo2,
   Loader2,
   ChevronRight,
@@ -436,52 +434,6 @@ export default function LobbyHUD({
             </div>
           </Link>
         </main>
-
-        {/* Speed Dial Action Dock: Solo visible en Desktop / Tablet (hidden sm:flex para no duplicar BottomTabBar) */}
-        <footer
-          aria-label="Acciones rápidas del hogar"
-          className="hidden sm:flex glass-card p-3 rounded-2xl border border-separator items-center justify-around gap-2"
-        >
-          <Link
-            href="/plantas"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/60 dark:hover:bg-tertiary transition group"
-          >
-            <Sprout size={16} className="text-mint group-hover:scale-110 transition" />
-            <span className="text-xs font-semibold text-label-secondary group-hover:text-label-primary">
-              Jardín
-            </span>
-          </Link>
-
-          <Link
-            href="/finanzas"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/60 dark:hover:bg-tertiary transition group"
-          >
-            <CreditCard size={16} className="text-terracotta group-hover:scale-110 transition" />
-            <span className="text-xs font-semibold text-label-secondary group-hover:text-label-primary">
-              Cuentas
-            </span>
-          </Link>
-
-          <Link
-            href="/calendario"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/60 dark:hover:bg-tertiary transition group"
-          >
-            <Calendar size={16} className="text-brand-deep group-hover:scale-110 transition" />
-            <span className="text-xs font-semibold text-label-secondary group-hover:text-label-primary">
-              Agenda
-            </span>
-          </Link>
-
-          <Link
-            href="/usuarios"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/60 dark:hover:bg-tertiary transition group"
-          >
-            <UserCheck size={16} className="text-label-primary group-hover:scale-110 transition" />
-            <span className="text-xs font-semibold text-label-secondary group-hover:text-label-primary">
-              Habitantes
-            </span>
-          </Link>
-        </footer>
       </div>
     </div>
   );

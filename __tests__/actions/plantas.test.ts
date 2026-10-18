@@ -1,4 +1,4 @@
-import { registrarCuidado, deshacerCuidado, getResumenPlantasLobby } from '@/actions/plantas';
+import { registrarCuidado, deshacerCuidado, getResumenPlantasLobby, createPlanta } from '@/actions/plantas';
 import { prisma } from '@/lib/prisma';
 
 jest.mock('@/lib/prisma', () => ({
@@ -33,6 +33,46 @@ jest.mock('next/cache', () => ({
 describe('Plantas Actions - Cuidados y Lobby (GUI-02, GUI-07, GUI-08)', () => {
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('createPlanta con Guía de Cuidado', () => {
+    it('debe persistir nivel_luz, nivel_agua, estado_salud y notas_cuidado al crear planta', async () => {
+      (prisma.plantas.create as jest.Mock).mockResolvedValue({
+        id: 'p-new',
+        nombre_comun: 'Helecho Boston',
+        ubicacion: 'Balcón',
+        especie: 'Nephrolepis exaltata',
+        foto_url: null,
+        nivel_luz: 'SOMBRA',
+        nivel_agua: 'ABUNDANTE',
+        estado_salud: 'EN_OBSERVACION',
+        notas_cuidado: 'Atomizar hojas a diario',
+      });
+
+      const fd = new FormData();
+      fd.set('nombre_comun', 'Helecho Boston');
+      fd.set('ubicacion', 'Balcón');
+      fd.set('especie', 'Nephrolepis exaltata');
+      fd.set('frecuencia_riego', '3');
+      fd.set('nivel_luz', 'SOMBRA');
+      fd.set('nivel_agua', 'ABUNDANTE');
+      fd.set('estado_salud', 'EN_OBSERVACION');
+      fd.set('notas_cuidado', 'Atomizar hojas a diario');
+
+      const res = await createPlanta(fd);
+      expect(res.success).toBe(true);
+      expect(prisma.plantas.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            nombre_comun: 'Helecho Boston',
+            nivel_luz: 'SOMBRA',
+            nivel_agua: 'ABUNDANTE',
+            estado_salud: 'EN_OBSERVACION',
+            notas_cuidado: 'Atomizar hojas a diario',
+          }),
+        })
+      );
+    });
   });
 
   describe('getResumenPlantasLobby', () => {

@@ -73,7 +73,7 @@ export default async function RootLayout({
           <RegisterServiceWorker />
           <InactivityTimer isLoggedIn={!!user} timeoutMinutes={15} />
           <HeaderNav user={user} />
-          <main className="flex-1 pb-[calc(49px+env(safe-area-inset-bottom,0px)+1.5rem)] sm:pb-0">{children}</main>
+          <main className="flex-1 pb-[calc(49px+env(safe-area-inset-bottom,0px)+1.5rem)] lg:pb-0">{children}</main>
           <BottomTabBar />
           <InstallPrompt />
         </ThemeProvider>

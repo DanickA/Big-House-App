@@ -6,6 +6,10 @@ export interface CreatePlantaData {
   especie?: string | null;
   foto_url?: string | null;
   frecuencia_dias: number;
+  nivel_luz?: string | null;
+  nivel_agua?: string | null;
+  estado_salud?: string | null;
+  notas_cuidado?: string | null;
 }
 
 export interface UpdatePlantaData {
@@ -13,6 +17,10 @@ export interface UpdatePlantaData {
   ubicacion?: string;
   especie?: string | null;
   foto_url?: string | null;
+  nivel_luz?: string | null;
+  nivel_agua?: string | null;
+  estado_salud?: string | null;
+  notas_cuidado?: string | null;
 }
 
 export interface IPlantaRepository {

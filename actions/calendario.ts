@@ -67,6 +67,11 @@ export async function obtenerEventosMes(fechaInicio: Date, fechaFin: Date) {
   }
 }
 
+import {
+  pushEventoAGoogleCalendar,
+  deleteEventoEnGoogleCalendar,
+} from '@/actions/google-calendar';
+
 export async function crearEvento(data: EventoData) {
   const auth = await resolveSessionUser();
   if (!auth.ok) {
@@ -78,11 +83,27 @@ export async function crearEvento(data: EventoData) {
     creador_id: auth.user.userId,
   });
 
+  let googleSynced = false;
   if (result.success) {
-    revalidatePath('/calendario');
+    if (result.data?.id) {
+      try {
+        const pushRes = await pushEventoAGoogleCalendar(auth.user.userId, result.data.id);
+        googleSynced = pushRes.synced;
+      } catch (err) {
+        console.warn('Error al exportar a Google Calendar:', err);
+      }
+    }
+    try {
+      revalidatePath('/calendario');
+      revalidatePath('/');
+    } catch {}
   }
 
-  return toActionResponse(result);
+  const response = toActionResponse(result);
+  return {
+    ...response,
+    googleSynced,
+  };
 }
 
 export async function actualizarEvento(
@@ -97,12 +118,26 @@ export async function actualizarEvento(
 
   const result = await actualizarEventoUC.execute(id, data, opcionRecurrencia);
 
+  let googleSynced = false;
   if (result.success) {
-    revalidatePath('/calendario');
-    revalidatePath('/');
+    const targetId = result.data?.id || id;
+    try {
+      const pushRes = await pushEventoAGoogleCalendar(auth.user.userId, targetId);
+      googleSynced = pushRes.synced;
+    } catch (err) {
+      console.warn('Error al exportar actualización a Google Calendar:', err);
+    }
+    try {
+      revalidatePath('/calendario');
+      revalidatePath('/');
+    } catch {}
   }
 
-  return toActionResponse(result);
+  const response = toActionResponse(result);
+  return {
+    ...response,
+    googleSynced,
+  };
 }
 
 export async function cancelarEventoLogico(id: string) {
@@ -111,10 +146,17 @@ export async function cancelarEventoLogico(id: string) {
     return { success: false, error: auth.error, code: auth.code };
   }
 
+  const previo = await prisma.eventos?.findUnique?.({ where: { id } });
   const result = await cancelarEventoLogicoUC.execute(id);
 
   if (result.success) {
-    revalidatePath('/calendario');
+    if (previo?.google_event_id) {
+      await deleteEventoEnGoogleCalendar(auth.user.userId, previo.google_event_id);
+    }
+    try {
+      revalidatePath('/calendario');
+      revalidatePath('/');
+    } catch {}
   }
 
   return toActionResponse(result);
@@ -126,10 +168,17 @@ export async function eliminarEventoFisico(id: string) {
     return { success: false, error: auth.error, code: auth.code };
   }
 
+  const previo = await prisma.eventos?.findUnique?.({ where: { id } });
   const result = await eliminarEventoFisicoUC.execute(id);
 
   if (result.success) {
-    revalidatePath('/calendario');
+    if (previo?.google_event_id) {
+      await deleteEventoEnGoogleCalendar(auth.user.userId, previo.google_event_id);
+    }
+    try {
+      revalidatePath('/calendario');
+      revalidatePath('/');
+    } catch {}
   }
 
   return toActionResponse(result);

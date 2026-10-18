@@ -1,8 +1,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { prisma } from '@/lib/prisma';
 import { resolveSessionUser } from '@/lib/auth-guard';
 import { toActionResponse } from '@/modules/shared';
+import {
+  pushEventoAGoogleCalendar,
+  deleteEventoEnGoogleCalendar,
+} from '@/actions/google-calendar';
 import {
   GetEventosCalendarioUseCase,
   GetProximosEventosLobbyUseCase,
@@ -90,6 +95,9 @@ export async function createEvento(formData: FormData) {
   });
 
   if (result.success) {
+    if (result.data?.id) {
+      await pushEventoAGoogleCalendar(auth.user.userId, result.data.id);
+    }
     revalidatePath('/calendario');
     revalidatePath('/');
   }
@@ -104,9 +112,13 @@ export async function deleteEvento(id: string) {
     return { success: false, error: auth.error, code: auth.code };
   }
 
+  const previo = await prisma.eventos?.findUnique?.({ where: { id } });
   const result = await eliminarEventoFisicoUC.execute(id);
 
   if (result.success) {
+    if (previo?.google_event_id) {
+      await deleteEventoEnGoogleCalendar(auth.user.userId, previo.google_event_id);
+    }
     revalidatePath('/calendario');
     revalidatePath('/');
   }

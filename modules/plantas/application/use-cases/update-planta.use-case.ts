@@ -14,6 +14,10 @@ export interface UpdatePlantaDTO {
   especie?: string | null;
   foto?: File | null;
   frecuencia_riego?: number | null;
+  nivel_luz?: string | null;
+  nivel_agua?: string | null;
+  estado_salud?: string | null;
+  notas_cuidado?: string | null;
 }
 
 export class UpdatePlantaUseCase {
@@ -36,6 +40,10 @@ export class UpdatePlantaUseCase {
         nombre_comun,
         ubicacion,
         especie: dto.especie?.trim() || null,
+        ...(dto.nivel_luz !== undefined && { nivel_luz: dto.nivel_luz?.trim() || 'INDIRECTA' }),
+        ...(dto.nivel_agua !== undefined && { nivel_agua: dto.nivel_agua?.trim() || 'MODERADA' }),
+        ...(dto.estado_salud !== undefined && { estado_salud: dto.estado_salud?.trim() || 'SANA' }),
+        ...(dto.notas_cuidado !== undefined && { notas_cuidado: dto.notas_cuidado?.trim() || null }),
       };
 
       if (dto.foto && dto.foto.size > 0) {

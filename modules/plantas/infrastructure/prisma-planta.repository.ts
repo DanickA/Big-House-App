@@ -20,6 +20,10 @@ export class PrismaPlantaRepository implements IPlantaRepository {
       especie: p.especie,
       ubicacion: p.ubicacion,
       foto_url: p.foto_url,
+      nivel_luz: p.nivel_luz ?? 'INDIRECTA',
+      nivel_agua: p.nivel_agua ?? 'MODERADA',
+      estado_salud: p.estado_salud ?? 'SANA',
+      notas_cuidado: p.notas_cuidado ?? null,
     };
   }
 
@@ -59,6 +63,10 @@ export class PrismaPlantaRepository implements IPlantaRepository {
         especie: planta.especie,
         ubicacion: planta.ubicacion,
         foto_url: planta.foto_url,
+        nivel_luz: planta.nivel_luz ?? 'INDIRECTA',
+        nivel_agua: planta.nivel_agua ?? 'MODERADA',
+        estado_salud: planta.estado_salud ?? 'SANA',
+        notas_cuidado: planta.notas_cuidado ?? null,
         diasRestantes,
         frecuencia_dias: tareaRiego?.frecuencia_dias ?? 7,
         requiereRiego,
@@ -77,6 +85,10 @@ export class PrismaPlantaRepository implements IPlantaRepository {
         ubicacion: data.ubicacion,
         especie: data.especie ?? null,
         foto_url: data.foto_url ?? null,
+        nivel_luz: data.nivel_luz ?? 'INDIRECTA',
+        nivel_agua: data.nivel_agua ?? 'MODERADA',
+        estado_salud: data.estado_salud ?? 'SANA',
+        notas_cuidado: data.notas_cuidado ?? null,
         tareas_cuidado: {
           create: {
             tipo_tarea: 'RIEGO',
@@ -93,6 +105,10 @@ export class PrismaPlantaRepository implements IPlantaRepository {
       especie: nueva.especie,
       ubicacion: nueva.ubicacion,
       foto_url: nueva.foto_url,
+      nivel_luz: nueva.nivel_luz ?? 'INDIRECTA',
+      nivel_agua: nueva.nivel_agua ?? 'MODERADA',
+      estado_salud: nueva.estado_salud ?? 'SANA',
+      notas_cuidado: nueva.notas_cuidado ?? null,
     };
   }
 
@@ -104,6 +120,10 @@ export class PrismaPlantaRepository implements IPlantaRepository {
         ...(data.ubicacion !== undefined && { ubicacion: data.ubicacion }),
         ...(data.especie !== undefined && { especie: data.especie }),
         ...(data.foto_url !== undefined && { foto_url: data.foto_url }),
+        ...(data.nivel_luz !== undefined && { nivel_luz: data.nivel_luz }),
+        ...(data.nivel_agua !== undefined && { nivel_agua: data.nivel_agua }),
+        ...(data.estado_salud !== undefined && { estado_salud: data.estado_salud }),
+        ...(data.notas_cuidado !== undefined && { notas_cuidado: data.notas_cuidado }),
       },
     });
 
@@ -113,6 +133,10 @@ export class PrismaPlantaRepository implements IPlantaRepository {
       especie: updated.especie,
       ubicacion: updated.ubicacion,
       foto_url: updated.foto_url,
+      nivel_luz: updated.nivel_luz ?? 'INDIRECTA',
+      nivel_agua: updated.nivel_agua ?? 'MODERADA',
+      estado_salud: updated.estado_salud ?? 'SANA',
+      notas_cuidado: updated.notas_cuidado ?? null,
     };
   }
 

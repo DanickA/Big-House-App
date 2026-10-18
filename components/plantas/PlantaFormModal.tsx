@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { Planta } from './PlantaCard';
 import { createPlanta, updatePlanta } from '@/actions/plantas';
 import { compressImage } from '@/lib/image-compression';
-import { X, Check, Sprout, MapPin, Tag, Droplets, Camera, Minus, Plus, RefreshCw, Loader2 } from 'lucide-react';
+import { X, Check, Sprout, MapPin, Tag, Droplets, Camera, RefreshCw, Loader2, Sun, CloudSun, Cloud, HeartPulse } from 'lucide-react';
 import WaterProgressRing from '@/components/ui/WaterProgressRing';
 
 interface PlantaFormModalProps {
@@ -38,6 +38,10 @@ export default function PlantaFormModal({
   const [ubicacion, setUbicacion] = useState('');
   const [especie, setEspecie] = useState('');
   const [frecuenciaDias, setFrecuenciaDias] = useState<number>(7);
+  const [nivelLuz, setNivelLuz] = useState<'SOMBRA' | 'INDIRECTA' | 'DIRECTA'>('INDIRECTA');
+  const [nivelAgua, setNivelAgua] = useState<'POCA' | 'MODERADA' | 'ABUNDANTE'>('MODERADA');
+  const [estadoSalud, setEstadoSalud] = useState<'SANA' | 'EN_OBSERVACION'>('SANA');
+  const [notasCuidado, setNotasCuidado] = useState('');
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,12 +57,26 @@ export default function PlantaFormModal({
       setUbicacion(plantaAEditar.ubicacion || '');
       setEspecie(plantaAEditar.especie || '');
       setFrecuenciaDias(plantaAEditar.frecuencia_dias ?? 7);
+      setNivelLuz(
+        (plantaAEditar.nivel_luz as 'SOMBRA' | 'INDIRECTA' | 'DIRECTA') || 'INDIRECTA'
+      );
+      setNivelAgua(
+        (plantaAEditar.nivel_agua as 'POCA' | 'MODERADA' | 'ABUNDANTE') || 'MODERADA'
+      );
+      setEstadoSalud(
+        (plantaAEditar.estado_salud as 'SANA' | 'EN_OBSERVACION') || 'SANA'
+      );
+      setNotasCuidado(plantaAEditar.notas_cuidado || '');
       setFotoPreview(plantaAEditar.foto_url || null);
     } else {
       setNombre('');
       setUbicacion('');
       setEspecie('');
       setFrecuenciaDias(7);
+      setNivelLuz('INDIRECTA');
+      setNivelAgua('MODERADA');
+      setEstadoSalud('SANA');
+      setNotasCuidado('');
       setFotoPreview(null);
     }
     setErrorMsg(null);
@@ -89,14 +107,6 @@ export default function PlantaFormModal({
     fileInputRef.current?.click();
   }
 
-  function handleIncrementarFrecuencia() {
-    setFrecuenciaDias((prev) => Math.min(60, prev + 1));
-  }
-
-  function handleDecrementarFrecuencia() {
-    setFrecuenciaDias((prev) => Math.max(1, prev - 1));
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMsg(null);
@@ -105,6 +115,10 @@ export default function PlantaFormModal({
     try {
       const formData = new FormData(e.currentTarget);
       formData.set('frecuencia_riego', frecuenciaDias.toString());
+      formData.set('nivel_luz', nivelLuz);
+      formData.set('nivel_agua', nivelAgua);
+      formData.set('estado_salud', estadoSalud);
+      formData.set('notas_cuidado', notasCuidado.trim());
 
       // Optimizar y comprimir la foto en el cliente si existe (evita errores 413 de 1MB/4.5MB)
       const rawFoto = formData.get('foto') as File | null;
@@ -397,6 +411,133 @@ export default function PlantaFormModal({
                     {item.label}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* 6. GUÍA RÁPIDA DE CUIDADO (1 TOQUE) */}
+            <div className="p-4.5 bg-secondary/75 dark:bg-tertiary/40 rounded-3xl border border-separator space-y-4 shadow-xs">
+              <div>
+                <span className="block apple-subhead font-medium text-label-primary">
+                  Guía rápida de cuidado
+                </span>
+                <p className="apple-caption-2 text-label-secondary font-normal mt-0.5">
+                  Se mostrará al desplegar la cápsula de la planta
+                </p>
+              </div>
+
+              {/* Exposición a la luz */}
+              <div className="space-y-1.5">
+                <label className="block apple-caption-1 font-semibold text-label-secondary">
+                  Exposición solar
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      { id: 'SOMBRA', label: 'Sombra', icon: Cloud },
+                      { id: 'INDIRECTA', label: 'Indirecta', icon: CloudSun },
+                      { id: 'DIRECTA', label: 'Sol directo', icon: Sun },
+                    ] as const
+                  ).map((item) => {
+                    const Icon = item.icon;
+                    const active = nivelLuz === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setNivelLuz(item.id)}
+                        className={`py-2.5 px-2 min-h-[44px] rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
+                          active
+                            ? 'bg-mint text-white shadow-2xs'
+                            : 'bg-tertiary hover:bg-tertiary-hover text-label-secondary border border-separator'
+                        }`}
+                      >
+                        <Icon size={14} />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Cantidad de agua */}
+              <div className="space-y-1.5">
+                <label className="block apple-caption-1 font-semibold text-label-secondary">
+                  Cantidad de agua por riego
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      { id: 'POCA', label: 'Poca' },
+                      { id: 'MODERADA', label: 'Moderada' },
+                      { id: 'ABUNDANTE', label: 'Abundante' },
+                    ] as const
+                  ).map((item) => {
+                    const active = nivelAgua === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setNivelAgua(item.id)}
+                        className={`py-2.5 px-2 min-h-[44px] rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
+                          active
+                            ? 'bg-mint text-white shadow-2xs'
+                            : 'bg-tertiary hover:bg-tertiary-hover text-label-secondary border border-separator'
+                        }`}
+                      >
+                        <Droplets size={13} />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Estado de Salud */}
+              <div className="space-y-1.5">
+                <label className="block apple-caption-1 font-semibold text-label-secondary">
+                  Estado de salud
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEstadoSalud('SANA')}
+                    className={`py-2.5 px-3 min-h-[44px] rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
+                      estadoSalud === 'SANA'
+                        ? 'bg-mint text-white shadow-2xs'
+                        : 'bg-tertiary hover:bg-tertiary-hover text-label-secondary border border-separator'
+                    }`}
+                  >
+                    <Check size={14} />
+                    <span>Sana</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEstadoSalud('EN_OBSERVACION')}
+                    className={`py-2.5 px-3 min-h-[44px] rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
+                      estadoSalud === 'EN_OBSERVACION'
+                        ? 'bg-amber-500 text-white shadow-2xs'
+                        : 'bg-tertiary hover:bg-tertiary-hover text-label-secondary border border-separator'
+                    }`}
+                  >
+                    <HeartPulse size={14} />
+                    <span>En observación</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Notas de cuidado */}
+              <div className="space-y-1.5">
+                <label className="block apple-caption-1 font-semibold text-label-secondary">
+                  Notas o instrucciones (opcional)
+                </label>
+                <textarea
+                  name="notas_cuidado"
+                  rows={2}
+                  value={notasCuidado}
+                  onChange={(e) => setNotasCuidado(e.target.value)}
+                  placeholder="Ej. Atomizar hojas una vez por semana, evitar corrientes de aire..."
+                  className="w-full px-3.5 py-2.5 bg-secondary/80 dark:bg-tertiary/60 border border-separator rounded-2xl text-xs text-label-primary font-medium placeholder:text-label-tertiary focus:outline-none focus:bg-secondary focus:border-mint transition"
+                />
               </div>
             </div>
 

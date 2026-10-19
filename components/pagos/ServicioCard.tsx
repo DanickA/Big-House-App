@@ -70,7 +70,7 @@ export default function ServicioCard({
   let badgeTexto = `Al día (${servicio.diasRestantes}d)`;
 
   if (servicio.estadoVencimiento === 'VENCIDO') {
-    badgeClasses = 'bg-[#ce9b8c]/25 dark:bg-terracotta/20 text-terracotta border-[#aa4b50]/30 dark:border-terracotta/40 animate-pulse';
+    badgeClasses = 'bg-terracotta/15 text-terracotta border-separator animate-pulse';
     badgeIcon = <AlertCircle size={12} strokeWidth={2.5} />;
     const diasVencido = Math.abs(servicio.diasRestantes);
     badgeTexto = diasVencido === 0 ? 'Venció hoy' : `Vencido (${diasVencido}d)`;
@@ -135,7 +135,7 @@ export default function ServicioCard({
   ];
 
   return (
-    <div className="glass-card glass-card-hover rounded-[2rem] p-5 sm:p-6 flex flex-col justify-between space-y-4 border border-white/80 dark:border-white/10 shadow-xs relative overflow-hidden transition-all duration-300">
+    <div className="glass-card glass-card-hover rounded-[2rem] p-5 sm:p-6 flex flex-col justify-between space-y-4 border border-separator shadow-xs relative overflow-hidden transition-all duration-300">
       
       {/* Fondo decorativo suave sutil según estado */}
       {servicio.estadoVencimiento === 'VENCIDO' && (
@@ -161,7 +161,7 @@ export default function ServicioCard({
       {/* Identificación y Monto */}
       <div className="space-y-2">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#ce9b8c]/20 to-[#ce9b8c]/35 dark:from-terracotta/20 dark:to-terracotta/10 text-terracotta border border-[#aa4b50]/20 dark:border-terracotta/30 flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+          <div className="w-10 h-10 rounded-2xl bg-tertiary text-terracotta border border-separator flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
             <Receipt size={20} strokeWidth={2.2} />
           </div>
           <div className="min-w-0 flex-1">
@@ -194,7 +194,7 @@ export default function ServicioCard({
         </div>
 
         {/* Referencias y Próximo Vencimiento */}
-        <div className="p-3 bg-white/60 dark:bg-tertiary/60 rounded-2xl border border-white/80 dark:border-white/10 space-y-1.5 text-xs shadow-2xs">
+        <div className="p-3 bg-tertiary rounded-2xl border border-separator space-y-1.5 text-xs shadow-2xs">
           <div className="flex items-center justify-between text-label-secondary">
             <span className="flex items-center gap-1 font-medium">
               <Calendar size={12} className="text-terracotta" />
@@ -224,7 +224,7 @@ export default function ServicioCard({
       {/* Pie con Altura Estrictamente Bloqueada (Garantía CLS = 0 al confirmar) */}
       <div className="pt-2 border-t border-separator min-h-[52px] flex items-center">
         {confirmandoQuickPay ? (
-          <div className="w-full flex items-center justify-between gap-2 bg-[#ce9b8c]/20 dark:bg-terracotta/20 border border-terracotta/30 rounded-xl px-2.5 py-1 animate-fade-in">
+          <div className="w-full flex items-center justify-between gap-2 bg-terracotta/15 border border-terracotta/30 rounded-xl px-2.5 py-1 animate-fade-in">
             <span className="text-xs font-semibold text-label-primary truncate flex items-center gap-1.5 min-w-0">
               <Zap size={13} className="text-terracotta fill-terracotta shrink-0" />
               <span className="truncate">¿Pagar {montoFormateado}?</span>

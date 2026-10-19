@@ -57,7 +57,7 @@ export default function SegmentedControl<T extends string | number>({
                 : 'py-2 px-3.5 apple-footnote min-h-[44px]'
             } ${
               isSelected
-                ? 'bg-white dark:bg-secondary text-label-primary shadow-xs font-semibold border border-white/80 dark:border-white/10'
+                ? 'bg-secondary text-label-primary shadow-xs font-semibold border border-separator'
                 : 'text-label-secondary hover:text-label-primary hover:bg-black/3 dark:hover:bg-white/5 border border-transparent'
             }`}
           >

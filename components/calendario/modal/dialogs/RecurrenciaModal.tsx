@@ -16,7 +16,7 @@ export function RecurrenciaScopeSelector({
 }: RecurrenciaScopeSelectorProps) {
   return (
     <div
-      className={`p-4 rounded-2xl bg-gradient-to-br from-[#ce9b8c]/15 via-[#ce9b8c]/25 to-terracotta/10 dark:from-terracotta/20 dark:via-terracotta/15 dark:to-terracotta/5 border border-terracotta/30 dark:border-terracotta/35 space-y-3 shadow-2xs animate-fade-in-up ${className}`}
+      className={`p-4 rounded-2xl bg-tertiary border border-terracotta/30 dark:border-terracotta/35 space-y-3 shadow-2xs animate-fade-in-up ${className}`}
     >
       <div className="flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-xl bg-terracotta text-white flex items-center justify-center shrink-0 shadow-3xs">
@@ -38,8 +38,8 @@ export function RecurrenciaScopeSelector({
           onClick={() => onChange('SOLO_ESTE')}
           className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-2.5 ${
             value === 'SOLO_ESTE'
-              ? 'bg-white dark:bg-tertiary border-terracotta text-label-primary shadow-xs ring-2 ring-terracotta/25'
-              : 'bg-white/50 dark:bg-tertiary/40 border-separator/70 text-label-secondary hover:text-label-primary hover:bg-white/80'
+              ? 'bg-tertiary border-terracotta text-label-primary shadow-xs ring-2 ring-terracotta/25'
+              : 'bg-tertiary border-separator/70 text-label-secondary hover:text-label-primary hover:bg-tertiary'
           }`}
         >
           <div
@@ -66,8 +66,8 @@ export function RecurrenciaScopeSelector({
           onClick={() => onChange('ESTE_Y_FUTUROS')}
           className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-2.5 ${
             value === 'ESTE_Y_FUTUROS'
-              ? 'bg-white dark:bg-tertiary border-terracotta text-label-primary shadow-xs ring-2 ring-terracotta/25'
-              : 'bg-white/50 dark:bg-tertiary/40 border-separator/70 text-label-secondary hover:text-label-primary hover:bg-white/80'
+              ? 'bg-tertiary border-terracotta text-label-primary shadow-xs ring-2 ring-terracotta/25'
+              : 'bg-tertiary border-separator/70 text-label-secondary hover:text-label-primary hover:bg-tertiary'
           }`}
         >
           <div

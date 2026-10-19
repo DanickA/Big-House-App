@@ -25,7 +25,7 @@ export default function SeccionRecordatorios({
   onChangeMinutosAnticipacion,
 }: SeccionRecordatoriosProps) {
   return (
-    <div className="p-4 bg-white/50 dark:bg-tertiary/40 rounded-2xl border border-separator/80 dark:border-separator space-y-3">
+    <div className="p-4 bg-tertiary rounded-2xl border border-separator/80 dark:border-separator space-y-3">
       <div className="flex items-center justify-between">
         <span className="apple-footnote font-semibold text-label-primary flex items-center gap-1.5">
           <Bell size={13} className="text-terracotta" />
@@ -44,7 +44,7 @@ export default function SeccionRecordatorios({
             <select
               value={minutosAnticipacion}
               onChange={(e) => onChangeMinutosAnticipacion(parseInt(e.target.value, 10))}
-              className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-white dark:bg-secondary border border-separator/80 text-label-primary focus:outline-none cursor-pointer"
+              className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-secondary border border-separator/80 text-label-primary focus:outline-none cursor-pointer"
             >
               <option value={15}>15 minutos antes</option>
               <option value={30}>30 minutos antes</option>

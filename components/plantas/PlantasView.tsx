@@ -168,7 +168,7 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
       <div className="relative z-10 max-w-5xl mx-auto space-y-6 animate-fade-in-up">
         {/* Notificación Flotante Glassmorphic */}
         {mensajeExito && (
-          <div className="fixed top-20 right-6 z-60 glass-card bg-[#c7e1d7]/95 dark:bg-mint/20 border border-[#6eb5a5]/40 text-mint px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+          <div className="fixed top-20 right-6 z-60 glass-card bg-mint/20 border border-mint/40 text-label-primary px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
             <CheckCircle2 size={18} className="text-mint shrink-0" />
             <span>{mensajeExito}</span>
             {undoQuickWater && (
@@ -176,7 +176,7 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
                 type="button"
                 disabled={deshaciendoQuickWater}
                 onClick={handleUndoQuickWater}
-                className="ml-2 px-3.5 py-2 min-h-[40px] bg-mint text-white dark:bg-mint dark:text-black rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 shrink-0"
+                className="ml-2 px-3.5 py-2 min-h-[40px] bg-terracotta text-white rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 shrink-0"
               >
                 {deshaciendoQuickWater ? (
                   <>
@@ -194,7 +194,7 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
           </div>
         )}
         {mensajeError && (
-          <div className="fixed top-20 right-6 z-60 glass-card bg-[#ce9b8c]/30 dark:bg-terracotta/20 border border-[#aa4b50]/40 text-terracotta px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
+          <div className="fixed top-20 right-6 z-60 glass-card bg-terracotta/20 border border-terracotta/40 text-label-primary px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm animate-fade-in-up">
             <AlertCircle size={18} className="text-terracotta" />
             <span>{mensajeError}</span>
           </div>

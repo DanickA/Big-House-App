@@ -216,7 +216,7 @@ export async function sincronizarEventosGoogle(
           ubicacion: item.location || null,
           tipo_plantilla: TipoPlantilla.EVENTO,
           estado: EstadoEvento.ACTIVO,
-          color: '#6EB5A5',
+          color: '#54749d',
           creador_id: usuarioId,
           google_event_id: item.id,
         },

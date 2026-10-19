@@ -55,10 +55,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         root.classList.remove('dark');
       }
 
-      // Actualizar color de la barra de estado móvil
+      // Actualizar color de la barra de estado móvil (Paleta de 11 colores)
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', actual === 'dark' ? '#151413' : '#f9f6eb');
+        metaThemeColor.setAttribute('content', actual === 'dark' ? '#3e6190' : '#f8eddb');
       }
     }
 

@@ -17,7 +17,7 @@ export default function ColorPicker({
       <label className="apple-footnote text-label-secondary font-medium">
         Color identificador
       </label>
-      <div className="flex items-center gap-2.5 p-2 bg-white/50 dark:bg-tertiary/40 rounded-2xl border border-separator/60 dark:border-separator">
+      <div className="flex items-center gap-2.5 p-2 bg-tertiary rounded-2xl border border-separator/60 dark:border-separator">
         {PALETA_COLORES.map((c) => (
           <button
             key={c}

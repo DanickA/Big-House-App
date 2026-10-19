@@ -52,11 +52,11 @@ const MESES = [
 ];
 
 const COLORES_GOOGLE = [
-  { hex: '#6EB5A5', nombre: 'Salvia Google' },
-  { hex: '#AA4B50', nombre: 'Terracota' },
-  { hex: '#5F6F52', nombre: 'Oliva' },
-  { hex: '#A13842', nombre: 'Carmín' },
-  { hex: '#BD7471', nombre: 'Arcilla' },
+  { hex: '#54749d', nombre: 'Acero Primario' },
+  { hex: '#3e6190', nombre: 'Zafiro Profundo' },
+  { hex: '#6b87a9', nombre: 'Acero Medio' },
+  { hex: '#8599b2', nombre: 'Pizarra Suave' },
+  { hex: '#f9deaf', nombre: 'Vainilla Dorado' },
 ];
 
 export default function CalendarioView({
@@ -90,7 +90,7 @@ export default function CalendarioView({
   const [todoElDia, setTodoElDia] = useState(false);
   const [ubicacion, setUbicacion] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [color, setColor] = useState('#6EB5A5');
+  const [color, setColor] = useState('#54749d');
 
   // Caché Stale-While-Revalidate en memoria para transiciones de 0 ms
   const cacheMesesRef = useRef<Record<string, EventoUnificado[]>>({
@@ -182,7 +182,7 @@ export default function CalendarioView({
     setTodoElDia(false);
     setUbicacion('');
     setDescripcion('');
-    setColor('#6EB5A5');
+    setColor('#54749d');
     setMostrarOpcionesExtra(false);
     setIsSheetOpen(true);
   }
@@ -202,7 +202,7 @@ export default function CalendarioView({
     );
     setUbicacion(ev.ubicacion || '');
     setDescripcion(ev.descripcion || '');
-    setColor(ev.color || '#6EB5A5');
+    setColor(ev.color || '#54749d');
     setMostrarOpcionesExtra(Boolean(ev.ubicacion || ev.descripcion));
     setIsSheetOpen(true);
   }
@@ -438,7 +438,7 @@ export default function CalendarioView({
           className={`fixed top-20 right-4 sm:right-6 z-50 glass-card px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 font-bold text-xs animate-fade-in-up ${
             notificacion.tipo === 'error'
               ? 'bg-red-100/95 dark:bg-red-950/80 border border-red-300 text-red-700 dark:text-red-300'
-              : 'bg-[#c7e1d7]/95 dark:bg-mint/20 border border-[#6eb5a5]/40 text-mint'
+              : 'bg-mint/20 border border-mint/40 text-label-primary'
           }`}
         >
           {notificacion.tipo === 'error' ? (
@@ -451,15 +451,15 @@ export default function CalendarioView({
       )}
 
       {/* CABECERA ÚNICA (Sin superposición entre Selector de Mes y Google Sync en móvil) */}
-      <div className="glass-card p-3.5 sm:p-5 rounded-[1.8rem] sm:rounded-[2rem] border border-white/80 dark:border-white/10 shadow-xs space-y-3">
+      <div className="glass-card p-3.5 sm:p-5 rounded-[1.8rem] sm:rounded-[2rem] space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           {/* Fila 1 en Móvil / Izquierda en Desktop: Selector de Mes + Botón Hoy */}
           <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
-            <div className="flex items-center bg-white/80 dark:bg-tertiary/50 p-1 rounded-2xl border border-separator shadow-2xs">
+            <div className="flex items-center bg-tertiary p-1 rounded-2xl border border-separator">
               <button
                 type="button"
                 onClick={() => cambiarMes(-1)}
-                className="w-8 h-8 rounded-xl bg-white dark:bg-secondary hover:bg-[#c7e1d7]/40 text-label-primary flex items-center justify-center transition cursor-pointer active:scale-90 shrink-0"
+                className="w-8 h-8 rounded-xl bg-secondary hover:bg-mint/20 text-label-primary border border-separator flex items-center justify-center transition cursor-pointer active:scale-90 shrink-0"
                 title="Mes anterior"
               >
                 <ChevronLeft size={16} strokeWidth={2.5} />
@@ -470,7 +470,7 @@ export default function CalendarioView({
               <button
                 type="button"
                 onClick={() => cambiarMes(1)}
-                className="w-8 h-8 rounded-xl bg-white dark:bg-secondary hover:bg-[#c7e1d7]/40 text-label-primary flex items-center justify-center transition cursor-pointer active:scale-90 shrink-0"
+                className="w-8 h-8 rounded-xl bg-secondary hover:bg-mint/20 text-label-primary border border-separator flex items-center justify-center transition cursor-pointer active:scale-90 shrink-0"
                 title="Mes siguiente"
               >
                 <ChevronRight size={16} strokeWidth={2.5} />
@@ -480,14 +480,14 @@ export default function CalendarioView({
             <button
               type="button"
               onClick={irAHoy}
-              className="px-3 py-2 bg-white/80 dark:bg-tertiary/60 hover:bg-white text-xs font-bold text-label-primary rounded-xl border border-separator transition cursor-pointer active:scale-95 shadow-2xs shrink-0"
+              className="px-3 py-2 bg-tertiary hover:bg-secondary text-xs font-bold text-label-primary rounded-xl border border-separator transition cursor-pointer active:scale-95 shrink-0"
             >
               Hoy
             </button>
           </div>
 
           {/* Fila 2 en Móvil / Derecha en Desktop: Botón Google Calendar Sync + Agendar */}
-          <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-separator/40">
+          <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-separator">
             <GoogleCalendarButton
               mes={mesActual + 1}
               anio={anioActual}
@@ -497,7 +497,7 @@ export default function CalendarioView({
             <button
               type="button"
               onClick={() => abrirCreacion(selectedDate)}
-              className="px-3.5 py-2 bg-terracotta hover:bg-terracotta-hover text-white rounded-xl text-xs font-bold transition shadow-sm shadow-terracotta/20 flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0"
+              className="px-3.5 py-2 bg-terracotta hover:bg-terracotta-hover text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0"
             >
               <Plus size={15} strokeWidth={2.5} />
               <span>Agendar</span>
@@ -522,8 +522,8 @@ export default function CalendarioView({
                 onClick={() => setFiltroOrigen(pill.id as FiltroOrigen)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 border ${
                   active
-                    ? 'bg-label-primary text-white border-label-primary shadow-2xs'
-                    : 'bg-white/60 dark:bg-tertiary/40 text-label-secondary border-separator hover:text-label-primary hover:bg-white'
+                    ? 'bg-terracotta text-white border-terracotta'
+                    : 'bg-tertiary text-label-secondary border-separator hover:text-label-primary'
                 }`}
               >
                 {Icon && <Icon size={12} />}
@@ -544,7 +544,7 @@ export default function CalendarioView({
       {/* LAYOUT 2B-2: SPLIT MASTER-DETAIL + MES ULTRA-COMPACTO */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start">
         {/* COLUMNA IZQUIERDA (MASTER): CUADRÍCULA MENSUAL ULTRA-COMPACTA */}
-        <div className="lg:col-span-7 glass-card rounded-[1.8rem] sm:rounded-[2rem] p-3 sm:p-5 border border-white/80 dark:border-white/10 shadow-xs">
+        <div className="lg:col-span-7 glass-card rounded-[1.8rem] sm:rounded-[2rem] p-3 sm:p-5">
           {/* Nombres de los días de la semana (1 letra en celular, 3 letras en desktop) */}
           <div className="grid grid-cols-7 gap-1 mb-1.5 text-center">
             {DIAS_SEMANA_CORTO.map((diaCorto, i) => (
@@ -558,7 +558,7 @@ export default function CalendarioView({
             ))}
           </div>
 
-          {/* Celdas de los días */}
+          {/* Celdas de los días (Plano 2: superficie sólida limpia con borde simétrico 1px) */}
           <div
             className={`grid grid-cols-7 gap-1 sm:gap-2 ${
               cargando ? 'opacity-50' : ''
@@ -576,12 +576,12 @@ export default function CalendarioView({
                   onClick={() => setSelectedDate(fecha)}
                   className={`h-10 sm:h-16 p-1 sm:p-2 rounded-xl sm:rounded-2xl border flex flex-col items-center justify-between transition-all cursor-pointer ${
                     seleccionado
-                      ? 'bg-terracotta text-white border-terracotta shadow-xs scale-[1.02]'
+                      ? 'bg-terracotta text-white border-terracotta'
                       : esHoy
-                      ? 'bg-terracotta/15 border-terracotta/40 text-terracotta'
+                      ? 'bg-terracotta/15 border-terracotta text-label-primary'
                       : esMesActual
-                      ? 'bg-white/70 dark:bg-tertiary/40 border-white/80 dark:border-white/10 text-label-primary hover:bg-white'
-                      : 'opacity-30 border-transparent text-label-quaternary'
+                      ? 'bg-tertiary border-separator text-label-primary hover:border-terracotta/50'
+                      : 'opacity-35 border-transparent text-label-quaternary'
                   }`}
                 >
                   <span className="text-xs font-bold tabular-nums leading-none mt-0.5">
@@ -595,7 +595,7 @@ export default function CalendarioView({
                         key={ev.id}
                         className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full"
                         style={{
-                          backgroundColor: seleccionado ? '#FFFFFF' : ev.color || '#6EB5A5',
+                          backgroundColor: seleccionado ? '#f8eddb' : ev.color || '#54749d',
                         }}
                       />
                     ))}
@@ -616,8 +616,8 @@ export default function CalendarioView({
         </div>
 
         {/* COLUMNA DERECHA / INFERIOR (DETAIL): AGENDA DEL DÍA CON CÁPSULAS ACORDEÓN IN-PLACE */}
-        <div className="lg:col-span-5 glass-card rounded-[1.8rem] sm:rounded-[2rem] p-4 sm:p-5 border border-white/80 dark:border-white/10 space-y-3.5 shadow-xs">
-          <div className="flex items-center justify-between border-b border-separator/50 pb-3 gap-2">
+        <div className="lg:col-span-5 glass-card rounded-[1.8rem] sm:rounded-[2rem] p-4 sm:p-5 space-y-3.5">
+          <div className="flex items-center justify-between border-b border-separator pb-3 gap-2">
             <div className="min-w-0">
               <h3 className="text-sm sm:text-base font-bold text-label-primary capitalize truncate">
                 {selectedDate.toLocaleDateString('es-CO', {
@@ -638,7 +638,7 @@ export default function CalendarioView({
             <button
               type="button"
               onClick={() => abrirCreacion(selectedDate)}
-              className="px-3 py-1.5 rounded-xl bg-terracotta/15 hover:bg-terracotta text-terracotta hover:text-white text-xs font-bold flex items-center gap-1 transition cursor-pointer active:scale-95 shrink-0"
+              className="px-3 py-1.5 rounded-xl bg-terracotta/15 hover:bg-terracotta text-label-primary hover:text-white border border-separator text-xs font-bold flex items-center gap-1 transition cursor-pointer active:scale-95 shrink-0"
             >
               <Plus size={14} strokeWidth={2.5} />
               <span>Añadir</span>
@@ -653,7 +653,7 @@ export default function CalendarioView({
               <button
                 type="button"
                 onClick={() => abrirCreacion(selectedDate)}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-terracotta hover:underline cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-label-secondary hover:underline cursor-pointer"
               >
                 <Plus size={13} />
                 <span>Agendar evento en Google Calendar</span>
@@ -672,10 +672,10 @@ export default function CalendarioView({
                     key={ev.id}
                     className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                       esCancelado
-                        ? 'opacity-55 bg-white/50 dark:bg-tertiary/30 border-separator'
+                        ? 'opacity-55 bg-tertiary/50 border-separator'
                         : isExpanded
-                        ? 'bg-white dark:bg-tertiary/90 border-terracotta/40 shadow-md'
-                        : 'bg-white/85 dark:bg-tertiary/50 border-white/80 dark:border-white/10 hover:bg-white shadow-2xs'
+                        ? 'bg-tertiary border-terracotta'
+                        : 'bg-tertiary border-separator hover:border-terracotta/50'
                     }`}
                   >
                     {/* Nivel 1 Visible: Identidad + Hora + Acción Primaria / Chevron */}
@@ -686,7 +686,7 @@ export default function CalendarioView({
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <div
                           className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-white shadow-2xs"
-                          style={{ backgroundColor: ev.color || '#6EB5A5' }}
+                          style={{ backgroundColor: ev.color || '#54749d' }}
                         >
                           {esPlanta ? (
                             <Sprout size={15} />
@@ -790,7 +790,7 @@ export default function CalendarioView({
                                   className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition ${
                                     st.completado
                                       ? 'bg-mint border-mint text-white'
-                                      : 'border-separator bg-white dark:bg-tertiary'
+                                      : 'border-separator bg-tertiary'
                                   }`}
                                 >
                                   {st.completado && <Check size={10} />}
@@ -823,7 +823,7 @@ export default function CalendarioView({
                               <button
                                 type="button"
                                 onClick={() => abrirEdicion(ev)}
-                                className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-label-secondary hover:text-label-primary hover:bg-white/80 flex items-center gap-1 transition cursor-pointer"
+                                className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-label-secondary hover:text-label-primary hover:bg-tertiary flex items-center gap-1 transition cursor-pointer"
                               >
                                 <Pencil size={11} />
                                 <span>Editar</span>
@@ -867,7 +867,7 @@ export default function CalendarioView({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-system dark:bg-secondary rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 border-t sm:border border-white/80 dark:border-white/10 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-md bg-system dark:bg-secondary rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 border-t sm:border border-separator shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
           >
             {/* Tirador de gaveta móvil */}
             <div className="w-10 h-1 bg-separator rounded-full mx-auto sm:hidden" />
@@ -894,7 +894,7 @@ export default function CalendarioView({
               <button
                 type="button"
                 onClick={cerrarSheet}
-                className="w-8 h-8 rounded-full bg-white/70 dark:bg-tertiary flex items-center justify-center text-label-secondary hover:text-label-primary shrink-0 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-tertiary flex items-center justify-center text-label-secondary hover:text-label-primary shrink-0 cursor-pointer"
                 aria-label="Cerrar"
               >
                 <X size={16} />
@@ -911,12 +911,12 @@ export default function CalendarioView({
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
                   placeholder="Título (ej. Cita médica, Reunión, Mercado)..."
-                  className="w-full min-w-0 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-tertiary border border-separator text-sm font-semibold text-label-primary focus:outline-none focus:border-terracotta"
+                  className="w-full min-w-0 px-3.5 py-2.5 rounded-2xl bg-tertiary border border-separator text-sm font-semibold text-label-primary focus:outline-none focus:border-terracotta"
                 />
               </div>
 
               {/* Campo 2: Horario en Grid de 2 Columnas (Nunca rompe el ancho en celular de 320px-375px) */}
-              <div className="rounded-2xl bg-white/75 dark:bg-tertiary/50 p-3 border border-separator/70 space-y-2.5">
+              <div className="rounded-2xl bg-tertiary p-3 border border-separator/70 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-label-secondary flex items-center gap-1.5">
                     <Clock size={13} className="text-terracotta" />
@@ -943,7 +943,7 @@ export default function CalendarioView({
                         type="time"
                         value={horaInicio}
                         onChange={(e) => setHoraInicio(e.target.value)}
-                        className="w-full min-w-0 px-2.5 py-1.5 rounded-xl bg-white dark:bg-secondary border border-separator text-xs font-bold text-label-primary focus:outline-none focus:border-terracotta"
+                        className="w-full min-w-0 px-2.5 py-1.5 rounded-xl bg-secondary border border-separator text-xs font-bold text-label-primary focus:outline-none focus:border-terracotta"
                       />
                     </div>
                     <div className="min-w-0">
@@ -954,7 +954,7 @@ export default function CalendarioView({
                         type="time"
                         value={horaFin}
                         onChange={(e) => setHoraFin(e.target.value)}
-                        className="w-full min-w-0 px-2.5 py-1.5 rounded-xl bg-white dark:bg-secondary border border-separator text-xs font-bold text-label-primary focus:outline-none focus:border-terracotta"
+                        className="w-full min-w-0 px-2.5 py-1.5 rounded-xl bg-secondary border border-separator text-xs font-bold text-label-primary focus:outline-none focus:border-terracotta"
                       />
                     </div>
                   </div>
@@ -981,7 +981,7 @@ export default function CalendarioView({
 
                 {mostrarOpcionesExtra && (
                   <div className="space-y-2.5 pt-2.5 animate-fade-in">
-                    <div className="flex items-center gap-2 bg-white dark:bg-tertiary px-3 py-2 rounded-xl border border-separator min-w-0">
+                    <div className="flex items-center gap-2 bg-tertiary px-3 py-2 rounded-xl border border-separator min-w-0">
                       <MapPin size={14} className="text-label-tertiary shrink-0" />
                       <input
                         type="text"
@@ -992,7 +992,7 @@ export default function CalendarioView({
                       />
                     </div>
 
-                    <div className="flex items-start gap-2 bg-white dark:bg-tertiary px-3 py-2 rounded-xl border border-separator min-w-0">
+                    <div className="flex items-start gap-2 bg-tertiary px-3 py-2 rounded-xl border border-separator min-w-0">
                       <AlignLeft size={14} className="text-label-tertiary shrink-0 mt-0.5" />
                       <textarea
                         rows={2}
@@ -1030,7 +1030,7 @@ export default function CalendarioView({
                 <button
                   type="button"
                   onClick={cerrarSheet}
-                  className="w-full py-2.5 rounded-xl border border-separator bg-white/70 dark:bg-tertiary text-xs font-semibold text-label-secondary hover:text-label-primary cursor-pointer"
+                  className="w-full py-2.5 rounded-xl border border-separator bg-tertiary text-xs font-semibold text-label-secondary hover:text-label-primary cursor-pointer"
                 >
                   Cancelar
                 </button>

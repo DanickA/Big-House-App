@@ -48,7 +48,7 @@ export default function RegisterForm() {
         </div>
 
         {/* Formulario de Registro Glassmorphic */}
-        <div className="glass-card rounded-[2.5rem] p-6 sm:p-8 space-y-6 shadow-xl shadow-black/5 border border-white/80 dark:border-white/10">
+        <div className="glass-card rounded-[2.5rem] p-6 sm:p-8 space-y-6 shadow-xl shadow-black/5 border border-separator">
           
           <div className="flex items-center justify-between border-b border-separator pb-3.5">
             <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ export default function RegisterForm() {
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 bg-[#ce9b8c]/25 border border-[#aa4b50]/30 text-terracotta rounded-2xl apple-footnote font-semibold text-center">
+            <div className="p-3.5 bg-terracotta/15 border border-separator text-terracotta rounded-2xl apple-footnote font-semibold text-center">
               {errorMsg}
             </div>
           )}
@@ -86,7 +86,7 @@ export default function RegisterForm() {
                   name="nombre"
                   required
                   placeholder="Ej. Ana"
-                  className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-white focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+                  className="w-full pl-10 pr-4 py-3 bg-tertiary border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                 />
               </div>
             </div>
@@ -104,7 +104,7 @@ export default function RegisterForm() {
                   name="email"
                   required
                   placeholder="ana@hogar.com"
-                  className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-white focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+                  className="w-full pl-10 pr-4 py-3 bg-tertiary border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                 />
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function RegisterForm() {
                     name="password"
                     required
                     placeholder="******"
-                    className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-white focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+                    className="w-full pl-10 pr-4 py-3 bg-tertiary border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                   />
                 </div>
               </div>
@@ -143,13 +143,13 @@ export default function RegisterForm() {
                     pattern="[0-9]*"
                     inputMode="numeric"
                     placeholder="4-6 dígitos"
-                    className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-white focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs tabular-nums"
+                    className="w-full pl-10 pr-4 py-3 bg-tertiary border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs tabular-nums"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="p-3.5 bg-white/60 dark:bg-tertiary/60 rounded-2xl border border-separator flex items-start gap-2.5">
+            <div className="p-3.5 bg-tertiary rounded-2xl border border-separator flex items-start gap-2.5">
               <ShieldCheck size={16} className="text-pistachio shrink-0 mt-0.5" />
               <p className="apple-footnote text-label-secondary leading-tight">
                 El PIN te permite ingresar con 1 toque en tablets y dispositivos compartidos de la casa.

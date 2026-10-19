@@ -381,7 +381,7 @@ export default function PagoModal({
       />
 
       <div
-        className="relative z-10 glass-modal w-full max-w-xl rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[calc(100vh-3.5rem)] border-t sm:border border-white/80 dark:border-white/10 animate-fade-in-up"
+        className="relative z-10 glass-modal w-full max-w-xl rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[calc(100vh-3.5rem)] border-t sm:border border-separator animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Asa táctil superior estilo Apple HIG Bottom Sheet */}
@@ -504,7 +504,7 @@ export default function PagoModal({
 
               {/* TARJETA DE PRE-APROBACIÓN EXPRESS (1 TOQUE) */}
               {servicioActual.monto > 0 && (
-                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#ce9b8c]/20 via-[#ce9b8c]/30 to-[#aa4b50]/15 dark:from-terracotta/25 dark:via-terracotta/15 dark:to-terracotta/5 border border-[#aa4b50]/30 dark:border-terracotta/40 space-y-3.5 shadow-sm">
+                <div className="p-4 sm:p-5 rounded-2xl bg-tertiary border border-separator space-y-3.5 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-terracotta text-white flex items-center justify-center shadow-xs shrink-0">

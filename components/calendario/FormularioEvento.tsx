@@ -39,7 +39,7 @@ const TEMPLATE_CONFIGS: Record<TipoPlantilla, { label: string; color: string; ic
   [TipoPlantilla.CITA_MEDICA]: { label: 'Cita Médica', color: '#B25D5D', icon: Stethoscope },
   [TipoPlantilla.MERCADO]: { label: 'Mercado', color: '#6EB5A5', icon: ShoppingCart },
   [TipoPlantilla.MANTENIMIENTO]: { label: 'Mantenimiento', color: '#BD7471', icon: ListTodo },
-  [TipoPlantilla.VISITAS]: { label: 'Visitas', color: '#CE9B8C', icon: HeartHandshake },
+  [TipoPlantilla.VISITAS]: { label: 'Visitas', color: '#54749d', icon: HeartHandshake },
   [TipoPlantilla.COMPRAS]: { label: 'Compras', color: '#6EB5A5', icon: ShoppingCart },
   [TipoPlantilla.MASCOTAS]: { label: 'Mascotas', color: '#AA4B50', icon: HeartHandshake },
 };

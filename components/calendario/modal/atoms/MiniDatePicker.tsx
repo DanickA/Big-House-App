@@ -81,7 +81,7 @@ export default function MiniDatePicker({
 
       {/* Mini Calendario Desplegable */}
       {mostrarMiniCal && (
-        <div className="p-3 bg-white/70 dark:bg-tertiary/70 rounded-2xl border border-separator shadow-md space-y-2 animate-fade-in-up">
+        <div className="p-3 bg-tertiary rounded-2xl border border-separator shadow-md space-y-2 animate-fade-in-up">
           <div className="flex items-center justify-between px-1">
             <span className="apple-subhead font-bold text-label-primary">
               {MESES_LABELS[miniCalMes]} {miniCalAnio}
@@ -138,8 +138,8 @@ export default function MiniDatePicker({
                     esSeleccionado
                       ? 'bg-terracotta text-white font-bold shadow-2xs'
                       : c.esMesActual
-                      ? 'text-label-primary hover:bg-white/80 dark:hover:bg-secondary'
-                      : 'text-label-secondary/50 hover:bg-white/40'
+                      ? 'text-label-primary hover:bg-secondary'
+                      : 'text-label-secondary/50 hover:bg-tertiary'
                   }`}
                 >
                   {c.dia}

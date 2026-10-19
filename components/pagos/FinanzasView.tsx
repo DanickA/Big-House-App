@@ -67,11 +67,11 @@ const NOMBRES_MESES = [
 ];
 
 const AVATAR_COLORS = [
-  'bg-[#6EB5A5] text-white',
-  'bg-[#AA4B50] text-white',
-  'bg-[#8C7A6B] text-white',
-  'bg-[#BD7471] text-white',
-  'bg-[#5DA494] text-white',
+  'bg-[#3e6190] text-[#fcf7ef]',
+  'bg-[#54749d] text-[#fcf7ef]',
+  'bg-[#6b87a9] text-[#fcf7ef]',
+  'bg-[#8599b2] text-[#0f1e32]',
+  'bg-[#f9deaf] text-[#0f1e32]',
 ];
 
 function getInitials(nombre: string): string {

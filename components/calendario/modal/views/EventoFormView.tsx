@@ -74,12 +74,12 @@ export default function EventoFormView({
                   className={`p-2.5 rounded-2xl border flex items-center gap-2 text-left transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-terracotta text-white border-terracotta shadow-xs'
-                      : 'bg-white/60 dark:bg-tertiary/40 border-separator/80 text-label-secondary hover:text-label-primary hover:bg-white/90'
+                      : 'bg-tertiary border-separator/80 text-label-secondary hover:text-label-primary hover:bg-tertiary'
                   }`}
                 >
                   <div
                     className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-white dark:bg-secondary text-label-primary shadow-2xs'
+                      isSelected ? 'bg-white/20 text-white' : 'bg-secondary text-label-primary shadow-2xs'
                     }`}
                   >
                     <Icon size={14} />
@@ -125,7 +125,7 @@ export default function EventoFormView({
           onChange={(e) => form.setTitulo(e.target.value)}
           placeholder={plantillaActualConfig.placeholder}
           required
-          className="w-full px-4 py-2.5 rounded-2xl bg-white/70 dark:bg-tertiary/60 border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta text-sm font-semibold transition-colors shadow-2xs"
+          className="w-full px-4 py-2.5 rounded-2xl bg-tertiary border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta text-sm font-semibold transition-colors shadow-2xs"
         />
       </div>
 
@@ -180,7 +180,7 @@ export default function EventoFormView({
               ? 'Ej. Consultorio 402, Clínica del Prado'
               : 'Ej. Sala principal, Terraza, Restaurante...'
           }
-          className={`w-full px-3.5 py-2 text-xs rounded-xl bg-white/70 dark:bg-tertiary/70 border text-label-primary placeholder:text-label-tertiary focus:outline-none transition-colors ${
+          className={`w-full px-3.5 py-2 text-xs rounded-xl bg-tertiary border text-label-primary placeholder:text-label-tertiary focus:outline-none transition-colors ${
             form.plantilla === TipoPlantilla.CITA_MEDICA && !form.ubicacion.trim()
               ? 'border-terracotta/60 focus:border-terracotta'
               : 'border-separator/80 focus:border-terracotta'
@@ -284,7 +284,7 @@ export default function EventoFormView({
           value={form.descripcion}
           onChange={(e) => form.setDescripcion(e.target.value)}
           placeholder="Información relevante o instrucciones..."
-          className="w-full px-3.5 py-2 text-xs rounded-xl bg-white/70 dark:bg-tertiary/70 border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta resize-none"
+          className="w-full px-3.5 py-2 text-xs rounded-xl bg-tertiary border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta resize-none"
         />
       </div>
 

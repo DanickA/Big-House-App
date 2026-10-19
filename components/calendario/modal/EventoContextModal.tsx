@@ -117,10 +117,10 @@ export default function EventoContextModal({
     <div className="fixed inset-0 z-[9999] bg-black/65 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-hidden">
       <div className="fixed inset-0 -z-10" onClick={onClose} />
 
-      <div className="relative glass-modal w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col my-auto max-h-[calc(100vh-3.5rem)] border border-white/80 dark:border-white/10 animate-fade-in-up">
+      <div className="relative glass-modal w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col my-auto max-h-[calc(100vh-3.5rem)] border border-separator animate-fade-in-up">
         
         {/* Encabezado del Día */}
-        <div className="flex justify-between items-center px-6 sm:px-8 py-4.5 border-b border-separator/80 dark:border-separator bg-white/85 dark:bg-[#1C1F1A]/85 backdrop-blur-md shrink-0">
+        <div className="flex justify-between items-center px-6 sm:px-8 py-4.5 border-b border-separator/80 dark:border-separator bg-secondary backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-mint/15 dark:bg-[#282C25] border border-separator/60 dark:border-separator text-label-primary dark:text-olive flex items-center justify-center shadow-2xs font-bold text-sm tabular-nums">
               {fechaActividadObj.getDate()}

@@ -37,7 +37,7 @@ export default function FormCumpleanos({
   return (
     <div className="space-y-4 pt-1">
       {/* Switch de Recurrencia Anual */}
-      <div className="flex items-center justify-between p-3 bg-white/50 dark:bg-tertiary/40 rounded-2xl border border-separator/80">
+      <div className="flex items-center justify-between p-3 bg-tertiary rounded-2xl border border-separator/80">
         <div className="flex items-center gap-2">
           <Repeat size={14} className="text-terracotta" />
           <div>
@@ -64,7 +64,7 @@ export default function FormCumpleanos({
             className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               agasajadoTipo === 'hogar'
                 ? 'bg-terracotta text-white border-terracotta shadow-2xs'
-                : 'bg-white/50 dark:bg-tertiary/40 border-separator/80 text-label-secondary hover:text-label-primary'
+                : 'bg-tertiary border-separator/80 text-label-secondary hover:text-label-primary'
             }`}
           >
             <User size={13} />
@@ -76,7 +76,7 @@ export default function FormCumpleanos({
             className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               agasajadoTipo === 'externo'
                 ? 'bg-terracotta text-white border-terracotta shadow-2xs'
-                : 'bg-white/50 dark:bg-tertiary/40 border-separator/80 text-label-secondary hover:text-label-primary'
+                : 'bg-tertiary border-separator/80 text-label-secondary hover:text-label-primary'
             }`}
           >
             <Users size={13} />
@@ -93,7 +93,7 @@ export default function FormCumpleanos({
             <select
               value={agasajadoHogarId}
               onChange={(e) => onChangeAgasajadoHogarId(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl bg-white/70 dark:bg-tertiary/70 border border-separator/80 text-label-primary focus:outline-none focus:border-terracotta cursor-pointer"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-tertiary border border-separator/80 text-label-primary focus:outline-none focus:border-terracotta cursor-pointer"
             >
               {miembros.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -117,7 +117,7 @@ export default function FormCumpleanos({
                 value={agasajadoExternoNombre}
                 onChange={(e) => onChangeAgasajadoExternoNombre(e.target.value)}
                 placeholder="Ej. Tía Gloria, Amigo Carlos..."
-                className="w-full px-3 py-2 text-xs rounded-xl bg-white/70 dark:bg-tertiary/70 border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-tertiary border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
               />
               <p className="text-[10px] text-label-tertiary">Sincroniza el título en tiempo real al escribir.</p>
             </div>
@@ -128,7 +128,7 @@ export default function FormCumpleanos({
                 value={agasajadoExternoContacto}
                 onChange={(e) => onChangeAgasajadoExternoContacto(e.target.value)}
                 placeholder="+57 300 123 4567"
-                className="w-full px-3 py-2 text-xs rounded-xl bg-white/70 dark:bg-tertiary/70 border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-tertiary border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
               />
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function FormCumpleanos({
                     className={`flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer select-none transition-all ${
                       isSelected
                         ? 'bg-terracotta/15 border-terracotta text-label-primary font-semibold shadow-3xs'
-                        : 'bg-white/40 dark:bg-tertiary/40 border-separator/60 text-label-secondary hover:text-label-primary'
+                        : 'bg-tertiary border-separator/60 text-label-secondary hover:text-label-primary'
                     }`}
                   >
                     <input

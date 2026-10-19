@@ -189,14 +189,14 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
 
         {/* Aviso de Inactividad */}
         {reason === 'inactivity' && (
-          <div className="p-4 bg-[#ce9b8c]/25 border border-[#aa4b50]/30 text-terracotta rounded-2xl apple-footnote font-semibold text-center flex items-center justify-center gap-2 shadow-sm animate-pulse">
+          <div className="p-4 bg-terracotta/15 border border-separator text-terracotta rounded-2xl apple-footnote font-semibold text-center flex items-center justify-center gap-2 shadow-sm animate-pulse">
             <Clock size={15} />
             <span>Tu sesión expiró por inactividad. Elige tu perfil para continuar.</span>
           </div>
         )}
 
         {/* Tarjeta Principal Glassmorphic */}
-        <div className="glass-card rounded-[2.5rem] p-6 sm:p-8 space-y-6 shadow-xl shadow-black/5 border border-white/80 dark:border-white/10">
+        <div className="glass-card rounded-[2.5rem] p-6 sm:p-8 space-y-6 shadow-xl shadow-black/5 border border-separator">
           
           {/* Header de Vistas / Switcher */}
           <div className="flex items-center justify-between border-b border-separator pb-3.5">
@@ -205,7 +205,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
             </h2>
             <Link
               href="/register"
-              className="text-xs font-semibold text-terracotta hover:opacity-85 bg-[#ce9b8c]/20 hover:bg-[#ce9b8c]/35 px-3.5 min-h-[44px] rounded-xl transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="text-xs font-semibold text-terracotta hover:opacity-85 bg-terracotta/15 hover:bg-terracotta/20 px-3.5 min-h-[44px] rounded-xl transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <UserPlus size={13} strokeWidth={2.2} />
               <span>Registrarse</span>
@@ -213,7 +213,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 bg-[#ce9b8c]/25 border border-[#aa4b50]/30 text-terracotta rounded-2xl apple-footnote font-semibold text-center">
+            <div className="p-3.5 bg-terracotta/15 border border-separator text-terracotta rounded-2xl apple-footnote font-semibold text-center">
               {errorMsg}
             </div>
           )}
@@ -241,7 +241,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                           key={m.id}
                           type="button"
                           onClick={() => handleSelectMiembro(m)}
-                          className="p-4 rounded-2xl border border-white/80 dark:border-separator bg-white/60 dark:bg-tertiary/40 hover:bg-white dark:hover:bg-tertiary hover:border-terracotta/40 hover:shadow-md transition-all duration-200 flex flex-col items-center gap-3 group cursor-pointer text-center active:scale-95 shadow-2xs"
+                          className="p-4 rounded-2xl border border-separator bg-tertiary hover:bg-tertiary hover:border-terracotta/40 hover:shadow-md transition-all duration-200 flex flex-col items-center gap-3 group cursor-pointer text-center active:scale-95 shadow-2xs"
                         >
                           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-terracotta to-brand-deep text-white font-bold text-xl flex items-center justify-center group-hover:scale-105 transition shadow-sm">
                             {m.nombre.charAt(0).toUpperCase()}
@@ -367,7 +367,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                             type="button"
                             disabled={procesando}
                             onClick={() => handlePinKey(num)}
-                            className="h-13 rounded-2xl bg-white/80 dark:bg-secondary hover:bg-white dark:hover:bg-tertiary border border-separator text-lg font-semibold tabular-nums text-label-primary transition shadow-2xs cursor-pointer active:scale-92 disabled:opacity-50"
+                            className="h-13 rounded-2xl bg-secondary hover:bg-tertiary border border-separator text-lg font-semibold tabular-nums text-label-primary transition shadow-2xs cursor-pointer active:scale-92 disabled:opacity-50"
                           >
                             {num}
                           </button>
@@ -384,7 +384,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                           type="button"
                           disabled={procesando}
                           onClick={() => handlePinKey('0')}
-                          className="h-13 rounded-2xl bg-white/80 dark:bg-secondary hover:bg-white dark:hover:bg-tertiary border border-separator text-lg font-semibold tabular-nums text-label-primary transition shadow-2xs cursor-pointer active:scale-92 disabled:opacity-50"
+                          className="h-13 rounded-2xl bg-secondary hover:bg-tertiary border border-separator text-lg font-semibold tabular-nums text-label-primary transition shadow-2xs cursor-pointer active:scale-92 disabled:opacity-50"
                         >
                           0
                         </button>
@@ -441,7 +441,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                             value={pinOClave}
                             onChange={(e) => setPinOClave(e.target.value)}
                             placeholder="Tu contraseña de acceso"
-                            className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-white focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+                            className="w-full pl-10 pr-4 py-3 bg-tertiary border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                           />
                         </div>
                       </div>
@@ -505,7 +505,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                     name="email"
                     required
                     placeholder="ejemplo@hogar.com"
-                    className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-white focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+                    className="w-full pl-10 pr-4 py-3 bg-tertiary border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                   />
                 </div>
               </div>
@@ -523,7 +523,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                     name="password"
                     required
                     placeholder="Tu contraseña"
-                    className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-tertiary/60 border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-white focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
+                    className="w-full pl-10 pr-4 py-3 bg-tertiary border border-separator rounded-2xl apple-body text-label-primary font-medium placeholder-label-tertiary focus:outline-none focus:bg-secondary focus:border-terracotta focus:ring-3 focus:ring-terracotta/15 transition shadow-2xs"
                   />
                 </div>
               </div>

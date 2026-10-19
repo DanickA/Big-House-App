@@ -2,7 +2,7 @@ import { getResumenPlantasLobby } from '@/actions/plantas';
 import { getServicios } from '@/actions/pagos';
 import { getProximosEventosLobby } from '@/actions/eventos';
 import { getSession } from '@/lib/session';
-import LobbyHUD from '@/components/lobby/LobbyHUD';
+import LobbyView from '@/components/lobby/LobbyView';
 
 export default async function HomeLobby() {
   const [resumen, session, resServicios, resEventos] = await Promise.all([
@@ -21,7 +21,7 @@ export default async function HomeLobby() {
   const plantasUrgentes = resumen.plantas.filter((p) => p.requiereRiego);
 
   return (
-    <LobbyHUD
+    <LobbyView
       fechaHoy={fechaHoy}
       session={session}
       resumenPlantas={resumen}

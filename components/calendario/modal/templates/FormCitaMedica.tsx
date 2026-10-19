@@ -51,7 +51,7 @@ export default function FormCitaMedica({
             required
             value={pacienteId}
             onChange={(e) => onChangePacienteId(e.target.value)}
-            className="w-full px-3 py-2 text-xs rounded-xl bg-white/70 dark:bg-tertiary/70 border border-separator/80 text-label-primary focus:outline-none focus:border-terracotta cursor-pointer"
+            className="w-full px-3 py-2 text-xs rounded-xl bg-tertiary border border-separator/80 text-label-primary focus:outline-none focus:border-terracotta cursor-pointer"
           >
             {miembros.map((m) => (
               <option key={m.id} value={m.id}>
@@ -71,7 +71,7 @@ export default function FormCitaMedica({
             value={especialidad}
             onChange={(e) => onChangeEspecialidad(e.target.value)}
             placeholder="Ej. Odontología, Pediatría, Oftalmología..."
-            className="w-full px-3 py-2 text-xs rounded-xl bg-white/70 dark:bg-tertiary/70 border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
+            className="w-full px-3 py-2 text-xs rounded-xl bg-tertiary border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
           />
         </div>
       </div>
@@ -87,7 +87,7 @@ export default function FormCitaMedica({
           value={especialista}
           onChange={(e) => onChangeEspecialista(e.target.value)}
           placeholder="Ej. Dr. Mario Ruiz"
-          className="w-full px-3 py-2 text-xs rounded-xl bg-white/70 dark:bg-tertiary/70 border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
+          className="w-full px-3 py-2 text-xs rounded-xl bg-tertiary border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
         />
       </div>
 
@@ -110,7 +110,7 @@ export default function FormCitaMedica({
                     className={`flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer select-none transition-all ${
                       isSelected
                         ? 'bg-terracotta/15 border-terracotta text-label-primary font-semibold shadow-3xs'
-                        : 'bg-white/40 dark:bg-tertiary/40 border-separator/60 text-label-secondary hover:text-label-primary'
+                        : 'bg-tertiary border-separator/60 text-label-secondary hover:text-label-primary'
                     }`}
                   >
                     <input

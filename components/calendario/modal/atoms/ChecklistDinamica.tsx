@@ -159,7 +159,7 @@ export default function ChecklistDinamica({
             className={`text-[10.5px] font-semibold flex items-center gap-1 px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
               modoPegadoMasivo
                 ? 'bg-terracotta text-white border-terracotta shadow-3xs'
-                : 'bg-white/50 dark:bg-tertiary/40 border-separator/80 text-label-secondary hover:text-terracotta'
+                : 'bg-tertiary border-separator/80 text-label-secondary hover:text-terracotta'
             }`}
           >
             <ClipboardList size={11} />
@@ -178,7 +178,7 @@ export default function ChecklistDinamica({
 
       {/* Panel Desplegable de Pegado Masivo (WhatsApp / Notas) */}
       {modoPegadoMasivo ? (
-        <div className="p-3 rounded-2xl bg-white/70 dark:bg-tertiary/60 border border-separator/80 space-y-2 animate-fade-in-up">
+        <div className="p-3 rounded-2xl bg-tertiary border border-separator/80 space-y-2 animate-fade-in-up">
           <div className="flex justify-between items-center">
             <span className="text-[11px] font-semibold text-label-primary">
               Pegar texto multilínea (WhatsApp, Notas...)
@@ -194,7 +194,7 @@ export default function ChecklistDinamica({
             value={textoMasivo}
             onChange={(e) => setTextoMasivo(e.target.value)}
             placeholder={'Ejemplo:\n- Leche entera\n- Huevos campesinos\n- Café en grano\n- Pan integral'}
-            className="w-full p-2.5 text-xs rounded-xl bg-white/90 dark:bg-secondary/70 border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta resize-none font-mono"
+            className="w-full p-2.5 text-xs rounded-xl bg-secondary border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta resize-none font-mono"
           />
           <div className="flex justify-end items-center gap-2 pt-0.5">
             <button
@@ -234,7 +234,7 @@ export default function ChecklistDinamica({
               }
             }}
             placeholder={placeholderNuevoItem}
-            className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-white/70 dark:bg-tertiary/70 border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
+            className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-tertiary border border-separator/80 text-label-primary placeholder:text-label-tertiary focus:outline-none focus:border-terracotta"
           />
           <button
             type="button"
@@ -255,7 +255,7 @@ export default function ChecklistDinamica({
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between p-2 rounded-xl bg-white/50 dark:bg-secondary/40 border border-separator/50 text-xs transition-colors hover:bg-white/80 dark:hover:bg-secondary/70"
+              className="flex items-center justify-between p-2 rounded-xl bg-secondary border border-separator/50 text-xs transition-colors hover:bg-secondary"
             >
               <button
                 type="button"

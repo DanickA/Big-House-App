@@ -103,10 +103,10 @@ export default function TimePicker12h({
       </div>
 
       {!esTodoElDiaEfectivo && (
-        <div className="p-3 bg-white/60 dark:bg-tertiary/40 rounded-2xl border border-separator/80 dark:border-separator space-y-2.5 shadow-2xs animate-fade-in-up">
+        <div className="p-3 bg-tertiary rounded-2xl border border-separator/80 dark:border-separator space-y-2.5 shadow-2xs animate-fade-in-up">
           <div className="flex items-center justify-between gap-2">
             {/* Input de Hora y Minutos 12H */}
-            <div className="flex items-center bg-white dark:bg-secondary rounded-xl border border-separator/80 dark:border-separator px-2.5 py-1.5 shadow-3xs">
+            <div className="flex items-center bg-secondary rounded-xl border border-separator/80 dark:border-separator px-2.5 py-1.5 shadow-3xs">
               <input
                 type="text"
                 inputMode="numeric"
@@ -141,7 +141,7 @@ export default function TimePicker12h({
                 }}
                 className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   periodo === 'AM'
-                    ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs'
+                    ? 'bg-secondary text-label-primary shadow-2xs'
                     : 'text-label-secondary hover:text-label-primary'
                 }`}
               >
@@ -155,7 +155,7 @@ export default function TimePicker12h({
                 }}
                 className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   periodo === 'PM'
-                    ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs'
+                    ? 'bg-secondary text-label-primary shadow-2xs'
                     : 'text-label-secondary hover:text-label-primary'
                 }`}
               >
@@ -177,7 +177,7 @@ export default function TimePicker12h({
                   className={`text-[11px] font-semibold px-2 py-0.5 rounded-md transition-all cursor-pointer tabular-nums ${
                     isSelected
                       ? 'bg-terracotta text-white shadow-3xs'
-                      : 'bg-white/50 dark:bg-secondary/50 text-label-secondary hover:text-label-primary border border-separator/40'
+                      : 'bg-secondary text-label-secondary hover:text-label-primary border border-separator/40'
                   }`}
                 >
                   :{m.toString().padStart(2, '0')}

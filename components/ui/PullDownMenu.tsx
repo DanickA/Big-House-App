@@ -261,7 +261,7 @@ export default function PullDownMenu({
                           item.disabled
                             ? 'opacity-40 pointer-events-none'
                             : isDestructive
-                            ? 'text-terracotta hover:bg-[#ce9b8c]/20 hover:text-terracotta dark:hover:bg-terracotta/20 font-semibold'
+                            ? 'text-terracotta hover:bg-terracotta/20 hover:text-terracotta dark:hover:bg-terracotta/20 font-semibold'
                             : 'text-label-primary hover:bg-tertiary font-medium'
                         }
                       `}

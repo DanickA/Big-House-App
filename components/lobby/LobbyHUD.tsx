@@ -150,7 +150,7 @@ export default function LobbyHUD({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/70 dark:bg-tertiary/70 border border-separator text-label-primary shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-tertiary border border-separator text-label-primary shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-mint animate-pulse" />
               <span>{session?.nombre ? session.nombre.split(' ')[0] : 'Habitante'}</span>
             </span>
@@ -335,7 +335,7 @@ export default function LobbyHUD({
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xs group-hover:scale-110 transition ${
                   tieneCuentasUrgentes
                     ? 'bg-terracotta text-white font-bold'
-                    : 'bg-[#ce9b8c]/25 dark:bg-terracotta/20 text-terracotta'
+                    : 'bg-terracotta/15 text-terracotta'
                 }`}
               >
                 <Receipt size={24} strokeWidth={2.2} />
@@ -384,7 +384,7 @@ export default function LobbyHUD({
             }`}
           >
             <div className="flex justify-between items-start">
-              <div className="w-12 h-12 rounded-2xl bg-[#ce9b8c]/20 dark:bg-brand-deep/20 text-brand-deep flex items-center justify-center shadow-2xs group-hover:scale-110 transition">
+              <div className="w-12 h-12 rounded-2xl bg-terracotta/15 text-brand-deep flex items-center justify-center shadow-2xs group-hover:scale-110 transition">
                 <Calendar size={24} strokeWidth={2.2} />
               </div>
               <ArrowUpRight

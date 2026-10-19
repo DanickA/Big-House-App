@@ -42,22 +42,22 @@ export default function Loading() {
           <div className="glass-card rounded-3xl p-6 h-48 sm:col-span-2 lg:col-span-1 flex flex-col justify-between animate-pulse">
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-2xl bg-brand-deep/20 dark:bg-white/10" />
-              <div className="w-16 h-4 rounded-full bg-[#736F68]/15 dark:bg-white/10" />
+              <div className="w-16 h-4 rounded-full bg-tertiary" />
             </div>
             <div className="space-y-2">
-              <div className="w-3/4 h-5 rounded-xl bg-[#736F68]/20 dark:bg-white/10" />
-              <div className="w-1/2 h-3.5 rounded-full bg-[#736F68]/15 dark:bg-white/10" />
+              <div className="w-3/4 h-5 rounded-xl bg-tertiary" />
+              <div className="w-1/2 h-3.5 rounded-full bg-tertiary" />
             </div>
           </div>
         </div>
 
         {/* Skeleton Lista / Bloque Inferior */}
         <div className="glass-card rounded-3xl p-6 h-64 space-y-4 animate-pulse">
-          <div className="w-40 h-5 rounded-xl bg-[#736F68]/20 dark:bg-white/10" />
+          <div className="w-40 h-5 rounded-xl bg-tertiary" />
           <div className="space-y-3 pt-2">
-            <div className="w-full h-12 rounded-2xl bg-[#736F68]/10 dark:bg-white/5" />
-            <div className="w-full h-12 rounded-2xl bg-[#736F68]/10 dark:bg-white/5" />
-            <div className="w-full h-12 rounded-2xl bg-[#736F68]/10 dark:bg-white/5" />
+            <div className="w-full h-12 rounded-2xl bg-tertiary" />
+            <div className="w-full h-12 rounded-2xl bg-tertiary" />
+            <div className="w-full h-12 rounded-2xl bg-tertiary" />
           </div>
         </div>
       </div>

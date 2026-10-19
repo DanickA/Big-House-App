@@ -207,7 +207,7 @@ export default function PlantaCard({
           : regadoReciente
           ? 'border-mint ring-2 ring-mint/40'
           : urgent
-          ? 'border-terracotta/45 bg-[#ce9b8c]/10 dark:bg-terracotta/10 shadow-xs'
+          ? 'border-terracotta/45 bg-terracotta/10 shadow-xs'
           : 'border-separator/80 hover:shadow-md'
       }`}
     >
@@ -227,7 +227,7 @@ export default function PlantaCard({
         className="p-3 sm:p-3.5 flex items-center justify-between gap-3.5 cursor-pointer"
       >
         {/* 1. Fotografía cuadrada con bordes orgánicos */}
-        <div className="relative w-18 h-18 rounded-2xl overflow-hidden bg-[#c7e1d7]/40 shrink-0 shadow-2xs">
+        <div className="relative w-18 h-18 rounded-2xl overflow-hidden bg-tertiary shrink-0 shadow-2xs border border-separator/50">
           {planta.foto_url ? (
             <img
               src={planta.foto_url}
@@ -235,7 +235,7 @@ export default function PlantaCard({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center font-bold text-xl text-mint">
+            <div className="w-full h-full flex items-center justify-center font-bold text-xl text-label-primary">
               {planta.nombre_comun.slice(0, 2).toUpperCase()}
             </div>
           )}
@@ -312,7 +312,7 @@ export default function PlantaCard({
       {isExpanded && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="px-4 pb-4 pt-2.5 border-t border-separator/60 bg-white/40 dark:bg-tertiary/30 space-y-3 animate-fade-in-up"
+          className="px-4 pb-4 pt-2.5 border-t border-separator/60 bg-tertiary space-y-3 animate-fade-in-up"
         >
           {/* Barra superior del acordeón: Cuidar | Bitácora + Editar / Eliminar */}
           <div className="flex items-center justify-between gap-2">
@@ -322,7 +322,7 @@ export default function PlantaCard({
                 onClick={() => setInlineTab('cuidar')}
                 className={`px-3 py-1 rounded-lg font-semibold transition cursor-pointer ${
                   inlineTab === 'cuidar'
-                    ? 'bg-white dark:bg-tertiary text-label-primary shadow-2xs'
+                    ? 'bg-tertiary text-label-primary shadow-2xs'
                     : 'text-label-secondary'
                 }`}
               >
@@ -336,7 +336,7 @@ export default function PlantaCard({
                 }}
                 className={`px-3 py-1 rounded-lg font-semibold transition cursor-pointer ${
                   inlineTab === 'bitacora'
-                    ? 'bg-white dark:bg-tertiary text-label-primary shadow-2xs'
+                    ? 'bg-tertiary text-label-primary shadow-2xs'
                     : 'text-label-secondary'
                 }`}
               >
@@ -406,7 +406,7 @@ export default function PlantaCard({
                     label: 'Podar',
                     icon: Scissors,
                     tipo: 'PODA' as const,
-                    cls: 'bg-[#ce9b8c]/20 text-terracotta border-terracotta/30 font-semibold',
+                    cls: 'bg-terracotta/15 text-terracotta border-terracotta/30 font-semibold',
                   },
                   {
                     label: 'Limpiar',

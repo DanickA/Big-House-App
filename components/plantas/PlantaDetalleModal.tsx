@@ -258,7 +258,7 @@ export default function PlantaDetalleModal({
       {/* Clic fuera para cerrar */}
       <div className="fixed inset-0 -z-10" onClick={onClose} />
 
-      <div className="relative glass-modal w-full max-w-lg rounded-[2.5rem] overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col shadow-2xl animate-fade-in-up my-auto border border-white/80 dark:border-white/10">
+      <div className="relative glass-modal w-full max-w-lg rounded-[2.5rem] overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col shadow-2xl animate-fade-in-up my-auto border border-separator">
         
         {/* Cabecera Compacta tipo Media Header (máximo 120px en móvil conforme a Apple HIG) */}
         <div className="h-[116px] sm:h-36 relative bg-mint/15 dark:bg-tertiary shrink-0 overflow-hidden">
@@ -399,7 +399,7 @@ export default function PlantaDetalleModal({
                     label: 'Podar',
                     icon: Scissors,
                     tipo: 'PODA',
-                    color: 'bg-[#ce9b8c]/20 text-terracotta border-terracotta/30 hover:bg-[#ce9b8c]/30 font-semibold',
+                    color: 'bg-terracotta/15 text-terracotta border-terracotta/30 hover:bg-terracotta/20 font-semibold',
                   },
                   {
                     label: 'Limpiar',

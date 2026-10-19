@@ -54,3 +54,7 @@ _Avoid_: Exportación manual por archivo, sincronización bloqueante
 **Evento Sintético del Hogar**:
 Compromiso proyectado automáticamente en el calendario a partir de otros módulos del hogar (ciclos de riego de **Plantas** o vencimientos de **Servicios** en **Finanzas**), diferenciable y filtrable por origen.
 _Avoid_: Evento duplicado manual
+
+**Lobby (Centro de Mando del Hogar)**:
+Núcleo principal de navegación, orientación y conciencia de estado de la aplicación. Organiza de forma seccionada y sin sobrecarga cognitiva: (1) las alertas críticas y reanudación de tareas pendientes hoy, (2) los accesos rápidos a acciones frecuentes y (3) la distribución directa hacia los módulos del ecosistema (**Jardín**, **Finanzas**, **Agenda** y **Habitantes**).
+_Avoid_: Dashboard saturado, métricas duplicadas

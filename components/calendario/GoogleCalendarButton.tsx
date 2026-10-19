@@ -139,7 +139,7 @@ export default function GoogleCalendarButton({
   return (
     <div className="relative inline-flex items-center shrink-0">
       {mensajeExito && (
-        <div className="fixed top-20 right-4 z-50 bg-[#c7e1d7] dark:bg-mint/20 border border-[#6eb5a5]/40 text-mint text-xs px-3.5 py-2 rounded-xl shadow-lg flex items-center gap-2 font-semibold animate-fade-in-up">
+        <div className="fixed top-20 right-4 z-50 bg-mint/20 border border-mint/40 text-label-primary text-xs px-3.5 py-2 rounded-xl shadow-lg flex items-center gap-2 font-semibold animate-fade-in-up">
           <Check size={14} className="stroke-[2.5] shrink-0" />
           <span>{mensajeExito}</span>
         </div>
@@ -155,7 +155,7 @@ export default function GoogleCalendarButton({
       {!estado.conectada ? (
         <a
           href="/api/auth/google"
-          className="px-2.5 sm:px-3 py-1.5 bg-white/90 dark:bg-secondary hover:bg-white text-[11px] sm:text-xs font-bold text-label-primary rounded-xl border border-separator transition flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95 shrink-0"
+          className="px-2.5 sm:px-3 py-1.5 bg-secondary hover:bg-tertiary text-[11px] sm:text-xs font-bold text-label-primary rounded-xl border border-separator transition flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95 shrink-0"
           title="Conectar y sincronizar bidireccionalmente con Google Calendar"
         >
           <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
@@ -180,9 +180,9 @@ export default function GoogleCalendarButton({
           <span className="hidden sm:inline">Conectar Google Calendar</span>
         </a>
       ) : (
-        <div className="flex items-center gap-1 bg-white/80 dark:bg-tertiary/50 px-2.5 py-1 rounded-xl border border-separator shadow-2xs shrink-0">
+        <div className="flex items-center gap-1 bg-tertiary px-2.5 py-1 rounded-xl border border-separator shadow-2xs shrink-0">
           <div className="flex items-center gap-1.5 pr-1.5 border-r border-separator text-[11px] font-semibold text-label-secondary">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-mint animate-pulse shrink-0" />
             <span>Google Sync</span>
           </div>
 
@@ -190,7 +190,7 @@ export default function GoogleCalendarButton({
             type="button"
             onClick={handleSyncManual}
             disabled={isPending}
-            className="p-1 hover:bg-[#c7e1d7]/40 dark:hover:bg-tertiary text-label-primary rounded-lg transition cursor-pointer active:scale-90 disabled:opacity-50"
+            className="p-1 hover:bg-mint/20 dark:hover:bg-tertiary text-label-primary rounded-lg transition cursor-pointer active:scale-90 disabled:opacity-50"
             title="Sincronizar eventos con Google Calendar ahora"
           >
             <RefreshCw size={13} className={isPending ? 'animate-spin text-mint' : ''} />

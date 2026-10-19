@@ -30,14 +30,14 @@ export default function EmptyState({
       className={`text-center space-y-3.5 select-none ${
         compact
           ? 'py-6 px-4 bg-tertiary/30 rounded-2xl border border-separator'
-          : 'py-10 px-6 glass-card rounded-[2.5rem] border border-white/80 dark:border-white/10 shadow-xs'
+          : 'py-10 px-6 glass-card rounded-[2.5rem] border border-separator shadow-xs'
       } ${className}`}
     >
       {/* 1. Squircle Badge con Icono Temático */}
       <div
         className={`${
           compact ? 'w-12 h-12 rounded-2xl' : 'w-16 h-16 rounded-3xl'
-        } bg-[#ce9b8c]/25 dark:bg-terracotta/20 border border-[#aa4b50]/30 dark:border-terracotta/30 text-terracotta flex items-center justify-center mx-auto shadow-2xs`}
+        } bg-terracotta/15 border border-separator text-terracotta flex items-center justify-center mx-auto shadow-2xs`}
         aria-hidden="true"
       >
         <IconComponent

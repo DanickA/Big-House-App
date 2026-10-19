@@ -159,7 +159,7 @@ export default function ServicioFormModal({
       {/* Fondo oscuro para cerrar */}
       <div className="fixed inset-0 -z-10" onClick={onClose} />
 
-      <div className="relative glass-modal w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col my-auto max-h-[calc(100vh-3.5rem)] border border-white/80 dark:border-white/10 animate-fade-in-up">
+      <div className="relative glass-modal w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col my-auto max-h-[calc(100vh-3.5rem)] border border-separator animate-fade-in-up">
         
         {/* Cabecera Fija */}
         <div className="flex justify-between items-center px-6 sm:px-8 py-5 border-b border-separator bg-secondary/85 backdrop-blur-md shrink-0">

@@ -49,8 +49,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
               prefetch={true}
               className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname === '/'
-                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
-                  : 'text-label-secondary hover:text-label-primary font-medium'
+                  ? 'bg-secondary text-label-primary border border-separator font-semibold'
+                  : 'text-label-secondary hover:text-label-primary border border-transparent font-medium'
               }`}
             >
               <Home size={14} strokeWidth={2.2} />
@@ -62,8 +62,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
               prefetch={true}
               className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/calendario')
-                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
-                  : 'text-label-secondary hover:text-label-primary font-medium'
+                  ? 'bg-secondary text-label-primary border border-separator font-semibold'
+                  : 'text-label-secondary hover:text-label-primary border border-transparent font-medium'
               }`}
             >
               <Calendar size={14} strokeWidth={2.2} />
@@ -75,8 +75,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
               prefetch={true}
               className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/plantas')
-                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
-                  : 'text-label-secondary hover:text-label-primary font-medium'
+                  ? 'bg-secondary text-label-primary border border-separator font-semibold'
+                  : 'text-label-secondary hover:text-label-primary border border-transparent font-medium'
               }`}
             >
               <Sprout size={14} strokeWidth={2.2} />
@@ -88,8 +88,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
               prefetch={true}
               className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/finanzas') || pathname.startsWith('/servicios')
-                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
-                  : 'text-label-secondary hover:text-label-primary font-medium'
+                  ? 'bg-secondary text-label-primary border border-separator font-semibold'
+                  : 'text-label-secondary hover:text-label-primary border border-transparent font-medium'
               }`}
             >
               <Receipt size={14} strokeWidth={2.2} />
@@ -101,8 +101,8 @@ export default function HeaderNav({ user }: HeaderNavProps) {
               prefetch={true}
               className={`px-3.5 py-1.5 rounded-xl text-[13px] transition-all duration-150 flex items-center gap-1.5 ${
                 pathname.startsWith('/usuarios')
-                  ? 'bg-white dark:bg-secondary text-label-primary shadow-2xs font-semibold'
-                  : 'text-label-secondary hover:text-label-primary font-medium'
+                  ? 'bg-secondary text-label-primary border border-separator font-semibold'
+                  : 'text-label-secondary hover:text-label-primary border border-transparent font-medium'
               }`}
             >
               <Users size={14} strokeWidth={2.2} />

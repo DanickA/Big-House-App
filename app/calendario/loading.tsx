@@ -22,24 +22,24 @@ export default function CalendarioLoading() {
         {/* Controles y Filtros */}
         <div className="glass-card rounded-2xl p-3 flex items-center justify-between animate-pulse">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#736F68]/15 dark:bg-white/10" />
-            <div className="w-32 h-6 rounded-lg bg-[#736F68]/15 dark:bg-white/10" />
-            <div className="w-8 h-8 rounded-xl bg-[#736F68]/15 dark:bg-white/10" />
+            <div className="w-8 h-8 rounded-xl bg-tertiary" />
+            <div className="w-32 h-6 rounded-lg bg-tertiary" />
+            <div className="w-8 h-8 rounded-xl bg-tertiary" />
           </div>
-          <div className="w-24 h-8 rounded-xl bg-[#736F68]/15 dark:bg-white/10" />
+          <div className="w-24 h-8 rounded-xl bg-tertiary" />
         </div>
 
         {/* Grid Calendario Skeleton */}
         <div className="glass-card rounded-3xl p-4 sm:p-6 space-y-4 animate-pulse">
           <div className="grid grid-cols-7 gap-2 pb-2 border-b border-[rgba(115,111,104,0.1)]">
             {[...Array(7)].map((_, i) => (
-              <div key={i} className="h-4 rounded bg-[#736F68]/15 dark:bg-white/10 mx-auto w-8" />
+              <div key={i} className="h-4 rounded bg-tertiary mx-auto w-8" />
             ))}
           </div>
           <div className="grid grid-cols-7 gap-2 sm:gap-3">
             {[...Array(35)].map((_, i) => (
-              <div key={i} className="h-16 sm:h-24 rounded-2xl bg-[#736F68]/10 dark:bg-white/5 p-2 flex flex-col justify-between">
-                <div className="w-4 h-4 rounded-full bg-[#736F68]/20 dark:bg-white/10" />
+              <div key={i} className="h-16 sm:h-24 rounded-2xl bg-tertiary p-2 flex flex-col justify-between">
+                <div className="w-4 h-4 rounded-full bg-tertiary" />
                 {i % 4 === 0 && (
                   <div className="w-full h-3 rounded-md bg-mint/25 dark:bg-white/10" />
                 )}

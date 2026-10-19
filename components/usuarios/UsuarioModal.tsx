@@ -137,10 +137,10 @@ export default function UsuarioModal({
       {/* Fondo oscuro para cerrar */}
       <div className="fixed inset-0 -z-10" onClick={onClose} />
 
-      <div className="relative glass-modal w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col my-auto max-h-[calc(100vh-3.5rem)] border border-white/80 dark:border-separator animate-fade-in-up">
+      <div className="relative glass-modal w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col my-auto max-h-[calc(100vh-3.5rem)] border border-separator animate-fade-in-up">
         
         {/* Cabecera Fija */}
-        <div className="flex justify-between items-center px-6 sm:px-8 py-5 border-b border-separator bg-white/85 dark:bg-secondary/90 backdrop-blur-md shrink-0">
+        <div className="flex justify-between items-center px-6 sm:px-8 py-5 border-b border-separator bg-secondary backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-terracotta to-brand-deep text-white font-bold text-lg flex items-center justify-center shadow-md shadow-terracotta/20 transition-all duration-300">
               {nombre ? nombre.charAt(0).toUpperCase() : <User size={22} />}
@@ -166,10 +166,10 @@ export default function UsuarioModal({
         </div>
 
         {/* Cuerpo del Formulario Desplazable (Grouped Sections estilo iOS) */}
-        <div className="p-6 sm:p-8 overflow-y-auto space-y-5 flex-1 pr-5 sm:pr-7 bg-white/40 dark:bg-system/60">
+        <div className="p-6 sm:p-8 overflow-y-auto space-y-5 flex-1 pr-5 sm:pr-7 bg-secondary">
           
           {errorMsg && (
-            <div className="p-3.5 bg-[#ce9b8c]/25 dark:bg-secondary border border-[#aa4b50]/30 dark:border-terracotta/40 text-terracotta rounded-2xl apple-footnote font-semibold text-center animate-fade-in-up">
+            <div className="p-3.5 bg-terracotta/15 dark:bg-secondary border border-separator text-terracotta rounded-2xl apple-footnote font-semibold text-center animate-fade-in-up">
               {errorMsg}
             </div>
           )}

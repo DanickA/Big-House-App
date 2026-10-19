@@ -63,8 +63,8 @@ export default function AgendaDiaView({
               key={ev.id}
               className={`p-4 rounded-2xl border transition-all space-y-2.5 ${
                 esCancelado
-                  ? 'bg-white/50 dark:bg-tertiary/30 border-gray-200/80 dark:border-separator opacity-60'
-                  : 'bg-white/85 dark:bg-tertiary/60 border-white dark:border-white/10 shadow-2xs hover:border-separator/80'
+                  ? 'bg-tertiary border-gray-200/80 dark:border-separator opacity-60'
+                  : 'bg-tertiary border-separator shadow-2xs hover:border-separator/80'
               }`}
             >
               <div className="flex items-start justify-between gap-3">

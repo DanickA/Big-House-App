@@ -73,7 +73,7 @@ export default function ConfirmModal({
     },
     warning: {
       icon: AlertTriangle,
-      iconContainer: 'bg-[#ce9b8c]/25 dark:bg-clay/20 text-label-primary dark:text-clay border border-[#aa4b50]/30',
+      iconContainer: 'bg-terracotta/15 text-label-primary dark:text-clay border border-separator',
       confirmBtn: 'bg-brand-deep hover:bg-terracotta text-white shadow-brand-deep/20',
       defaultConfirmText: 'Continuar',
     },

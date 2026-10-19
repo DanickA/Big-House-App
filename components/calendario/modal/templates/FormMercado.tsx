@@ -46,7 +46,7 @@ export default function FormMercado({
                   className={`flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer select-none transition-all ${
                     isSelected
                       ? 'bg-terracotta/15 border-terracotta text-label-primary font-semibold shadow-3xs'
-                      : 'bg-white/40 dark:bg-tertiary/40 border-separator/60 text-label-secondary hover:text-label-primary'
+                      : 'bg-tertiary border-separator/60 text-label-secondary hover:text-label-primary'
                   }`}
                 >
                   <input

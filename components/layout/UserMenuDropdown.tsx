@@ -66,7 +66,7 @@ export default function UserMenuDropdown({ user, onLogout }: UserMenuDropdownPro
 
       {/* Popover Desplegable Glassmorphic (Apple HIG Pull-Down Menu) */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2.5 w-64 rounded-2xl bg-white/95 dark:bg-[#201C1A]/95 backdrop-blur-2xl border border-separator shadow-2xl p-2 z-50 animate-fade-in-up">
+        <div className="absolute right-0 top-full mt-2.5 w-64 rounded-2xl bg-secondary backdrop-blur-2xl border border-separator shadow-2xl p-2 z-50 animate-fade-in-up">
           {/* Cabecera del Usuario */}
           <div className="p-3 bg-tertiary rounded-xl mb-1 flex items-center gap-3">
             <span className="w-9 h-9 rounded-xl bg-terracotta text-white text-sm font-bold flex items-center justify-center shrink-0 shadow-xs">
@@ -118,7 +118,7 @@ export default function UserMenuDropdown({ user, onLogout }: UserMenuDropdownPro
               setIsOpen(false);
               onLogout();
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 min-h-[44px] apple-footnote font-semibold text-terracotta hover:bg-[#ce9b8c]/20 hover:text-terracotta dark:hover:bg-terracotta/20 rounded-xl transition cursor-pointer active:scale-[0.98]"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 min-h-[44px] apple-footnote font-semibold text-terracotta hover:bg-terracotta/20 hover:text-terracotta dark:hover:bg-terracotta/20 rounded-xl transition cursor-pointer active:scale-[0.98]"
           >
             <LogOut size={15} strokeWidth={2.2} className="shrink-0" />
             <span>Cerrar sesión</span>

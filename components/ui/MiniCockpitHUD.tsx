@@ -62,12 +62,12 @@ const COLOR_MAP = {
     border: 'border-[#6eb5a5]/30',
   },
   terracotta: {
-    bg: 'bg-[#ce9b8c]/25 dark:bg-terracotta/15',
+    bg: 'bg-terracotta/15',
     text: 'text-terracotta',
-    border: 'border-[#aa4b50]/30',
+    border: 'border-separator',
   },
   'brand-deep': {
-    bg: 'bg-[#ce9b8c]/20 dark:bg-brand-deep/15',
+    bg: 'bg-terracotta/15',
     text: 'text-brand-deep',
     border: 'border-[#bd7471]/30',
   },
@@ -99,7 +99,7 @@ export default function MiniCockpitHUD({ metrics, className = '' }: MiniCockpitH
             className={`flex items-center gap-2 px-3 py-2 sm:py-1.5 rounded-xl transition min-w-0 ${
               metric.highlight
                 ? `${colorStyle.bg} ${colorStyle.border} border shadow-2xs`
-                : 'bg-white/50 dark:bg-tertiary/40 border border-separator/40'
+                : 'bg-tertiary border border-separator/40'
             }`}
           >
             <div

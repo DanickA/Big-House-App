@@ -60,7 +60,7 @@ export default function BottomTabBar() {
   return (
     <nav
       aria-label="Navegación Móvil y Tablet del Hogar"
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-secondary/80 backdrop-blur-2xl border-t border-separator pb-safe h-[calc(49px+env(safe-area-inset-bottom,0px))] flex items-center justify-center px-2 select-none"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-nav !border-b-0 border-t border-separator pb-safe h-[calc(49px+env(safe-area-inset-bottom,0px))] flex items-center justify-center px-2 select-none"
     >
       <div className="w-full max-w-xl flex items-center justify-around h-full">
         {TAB_ITEMS.map((tab) => {

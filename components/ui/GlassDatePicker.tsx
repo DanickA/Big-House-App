@@ -218,14 +218,14 @@ export default function GlassDatePicker({
       {/* Cápsula de activación Glassmorphic */}
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`flex items-center justify-between p-3 bg-white/85 dark:bg-secondary/85 hover:bg-white dark:hover:bg-secondary border rounded-2xl transition shadow-2xs cursor-pointer group ${
+        className={`flex items-center justify-between p-3 bg-secondary hover:bg-secondary border rounded-2xl transition shadow-2xs cursor-pointer group ${
           isOpen
             ? 'border-terracotta ring-2 ring-terracotta/15'
             : 'border-separator'
         } ${disabled ? 'opacity-60 pointer-events-none' : ''}`}
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-[#ce9b8c]/25 dark:bg-terracotta/20 text-terracotta flex items-center justify-center shrink-0 font-bold text-xs tabular-nums border border-[#aa4b50]/30 group-hover:scale-105 transition">
+          <div className="w-8 h-8 rounded-xl bg-terracotta/15 text-terracotta flex items-center justify-center shrink-0 font-bold text-xs tabular-nums border border-separator group-hover:scale-105 transition">
             {diaNumero}
           </div>
           <div className="min-w-0 text-left">
@@ -265,7 +265,7 @@ export default function GlassDatePicker({
                 className={`flex-1 min-w-[70px] py-1.5 px-2 rounded-xl apple-footnote font-semibold transition border cursor-pointer active:scale-95 text-center truncate ${
                   esActivo
                     ? 'bg-terracotta text-white border-terracotta shadow-2xs'
-                    : 'bg-white dark:bg-tertiary hover:bg-[#ce9b8c]/20 text-label-secondary hover:text-label-primary border-separator'
+                    : 'bg-tertiary hover:bg-terracotta/20 text-label-secondary hover:text-label-primary border-separator'
                 }`}
               >
                 {sc.label}
@@ -277,7 +277,7 @@ export default function GlassDatePicker({
 
       {/* Mini Calendario Glassmorphic Integrado (Desplegable suave) */}
       {isOpen && (
-        <div className="p-3 bg-white/95 dark:bg-secondary/95 backdrop-blur-md rounded-2xl border border-separator shadow-md space-y-2 animate-fade-in-up">
+        <div className="p-3 bg-secondary backdrop-blur-md rounded-2xl border border-separator shadow-md space-y-2 animate-fade-in-up">
           {/* Navegación del Mes */}
           <div className="flex items-center justify-between px-1">
             <span className="apple-subhead font-semibold text-label-primary capitalize">
@@ -324,9 +324,9 @@ export default function GlassDatePicker({
                   celda.esSeleccionado
                     ? 'bg-terracotta text-white shadow-2xs scale-105'
                     : celda.esHoy
-                    ? 'bg-[#ce9b8c]/20 text-terracotta border border-[#aa4b50]/30'
+                    ? 'bg-terracotta/15 text-terracotta border border-separator'
                     : celda.esMesActual
-                    ? 'bg-white dark:bg-tertiary hover:bg-[#ce9b8c]/20 text-label-primary'
+                    ? 'bg-tertiary hover:bg-terracotta/20 text-label-primary'
                     : 'text-label-quaternary hover:bg-tertiary/50'
                 }`}
               >

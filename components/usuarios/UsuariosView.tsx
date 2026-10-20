@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import useSWR from 'swr';
 import {
@@ -57,6 +58,11 @@ export default function UsuariosView({ initialUsuarios }: UsuariosViewProps) {
       dedupingInterval: 60000,
     }
   );
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [filtro, setFiltro] = useState<FiltroAcceso>('TODOS');
   const [notificacion, setNotificacion] = useState<{
@@ -202,7 +208,7 @@ export default function UsuariosView({ initialUsuarios }: UsuariosViewProps) {
     'w-full bg-transparent text-sm font-semibold text-label-primary placeholder:text-label-quaternary focus:outline-none';
 
   return (
-    <div className="relative min-h-screen bg-system text-label-primary p-4 sm:p-8 transition-colors duration-300">
+    <div className="relative min-h-screen bg-system text-label-primary p-4 sm:p-8 overflow-hidden transition-colors duration-300">
       <div className="ambient-glow-mint top-[-50px] right-[-50px]" />
       <div className="ambient-glow-terracotta bottom-[-50px] left-[-50px]" />
 
@@ -343,9 +349,9 @@ export default function UsuariosView({ initialUsuarios }: UsuariosViewProps) {
       </div>
 
       {/* GAVETA INFERIOR CONTENIDA (2B-2) · CREAR / EDITAR HABITANTE */}
-      {isSheetOpen && (
+      {mounted && isSheetOpen && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
+          className="fixed inset-0 z-[9999] bg-black/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
           onClick={() => setIsSheetOpen(false)}
         >
           <div
@@ -374,7 +380,7 @@ export default function UsuariosView({ initialUsuarios }: UsuariosViewProps) {
                 </div>
                 <button
                   type="button"
-                  aria-label="Cerrar"
+                  aria-label="Cerrar modal"
                   onClick={() => setIsSheetOpen(false)}
                   className="w-8 h-8 rounded-full bg-tertiary border border-separator flex items-center justify-center text-label-secondary hover:text-label-primary cursor-pointer"
                 >
@@ -519,7 +525,8 @@ export default function UsuariosView({ initialUsuarios }: UsuariosViewProps) {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <ConfirmModal

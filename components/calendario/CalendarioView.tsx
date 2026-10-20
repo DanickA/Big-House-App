@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useMemo, useCallback, useTransition } from 'react';
+import { useState, useRef, useMemo, useCallback, useTransition, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { EventoUnificado } from '@/actions/eventos';
 import {
   crearEvento,
@@ -75,6 +76,11 @@ export default function CalendarioView({
   } | null>(null);
 
   const [isPending, startTransition] = useTransition();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Día seleccionado y cápsula expandida (Acordeón In-Place sin duplicidad)
   const [selectedDate, setSelectedDate] = useState<Date>(hoy);
@@ -860,19 +866,19 @@ export default function CalendarioView({
       </div>
 
       {/* GAVETA INFERIOR CONTENIDA (BOTTOM SHEET EN MÓVIL / MODAL COMPACTO EN DESKTOP — 2B-2) */}
-      {isSheetOpen && (
+      {mounted && isSheetOpen && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
+          className="fixed inset-0 z-[9999] bg-black/45 backdrop-blur-[2px] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
           onClick={cerrarSheet}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-system dark:bg-secondary rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 border-t sm:border border-separator shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-md bg-system dark:bg-secondary rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 border-t sm:border border-separator shadow-2xl flex flex-col max-h-[88dvh] overflow-hidden"
           >
             {/* Tirador de gaveta móvil */}
-            <div className="w-10 h-1 bg-separator rounded-full mx-auto sm:hidden" />
+            <div className="w-10 h-1 bg-separator rounded-full mx-auto sm:hidden mb-2 shrink-0" />
 
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 pb-2.5 shrink-0 border-b border-separator/40">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-8 h-8 rounded-xl bg-mint/20 text-olive dark:text-mint flex items-center justify-center shrink-0">
                   <Cloud size={16} />
@@ -895,138 +901,140 @@ export default function CalendarioView({
                 type="button"
                 onClick={cerrarSheet}
                 className="w-8 h-8 rounded-full bg-tertiary flex items-center justify-center text-label-secondary hover:text-label-primary shrink-0 cursor-pointer"
-                aria-label="Cerrar"
+                aria-label="Cerrar modal"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmitEvento} className="space-y-3.5 min-w-0">
-              {/* Campo 1: Título */}
-              <div>
-                <input
-                  type="text"
-                  required
-                  autoFocus
-                  value={titulo}
-                  onChange={(e) => setTitulo(e.target.value)}
-                  placeholder="Título (ej. Cita médica, Reunión, Mercado)..."
-                  className="w-full min-w-0 px-3.5 py-2.5 rounded-2xl bg-tertiary border border-separator text-sm font-semibold text-label-primary focus:outline-none focus:border-terracotta"
-                />
-              </div>
-
-              {/* Campo 2: Horario en Grid de 2 Columnas (Nunca rompe el ancho en celular de 320px-375px) */}
-              <div className="rounded-2xl bg-tertiary p-3 border border-separator/70 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-label-secondary flex items-center gap-1.5">
-                    <Clock size={13} className="text-terracotta" />
-                    <span>Horario</span>
-                  </span>
-                  <label className="flex items-center gap-2 text-xs font-bold text-label-primary cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={todoElDia}
-                      onChange={(e) => setTodoElDia(e.target.checked)}
-                      className="rounded accent-terracotta w-4 h-4"
-                    />
-                    <span>Todo el día</span>
-                  </label>
+            <form onSubmit={handleSubmitEvento} className="flex flex-col min-h-0 flex-1 overflow-hidden pt-2">
+              <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 min-w-0">
+                {/* Campo 1: Título */}
+                <div>
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    value={titulo}
+                    onChange={(e) => setTitulo(e.target.value)}
+                    placeholder="Título (ej. Cita médica, Reunión, Mercado)..."
+                    className="w-full min-w-0 px-3.5 py-2.5 rounded-2xl bg-tertiary border border-separator text-sm font-semibold text-label-primary focus:outline-none focus:border-terracotta"
+                  />
                 </div>
 
-                {!todoElDia && (
-                  <div className="grid grid-cols-2 gap-2.5 pt-0.5">
-                    <div className="min-w-0">
-                      <label className="block text-[10.5px] font-semibold text-label-tertiary mb-1">
-                        Hora de inicio
-                      </label>
+                {/* Campo 2: Horario en Grid de 2 Columnas (Nunca rompe el ancho en celular de 320px-375px) */}
+                <div className="rounded-2xl bg-tertiary p-3 border border-separator/70 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-label-secondary flex items-center gap-1.5">
+                      <Clock size={13} className="text-terracotta" />
+                      <span>Horario</span>
+                    </span>
+                    <label className="flex items-center gap-2 text-xs font-bold text-label-primary cursor-pointer select-none">
                       <input
-                        type="time"
-                        value={horaInicio}
-                        onChange={(e) => setHoraInicio(e.target.value)}
-                        className="w-full min-w-0 px-2.5 py-1.5 rounded-xl bg-secondary border border-separator text-xs font-bold text-label-primary focus:outline-none focus:border-terracotta"
+                        type="checkbox"
+                        checked={todoElDia}
+                        onChange={(e) => setTodoElDia(e.target.checked)}
+                        className="rounded accent-terracotta w-4 h-4"
                       />
-                    </div>
-                    <div className="min-w-0">
-                      <label className="block text-[10.5px] font-semibold text-label-tertiary mb-1">
-                        Hora de fin
-                      </label>
-                      <input
-                        type="time"
-                        value={horaFin}
-                        onChange={(e) => setHoraFin(e.target.value)}
-                        className="w-full min-w-0 px-2.5 py-1.5 rounded-xl bg-secondary border border-separator text-xs font-bold text-label-primary focus:outline-none focus:border-terracotta"
-                      />
-                    </div>
+                      <span>Todo el día</span>
+                    </label>
                   </div>
-                )}
-              </div>
 
-              {/* Acordeón de Divulgación Progresiva: Ubicación, Notas y Color */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setMostrarOpcionesExtra(!mostrarOpcionesExtra)}
-                  className="text-xs font-bold text-terracotta flex items-center gap-1 cursor-pointer"
-                >
-                  <ChevronDown
-                    size={14}
-                    className={`transition-transform ${mostrarOpcionesExtra ? 'rotate-180' : ''}`}
-                  />
-                  <span>
-                    {mostrarOpcionesExtra
-                      ? 'Ocultar ubicación, notas y color'
-                      : '+ Añadir ubicación, notas o color'}
-                  </span>
-                </button>
-
-                {mostrarOpcionesExtra && (
-                  <div className="space-y-2.5 pt-2.5 animate-fade-in">
-                    <div className="flex items-center gap-2 bg-tertiary px-3 py-2 rounded-xl border border-separator min-w-0">
-                      <MapPin size={14} className="text-label-tertiary shrink-0" />
-                      <input
-                        type="text"
-                        value={ubicacion}
-                        onChange={(e) => setUbicacion(e.target.value)}
-                        placeholder="Ubicación o enlace"
-                        className="w-full min-w-0 text-xs bg-transparent focus:outline-none text-label-primary"
-                      />
-                    </div>
-
-                    <div className="flex items-start gap-2 bg-tertiary px-3 py-2 rounded-xl border border-separator min-w-0">
-                      <AlignLeft size={14} className="text-label-tertiary shrink-0 mt-0.5" />
-                      <textarea
-                        rows={2}
-                        value={descripcion}
-                        onChange={(e) => setDescripcion(e.target.value)}
-                        placeholder="Descripción o notas (se sincronizan en Google Calendar)"
-                        className="w-full min-w-0 text-xs bg-transparent focus:outline-none text-label-primary resize-none"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-xs text-label-secondary font-medium">Color:</span>
-                      <div className="flex items-center gap-2">
-                        {COLORES_GOOGLE.map((c) => (
-                          <button
-                            key={c.hex}
-                            type="button"
-                            onClick={() => setColor(c.hex)}
-                            className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
-                              color === c.hex
-                                ? 'scale-120 ring-2 ring-offset-2 ring-terracotta'
-                                : ''
-                            }`}
-                            style={{ backgroundColor: c.hex }}
-                            title={c.nombre}
-                          />
-                        ))}
+                  {!todoElDia && (
+                    <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+                      <div className="min-w-0">
+                        <label className="block text-[10.5px] font-semibold text-label-tertiary mb-1">
+                          Hora de inicio
+                        </label>
+                        <input
+                          type="time"
+                          value={horaInicio}
+                          onChange={(e) => setHoraInicio(e.target.value)}
+                          className="w-full min-w-0 px-2.5 py-1.5 rounded-xl bg-secondary border border-separator text-xs font-bold text-label-primary focus:outline-none focus:border-terracotta"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <label className="block text-[10.5px] font-semibold text-label-tertiary mb-1">
+                          Hora de fin
+                        </label>
+                        <input
+                          type="time"
+                          value={horaFin}
+                          onChange={(e) => setHoraFin(e.target.value)}
+                          className="w-full min-w-0 px-2.5 py-1.5 rounded-xl bg-secondary border border-separator text-xs font-bold text-label-primary focus:outline-none focus:border-terracotta"
+                        />
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+
+                {/* Acordeón de Divulgación Progresiva: Ubicación, Notas y Color */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setMostrarOpcionesExtra(!mostrarOpcionesExtra)}
+                    className="text-xs font-bold text-terracotta flex items-center gap-1 cursor-pointer"
+                  >
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform ${mostrarOpcionesExtra ? 'rotate-180' : ''}`}
+                    />
+                    <span>
+                      {mostrarOpcionesExtra
+                        ? 'Ocultar ubicación, notas y color'
+                        : '+ Añadir ubicación, notas o color'}
+                    </span>
+                  </button>
+
+                  {mostrarOpcionesExtra && (
+                    <div className="space-y-2.5 pt-2.5 animate-fade-in">
+                      <div className="flex items-center gap-2 bg-tertiary px-3 py-2 rounded-xl border border-separator min-w-0">
+                        <MapPin size={14} className="text-label-tertiary shrink-0" />
+                        <input
+                          type="text"
+                          value={ubicacion}
+                          onChange={(e) => setUbicacion(e.target.value)}
+                          placeholder="Ubicación o enlace"
+                          className="w-full min-w-0 text-xs bg-transparent focus:outline-none text-label-primary"
+                        />
+                      </div>
+
+                      <div className="flex items-start gap-2 bg-tertiary px-3 py-2 rounded-xl border border-separator min-w-0">
+                        <AlignLeft size={14} className="text-label-tertiary shrink-0 mt-0.5" />
+                        <textarea
+                          rows={2}
+                          value={descripcion}
+                          onChange={(e) => setDescripcion(e.target.value)}
+                          placeholder="Descripción o notas (se sincronizan en Google Calendar)"
+                          className="w-full min-w-0 text-xs bg-transparent focus:outline-none text-label-primary resize-none"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-xs text-label-secondary font-medium">Color:</span>
+                        <div className="flex items-center gap-2">
+                          {COLORES_GOOGLE.map((c) => (
+                            <button
+                              key={c.hex}
+                              type="button"
+                              onClick={() => setColor(c.hex)}
+                              className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
+                                color === c.hex
+                                  ? 'scale-120 ring-2 ring-offset-2 ring-terracotta'
+                                  : ''
+                              }`}
+                              style={{ backgroundColor: c.hex }}
+                              title={c.nombre}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <div className="grid grid-cols-2 gap-2.5 pt-3 mt-2 border-t border-separator/50 shrink-0 pb-[env(safe-area-inset-bottom,0px)]">
                 <button
                   type="button"
                   onClick={cerrarSheet}
@@ -1045,7 +1053,8 @@ export default function CalendarioView({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

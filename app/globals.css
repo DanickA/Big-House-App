@@ -947,3 +947,15 @@ button,
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Corrección de contraste para Autocompletado del Navegador (Autofill WebKit) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--label-primary) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--tertiary) inset !important;
+  box-shadow: 0 0 0px 1000px var(--tertiary) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+  border-radius: inherit;
+}

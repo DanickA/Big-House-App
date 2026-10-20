@@ -401,7 +401,7 @@ export default function LobbyView({
                   <div className="space-y-0.5 pt-3">
                     <h3 className="text-sm sm:text-base font-bold text-label-primary">{m.titulo}</h3>
                     <p className="text-xs font-semibold text-label-secondary tabular-nums">{m.metrica}</p>
-                    <p className="text-[11px] text-label-tertiary truncate">{m.detalle}</p>
+                    <p className="text-[11px] text-label-tertiary line-clamp-2 leading-tight">{m.detalle}</p>
                   </div>
                 </Link>
               );

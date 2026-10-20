@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import useSWR from 'swr';
 import {
   getServicios,
@@ -122,6 +123,11 @@ export default function FinanzasView({
 }: FinanzasViewProps) {
   const [periodoMes, setPeriodoMes] = useState<string>(() => getCurrentPeriodoMes());
   const [tab, setTab] = useState<'recibos' | 'fondo'>('recibos');
+  const [mounted, setMounted] = useState<boolean>(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [mensajeError, setMensajeError] = useState<string | null>(null);
@@ -570,7 +576,7 @@ export default function FinanzasView({
                 {/* Sección 1: Pendientes por pagar */}
                 {pendientesDelMes.length > 0 && (
                   <section className="space-y-2">
-                    <div className="flex items-center justify-between px-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 px-1">
                       <h2 className="text-xs font-semibold text-label-secondary uppercase tracking-wider">
                         Por pagar en {mesLabelCorto} ({pendientesDelMes.length})
                       </h2>
@@ -950,9 +956,9 @@ export default function FinanzasView({
       {/* ====================================================================
           HOJA DESLIZABLE UNIFICADA DE SERVICIO: PAGAR | HISTÓRICO | EDITAR/BORRAR
          ==================================================================== */}
-      {servicioActivo && (
+      {mounted && servicioActivo && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
           onClick={() => setServicioActivo(null)}
         >
           <div
@@ -980,7 +986,8 @@ export default function FinanzasView({
               <button
                 type="button"
                 onClick={() => setServicioActivo(null)}
-                className="p-1.5 rounded-full bg-tertiary text-label-secondary"
+                className="p-1.5 rounded-full bg-tertiary text-label-secondary hover:text-label-primary cursor-pointer"
+                aria-label="Cerrar modal"
               >
                 <X size={16} />
               </button>
@@ -1381,23 +1388,24 @@ export default function FinanzasView({
               </form>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ====================================================================
           MODAL PARA CREAR NUEVO SERVICIO RECURRENTE
          ==================================================================== */}
-      {modalNuevoServicio && (
+      {mounted && modalNuevoServicio && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
           onClick={() => setModalNuevoServicio(false)}
         >
           <form
             onSubmit={handleCrearNuevoServicio}
-            className="w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-secondary-solid p-5 space-y-4 border-t sm:border border-separator shadow-xl animate-fade-in-up"
+            className="w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-secondary-solid p-5 border-t sm:border border-separator shadow-xl animate-fade-in-up max-h-[88dvh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between pb-3 shrink-0 border-b border-separator/40">
               <div>
                 <span className="text-xs font-medium text-label-secondary">
                   Compromiso Recurrente
@@ -1407,13 +1415,14 @@ export default function FinanzasView({
               <button
                 type="button"
                 onClick={() => setModalNuevoServicio(false)}
-                className="p-1.5 rounded-full bg-tertiary text-label-secondary"
+                className="p-1.5 rounded-full bg-tertiary text-label-secondary hover:text-label-primary cursor-pointer"
+                aria-label="Cerrar modal"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1 overflow-y-auto pr-1 min-h-0 pt-3">
               <div>
                 <label className="text-xs font-semibold text-label-secondary block mb-1">
                   Nombre del servicio
@@ -1529,32 +1538,35 @@ export default function FinanzasView({
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-terracotta text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-              <span>Crear servicio</span>
-            </button>
+            <div className="pt-3 shrink-0 border-t border-separator/40 pb-[env(safe-area-inset-bottom,0px)]">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-3 rounded-xl bg-terracotta text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {isSubmitting && <Loader2 size={16} className="animate-spin" />}
+                <span>Crear servicio</span>
+              </button>
+            </div>
           </form>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ====================================================================
           HOJA DESLIZABLE PARA SUBIR APORTE AL FONDO COMÚN
          ==================================================================== */}
-      {modalAporteOpen && (
+      {mounted && modalAporteOpen && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
           onClick={() => setModalAporteOpen(false)}
         >
           <form
             onSubmit={handleGuardarAporte}
-            className="w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-secondary-solid p-5 space-y-4 border-t sm:border border-separator shadow-xl animate-fade-in-up"
+            className="w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-secondary-solid p-5 border-t sm:border border-separator shadow-xl animate-fade-in-up max-h-[88dvh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between pb-3 shrink-0 border-b border-separator/40">
               <div>
                 <span className="text-xs font-medium text-label-secondary">
                   Fondo Común · {mesLabelLargo}
@@ -1566,13 +1578,14 @@ export default function FinanzasView({
               <button
                 type="button"
                 onClick={() => setModalAporteOpen(false)}
-                className="p-1.5 rounded-full bg-tertiary text-label-secondary"
+                className="p-1.5 rounded-full bg-tertiary text-label-secondary hover:text-label-primary cursor-pointer"
+                aria-label="Cerrar modal"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1 overflow-y-auto pr-1 min-h-0 pt-3">
               {initialHabitantes.length > 0 && (
                 <div>
                   <label className="text-xs font-semibold text-label-secondary block mb-1">
@@ -1652,24 +1665,27 @@ export default function FinanzasView({
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-terracotta text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-              <span>Guardar Aporte en el Fondo Común</span>
-            </button>
+            <div className="pt-3 shrink-0 border-t border-separator/40 pb-[env(safe-area-inset-bottom,0px)]">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-3 rounded-xl bg-terracotta text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {isSubmitting && <Loader2 size={16} className="animate-spin" />}
+                <span>Guardar Aporte en el Fondo Común</span>
+              </button>
+            </div>
           </form>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ====================================================================
           MODAL DE VISTA PREVIA DE COMPROBANTE / RECIBO
          ==================================================================== */}
-      {comprobantePreview && (
+      {mounted && comprobantePreview && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setComprobantePreview(null)}
         >
           <div
@@ -1683,7 +1699,8 @@ export default function FinanzasView({
               <button
                 type="button"
                 onClick={() => setComprobantePreview(null)}
-                className="p-1 rounded-full bg-tertiary text-label-secondary"
+                className="p-1 rounded-full bg-tertiary text-label-secondary hover:text-label-primary cursor-pointer"
+                aria-label="Cerrar vista previa"
               >
                 <X size={16} />
               </button>
@@ -1722,7 +1739,8 @@ export default function FinanzasView({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

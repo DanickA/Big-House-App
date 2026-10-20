@@ -102,7 +102,13 @@ export class RegistrarPagoServicioUseCase {
           const ymdEsperada = `${fechaEsperada.getUTCFullYear()}-${fechaEsperada.getUTCMonth()}-${fechaEsperada.getUTCDate()}`;
           const ymdActual = `${fechaActual.getUTCFullYear()}-${fechaActual.getUTCMonth()}-${fechaActual.getUTCDate()}`;
 
-          if (ymdEsperada !== ymdActual) {
+          // Un cambio de ciclo real tras un pago avanza la fecha de vencimiento al menos 28 días (~1 mes).
+          // Para evitar falsos positivos provocados por desfases de zona horaria local vs UTC (de pocas horas),
+          // consideramos válido si coinciden en YMD UTC o si la diferencia absoluta es menor a 24 horas.
+          const diffMs = Math.abs(fechaEsperada.getTime() - fechaActual.getTime());
+          const esMismoCiclo = ymdEsperada === ymdActual || diffMs < 24 * 60 * 60 * 1000;
+
+          if (!esMismoCiclo) {
             throw new ConcurrencyError(
               `Esta factura ya fue pagada o actualizada por otro habitante. El próximo vencimiento actual es el ${fechaActual.toLocaleDateString('es-CO')}.`,
               {

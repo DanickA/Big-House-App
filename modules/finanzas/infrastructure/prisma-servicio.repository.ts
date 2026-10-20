@@ -120,11 +120,14 @@ export class PrismaServicioRepository implements IServicioRepository {
       totalPresupuestoMensual += montoNum / periodicidad;
       totalProximosVencimientos += montoNum;
 
-      const fVenc = new Date(s.fecha_vencimiento);
-      fVenc.setHours(0, 0, 0, 0);
-
-      const diffTime = fVenc.getTime() - hoy.getTime();
-      const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const fVencRaw = new Date(s.fecha_vencimiento);
+      // Preservar la fecha pura en UTC sin distorsión de huso horario local
+      const fVencUTC = new Date(
+        Date.UTC(fVencRaw.getUTCFullYear(), fVencRaw.getUTCMonth(), fVencRaw.getUTCDate())
+      );
+      const hoyUTC = new Date(Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()));
+      const diffTime = fVencUTC.getTime() - hoyUTC.getTime();
+      const diasRestantes = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
       const listaPagos: any[] = s.pagos_servicios || [];
       const ultimoPagoRaw = listaPagos[0];
@@ -189,7 +192,7 @@ export class PrismaServicioRepository implements IServicioRepository {
         numero_cuenta: s.numero_cuenta,
         numero_factura: s.numero_factura,
         monto: montoNum,
-        fecha_vencimiento: fVenc.toISOString(),
+        fecha_vencimiento: fVencUTC.toISOString(),
         estado: s.estado,
         periodicidad_meses: periodicidad,
         dia_vencimiento: s.dia_vencimiento,

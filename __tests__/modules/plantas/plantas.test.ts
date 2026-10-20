@@ -136,8 +136,10 @@ class InMemoryCuidadoRepository implements ICuidadoRepository {
     };
   }
 
-  async findUltimoCuidadoAnterior(tareaId: string, excludeHistorialId: string): Promise<HistorialCuidado | null> {
-    const filtered = this.historiales.filter((h) => h.tarea_id === tareaId && h.id !== excludeHistorialId);
+  async findUltimoCuidadoAnterior(tareaId: string, excludeHistorialId?: string): Promise<HistorialCuidado | null> {
+    const filtered = this.historiales.filter(
+      (h) => h.tarea_id === tareaId && (!excludeHistorialId || h.id !== excludeHistorialId)
+    );
     return filtered.length > 0 ? filtered[filtered.length - 1] : null;
   }
 
@@ -222,6 +224,29 @@ describe('Plantas Module - Clean Architecture Use Cases', () => {
         expect(updated.data.estado_salud).toBe('SANA');
         expect(updated.data.notas_cuidado).toBe('Podar guías largas en primavera');
       }
+    });
+
+    it('debe actualizar la frecuencia de riego recalculando la proxima fecha sin fallar por uuid vacio', async () => {
+      const createUC = new CreatePlantaUseCase(plantaRepo, imageStorage);
+      const created = await createUC.execute({
+        nombre_comun: 'Ficus',
+        ubicacion: 'Sala',
+        frecuencia_riego: 5,
+      });
+      expect(created.success).toBe(true);
+      if (!created.success) return;
+
+      const updateUC = new UpdatePlantaUseCase(plantaRepo, cuidadoRepo, imageStorage);
+      const updated = await updateUC.execute({
+        id: created.data.id,
+        nombre_comun: 'Ficus Lyrata',
+        ubicacion: 'Sala',
+        frecuencia_riego: 10,
+      });
+
+      expect(updated.success).toBe(true);
+      const tarea = await cuidadoRepo.findTarea(created.data.id, 'RIEGO');
+      expect(tarea?.frecuencia_dias).toBe(10);
     });
   });
 

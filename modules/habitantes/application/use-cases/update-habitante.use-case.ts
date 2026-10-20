@@ -48,6 +48,10 @@ export class UpdateHabitanteUseCase {
         if (pin.trim().length > 0) {
           dataToUpdate.pin_hash = await this.hasher.hash(pin.trim());
           dataToUpdate.pin_longitud = pin.trim().length;
+        } else {
+          // Si el PIN viene como cadena vacía explícita (''), revocar el PIN previo
+          dataToUpdate.pin_hash = null;
+          dataToUpdate.pin_longitud = null;
         }
       }
 

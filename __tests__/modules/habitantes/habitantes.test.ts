@@ -231,5 +231,30 @@ describe('Habitantes Module - Clean Architecture Use Cases', () => {
         expect(res.error.message).toContain('propia cuenta');
       }
     });
+
+    it('debe revocar el PIN cuando se actualiza el método a solo contraseña (pin="")', async () => {
+      const habitante = await repo.create({
+        nombre: 'Usuario Con Pin',
+        email: 'conpin@hogar.com',
+        password_hash: 'hashed',
+        pin_hash: 'hashed-pin',
+        pin_longitud: 4,
+      });
+
+      const updateUseCase = new UpdateHabitanteUseCase(repo, hasher);
+      const res = await updateUseCase.execute({
+        id: habitante.id,
+        nombre: 'Usuario Sin Pin',
+        email: 'conpin@hogar.com',
+        password: 'new-password',
+        pin: '',
+      });
+
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.data.pin_hash).toBeNull();
+        expect(res.data.pin_longitud).toBeNull();
+      }
+    });
   });
 });

@@ -65,7 +65,7 @@ export class UpdatePlantaUseCase {
         const tareaExistente = await this.cuidadoRepo.findTarea(dto.id, 'RIEGO');
 
         if (tareaExistente) {
-          const ultimoRiego = await this.cuidadoRepo.findUltimoCuidadoAnterior(tareaExistente.id, '');
+          const ultimoRiego = await this.cuidadoRepo.findUltimoCuidadoAnterior(tareaExistente.id);
 
           let nuevaProximaFecha = new Date();
           if (ultimoRiego?.fecha_realizada) {

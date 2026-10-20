@@ -7,6 +7,6 @@ export interface ICuidadoRepository {
   createHistorial(tareaId: string, usuarioId: string, observaciones?: string | null): Promise<HistorialCuidado>;
   findHistorialByPlanta(plantaId: string): Promise<HistorialCuidado[]>;
   findHistorialById(historialId: string): Promise<HistorialCuidado | null>;
-  findUltimoCuidadoAnterior(tareaId: string, excludeHistorialId: string): Promise<HistorialCuidado | null>;
+  findUltimoCuidadoAnterior(tareaId: string, excludeHistorialId?: string): Promise<HistorialCuidado | null>;
   deshacerCuidado(historialId: string, tareaId: string, nuevaProximaFecha: Date): Promise<void>;
 }

@@ -131,13 +131,15 @@ export class PrismaCuidadoRepository implements ICuidadoRepository {
 
   async findUltimoCuidadoAnterior(
     tareaId: string,
-    excludeHistorialId: string
+    excludeHistorialId?: string
   ): Promise<HistorialCuidado | null> {
+    const whereClause: any = { tarea_id: tareaId };
+    if (excludeHistorialId && excludeHistorialId.trim().length > 0) {
+      whereClause.id = { not: excludeHistorialId.trim() };
+    }
+
     const h = await this.db.historial_cuidado.findFirst({
-      where: {
-        tarea_id: tareaId,
-        id: { not: excludeHistorialId },
-      },
+      where: whereClause,
       orderBy: { fecha_realizada: 'desc' },
     });
     if (!h) return null;

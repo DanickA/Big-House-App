@@ -165,6 +165,10 @@ export default function UsuariosView({ initialUsuarios }: UsuariosViewProps) {
         if (password.trim()) {
           formData.set('password', password.trim());
         }
+        // En modo solo contraseña, revocar explícitamente el PIN previo al editar
+        if (usuarioAEditar) {
+          formData.set('pin', '');
+        }
       }
 
       const res = usuarioAEditar

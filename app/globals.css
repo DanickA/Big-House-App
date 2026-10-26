@@ -319,6 +319,7 @@
 @theme inline {
   --color-system: var(--bg-system);
   --color-secondary: var(--bg-secondary);
+  --color-secondary-solid: var(--bg-secondary-solid);
   --color-tertiary: var(--bg-tertiary);
   --color-label-primary: var(--label-primary);
   --color-label-secondary: var(--label-secondary);
@@ -358,12 +359,20 @@ body {
   color: var(--label-primary);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", var(--font-geist-sans), system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overflow-x: hidden;
+  overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   transition: background-color 0.25s ease, color 0.25s ease;
   touch-action: manipulation;
+}
+
+/* Bloqueo estricto de desplazamiento del fondo al abrir modales/gavetas (Anti-Scroll Chaining) */
+body.sheet-open {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
 }
 
 /* Optimización táctil móvil: eliminación de retraso de 300ms y destellos grises */
@@ -376,6 +385,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overflow-x: hidden;
+  overscroll-behavior: none;
   max-width: 100vw;
 }
 
@@ -463,9 +473,11 @@ button,
 }
 
 .glass-modal {
-  background: var(--glass-modal-bg);
-  border: 1px solid var(--glass-modal-border);
-  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.38);
+  background: color-mix(in srgb, var(--bg-secondary) 95%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--separator);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.38), 0 0 0 1px var(--separator);
 }
 
 /* Luces Ambientales Adaptativas (Paleta de 11 Colores) */
@@ -959,3 +971,62 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
   border-radius: inherit;
 }
+
+/* ==========================================================================
+   ACCESIBILIDAD Y MOVIMIENTO REDUCIDO (Apple HIG & Emil Craft Standards)
+   Reemplaza desplazamientos y sacudidas físicas por fundidos cruzados simples (cross-fade),
+   conservando comprensión y feedback de estado sin inducir disconfort vestibular.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Excepciones intencionales de fundido cruzado suave para transiciones estructurales */
+  .animate-fade-in-up,
+  .animate-apple-shake,
+  .animate-popover-spring,
+  .motion-reduce-fade {
+    animation: appleCrossFade 180ms ease-out forwards !important;
+    transform: none !important;
+  }
+
+  .sheet-fluid-container,
+  .sheet-fluid-backdrop,
+  .popover-fluid-container {
+    transition: opacity 180ms ease-out !important;
+    transform: none !important;
+  }
+}
+
+@keyframes appleCrossFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Animación elástica canónica de origen para Popovers Apple HIG */
+@keyframes popoverSpringIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-popover-spring {
+  animation: popoverSpringIn 220ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+

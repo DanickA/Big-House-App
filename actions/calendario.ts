@@ -143,15 +143,21 @@ export async function actualizarEvento(
 export async function cancelarEventoLogico(id: string) {
   const auth = await resolveSessionUser();
   if (!auth.ok) {
-    return { success: false, error: auth.error, code: auth.code };
+    return { success: false, error: auth.error, code: auth.code, googleDeleted: false };
   }
 
   const previo = await prisma.eventos?.findUnique?.({ where: { id } });
   const result = await cancelarEventoLogicoUC.execute(id);
 
+  let googleDeleted = false;
   if (result.success) {
     if (previo?.google_event_id) {
-      await deleteEventoEnGoogleCalendar(auth.user.userId, previo.google_event_id);
+      try {
+        const delRes = await deleteEventoEnGoogleCalendar(auth.user.userId, previo.google_event_id);
+        googleDeleted = Boolean(delRes.deleted);
+      } catch (err) {
+        console.warn('Error al eliminar evento en Google Calendar:', err);
+      }
     }
     try {
       revalidatePath('/calendario');
@@ -159,21 +165,31 @@ export async function cancelarEventoLogico(id: string) {
     } catch {}
   }
 
-  return toActionResponse(result);
+  const response = toActionResponse(result);
+  return {
+    ...response,
+    googleDeleted,
+  };
 }
 
 export async function eliminarEventoFisico(id: string) {
   const auth = await resolveSessionUser();
   if (!auth.ok) {
-    return { success: false, error: auth.error, code: auth.code };
+    return { success: false, error: auth.error, code: auth.code, googleDeleted: false };
   }
 
   const previo = await prisma.eventos?.findUnique?.({ where: { id } });
   const result = await eliminarEventoFisicoUC.execute(id);
 
+  let googleDeleted = false;
   if (result.success) {
     if (previo?.google_event_id) {
-      await deleteEventoEnGoogleCalendar(auth.user.userId, previo.google_event_id);
+      try {
+        const delRes = await deleteEventoEnGoogleCalendar(auth.user.userId, previo.google_event_id);
+        googleDeleted = Boolean(delRes.deleted);
+      } catch (err) {
+        console.warn('Error al eliminar evento en Google Calendar:', err);
+      }
     }
     try {
       revalidatePath('/calendario');
@@ -181,7 +197,11 @@ export async function eliminarEventoFisico(id: string) {
     } catch {}
   }
 
-  return toActionResponse(result);
+  const response = toActionResponse(result);
+  return {
+    ...response,
+    googleDeleted,
+  };
 }
 
 export async function toggleEstadoSubtarea(id: string, completado: boolean) {

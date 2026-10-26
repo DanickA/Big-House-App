@@ -212,7 +212,7 @@ hogar-app/
 sequenceDiagram
     autonumber
     actor Habitante as Habitante (Cliente)
-    participant UI as PagoModal (React)
+    participant UI as FinanzasView (React)
     participant Action as actions/pagos.ts
     participant Auth as lib/auth-guard.ts
     participant Storage as lib/storage.ts

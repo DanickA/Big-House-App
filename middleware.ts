@@ -8,11 +8,12 @@ const PUBLIC_PATHS = ['/login', '/register', '/favicon.ico'];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Permitir archivos estáticos e imágenes
+  // Permitir archivos estáticos, API y el laboratorio de prototipos
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/uploads') ||
     pathname.startsWith('/api') ||
+    pathname.startsWith('/prototype') ||
     pathname.includes('.')
   ) {
     return NextResponse.next();

@@ -14,12 +14,14 @@ interface GoogleCalendarButtonProps {
   mes?: number;
   anio?: number;
   onSynced?: () => void;
+  onStatusChange?: (conectada: boolean) => void;
 }
 
 export default function GoogleCalendarButton({
   mes,
   anio,
   onSynced,
+  onStatusChange,
 }: GoogleCalendarButtonProps) {
   const [estado, setEstado] = useState<EstadoConexionGoogle>({
     conectada: false,
@@ -35,6 +37,8 @@ export default function GoogleCalendarButton({
   const syncedMonthsRef = useRef<Set<string>>(new Set());
   const onSyncedRef = useRef(onSynced);
   onSyncedRef.current = onSynced;
+  const onStatusChangeRef = useRef(onStatusChange);
+  onStatusChangeRef.current = onStatusChange;
 
   // 1. Cargar estado inicial y disparar sincronización en 2º plano (Stale-While-Revalidate)
   useEffect(() => {
@@ -44,6 +48,7 @@ export default function GoogleCalendarButton({
         const res = await obtenerEstadoConexionGoogle();
         if (!mounted) return;
         setEstado(res);
+        onStatusChangeRef.current?.(res.conectada);
 
         if (res.conectada) {
           const key = `${mes || 'default'}-${anio || 'default'}`;
@@ -81,7 +86,10 @@ export default function GoogleCalendarButton({
 
     if (syncResult === 'success') {
       setMensajeExito('¡Google Calendar sincronizado!');
-      obtenerEstadoConexionGoogle().then(setEstado);
+      obtenerEstadoConexionGoogle().then((res) => {
+        setEstado(res);
+        onStatusChangeRef.current?.(res.conectada);
+      });
       if (onSyncedRef.current) onSyncedRef.current();
       setTimeout(() => setMensajeExito(null), 4000);
     } else if (syncResult === 'error') {
@@ -106,6 +114,7 @@ export default function GoogleCalendarButton({
         }
         const nuevoEstado = await obtenerEstadoConexionGoogle();
         setEstado(nuevoEstado);
+        onStatusChangeRef.current?.(nuevoEstado.conectada);
         if (onSynced) onSynced();
         setTimeout(() => setMensajeExito(null), 3500);
       } else {
@@ -122,6 +131,7 @@ export default function GoogleCalendarButton({
       const res = await desconectarGoogleCalendar();
       if (res.success) {
         setEstado({ conectada: false, ultima_sync: null });
+        onStatusChangeRef.current?.(false);
         setMensajeExito('Cuenta desconectada');
         if (onSynced) onSynced();
         setTimeout(() => setMensajeExito(null), 3500);

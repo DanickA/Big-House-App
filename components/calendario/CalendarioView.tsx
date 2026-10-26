@@ -9,7 +9,10 @@ import {
   eliminarEventoFisico,
   toggleEstadoSubtarea,
 } from '@/actions/calendario';
-import { exportarRecordatorioHogarAGoogle } from '@/actions/google-calendar';
+import {
+  exportarRecordatorioHogarAGoogle,
+  obtenerEstadoConexionGoogle,
+} from '@/actions/google-calendar';
 import { TipoPlantilla } from '@prisma/client';
 import GoogleCalendarButton from './GoogleCalendarButton';
 import {
@@ -77,9 +80,13 @@ export default function CalendarioView({
 
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
+  const [googleConectado, setGoogleConectado] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    obtenerEstadoConexionGoogle()
+      .then((res) => setGoogleConectado(Boolean(res?.conectada)))
+      .catch(() => setGoogleConectado(false));
   }, []);
 
   // Día seleccionado y cápsula expandida (Acordeón In-Place sin duplicidad)
@@ -97,6 +104,10 @@ export default function CalendarioView({
   const [ubicacion, setUbicacion] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [color, setColor] = useState('#54749d');
+
+  const tieneVinculacionGoogle = Boolean(
+    editingEvent ? editingEvent.google_event_id : googleConectado
+  );
 
   // Caché Stale-While-Revalidate en memoria para transiciones de 0 ms
   const cacheMesesRef = useRef<Record<string, EventoUnificado[]>>({
@@ -177,6 +188,9 @@ export default function CalendarioView({
 
   const handleGoogleSynced = useCallback(() => {
     recargarMesActual(mesActual + 1, anioActual);
+    obtenerEstadoConexionGoogle()
+      .then((res) => setGoogleConectado(Boolean(res?.conectada)))
+      .catch(() => {});
   }, [recargarMesActual, mesActual, anioActual]);
 
   function abrirCreacion(fechaBase = selectedDate) {
@@ -296,7 +310,11 @@ export default function CalendarioView({
       const res = await eliminarEventoFisico(ev.id);
       if (res.success) {
         await recargarMesActual();
-        mostrarAviso('Evento eliminado en la App y en Google Calendar');
+        if ((res as any).googleDeleted) {
+          mostrarAviso('Evento eliminado en la App y en Google Calendar');
+        } else {
+          mostrarAviso('Evento eliminado en la App');
+        }
       } else {
         await recargarMesActual();
         mostrarAviso(res.error || 'No se pudo eliminar el evento', 'error');
@@ -498,6 +516,7 @@ export default function CalendarioView({
               mes={mesActual + 1}
               anio={anioActual}
               onSynced={handleGoogleSynced}
+              onStatusChange={setGoogleConectado}
             />
 
             <button
@@ -662,7 +681,11 @@ export default function CalendarioView({
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-label-secondary hover:underline cursor-pointer"
               >
                 <Plus size={13} />
-                <span>Agendar evento en Google Calendar</span>
+                <span>
+                  {googleConectado
+                    ? 'Agendar evento en Google Calendar'
+                    : 'Agendar evento'}
+                </span>
               </button>
             </div>
           ) : (
@@ -880,12 +903,24 @@ export default function CalendarioView({
 
             <div className="flex items-center justify-between gap-2 pb-2.5 shrink-0 border-b border-separator/40">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-mint/20 text-olive dark:text-mint flex items-center justify-center shrink-0">
-                  <Cloud size={16} />
+                <div
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                    tieneVinculacionGoogle
+                      ? 'bg-mint/20 text-olive dark:text-mint'
+                      : 'bg-primary/10 text-label-secondary'
+                  }`}
+                >
+                  {tieneVinculacionGoogle ? <Cloud size={16} /> : <CalendarIcon size={16} />}
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-sm font-bold text-label-primary truncate">
-                    {editingEvent ? 'Editar Evento' : 'Nuevo Evento en Google Calendar'}
+                    {editingEvent
+                      ? tieneVinculacionGoogle
+                        ? 'Editar Evento en Google Calendar'
+                        : 'Editar Evento'
+                      : tieneVinculacionGoogle
+                      ? 'Nuevo Evento en Google Calendar'
+                      : 'Nuevo Evento'}
                   </h3>
                   <p className="text-[11px] text-label-secondary capitalize truncate">
                     {selectedDate.toLocaleDateString('es-CO', {
@@ -1005,7 +1040,11 @@ export default function CalendarioView({
                           rows={2}
                           value={descripcion}
                           onChange={(e) => setDescripcion(e.target.value)}
-                          placeholder="Descripción o notas (se sincronizan en Google Calendar)"
+                          placeholder={
+                            tieneVinculacionGoogle
+                              ? 'Descripción o notas (se sincronizan en Google Calendar)'
+                              : 'Descripción o notas del evento'
+                          }
                           className="w-full min-w-0 text-xs bg-transparent focus:outline-none text-label-primary resize-none"
                         />
                       </div>
@@ -1048,7 +1087,13 @@ export default function CalendarioView({
                   className="w-full py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
                 >
                   {isPending && <Loader2 size={13} className="animate-spin" />}
-                  <span>{editingEvent ? 'Guardar cambios' : 'Guardar en Google'}</span>
+                  <span>
+                    {editingEvent
+                      ? 'Guardar cambios'
+                      : tieneVinculacionGoogle
+                      ? 'Guardar en Google'
+                      : 'Guardar Evento'}
+                  </span>
                 </button>
               </div>
             </form>

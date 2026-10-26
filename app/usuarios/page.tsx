@@ -1,6 +1,6 @@
 import { getUsuarios } from '@/actions/usuarios';
 import UsuariosView from '@/components/usuarios/UsuariosView';
-import type { UsuarioItem } from '@/components/usuarios/UsuarioModal';
+import type { UsuarioItem } from '@/components/usuarios/types';
 
 export default async function UsuariosPage() {
   const res = await getUsuarios();

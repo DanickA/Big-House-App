@@ -31,6 +31,11 @@ jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
+jest.mock('@/actions/google-calendar', () => ({
+  pushEventoAGoogleCalendar: jest.fn().mockResolvedValue({ synced: false }),
+  deleteEventoEnGoogleCalendar: jest.fn().mockResolvedValue({ deleted: false }),
+}));
+
 describe('Calendario Actions', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -314,6 +319,67 @@ describe('Calendario Actions', () => {
           titulo: 'Nuevo Nombre Cumpleaños',
         })
       }));
+    });
+  });
+
+  describe('Eliminación física y cancelación con reporte de Google Calendar', () => {
+    it('eliminarEventoFisico debe retornar googleDeleted: true cuando el evento tiene google_event_id y se borra exitosamente de Google', async () => {
+      const { deleteEventoEnGoogleCalendar } = require('@/actions/google-calendar');
+      (deleteEventoEnGoogleCalendar as jest.Mock).mockResolvedValueOnce({ deleted: true });
+
+      (prisma.eventos.findUnique as jest.Mock).mockResolvedValue({
+        id: 'evento-google-1',
+        titulo: 'Evento en Google',
+        google_event_id: 'g-event-999',
+      });
+      (prisma.eventos.delete as jest.Mock).mockResolvedValue({
+        id: 'evento-google-1',
+      });
+
+      const res = await eliminarEventoFisico('evento-google-1');
+
+      expect(res.success).toBe(true);
+      expect(res.googleDeleted).toBe(true);
+      expect(deleteEventoEnGoogleCalendar).toHaveBeenCalledWith('uuid-1', 'g-event-999');
+    });
+
+    it('eliminarEventoFisico debe retornar googleDeleted: false si el evento es solo local (sin google_event_id)', async () => {
+      const { deleteEventoEnGoogleCalendar } = require('@/actions/google-calendar');
+
+      (prisma.eventos.findUnique as jest.Mock).mockResolvedValue({
+        id: 'evento-local-1',
+        titulo: 'Evento Local',
+        google_event_id: null,
+      });
+      (prisma.eventos.delete as jest.Mock).mockResolvedValue({
+        id: 'evento-local-1',
+      });
+
+      const res = await eliminarEventoFisico('evento-local-1');
+
+      expect(res.success).toBe(true);
+      expect(res.googleDeleted).toBe(false);
+      expect(deleteEventoEnGoogleCalendar).not.toHaveBeenCalled();
+    });
+
+    it('eliminarEventoFisico debe retornar googleDeleted: false si la eliminación en Google Calendar falla', async () => {
+      const { deleteEventoEnGoogleCalendar } = require('@/actions/google-calendar');
+      (deleteEventoEnGoogleCalendar as jest.Mock).mockResolvedValueOnce({ deleted: false });
+
+      (prisma.eventos.findUnique as jest.Mock).mockResolvedValue({
+        id: 'evento-google-fallido',
+        titulo: 'Evento con Error en Google',
+        google_event_id: 'g-err-123',
+      });
+      (prisma.eventos.delete as jest.Mock).mockResolvedValue({
+        id: 'evento-google-fallido',
+      });
+
+      const res = await eliminarEventoFisico('evento-google-fallido');
+
+      expect(res.success).toBe(true);
+      expect(res.googleDeleted).toBe(false);
+      expect(deleteEventoEnGoogleCalendar).toHaveBeenCalledWith('uuid-1', 'g-err-123');
     });
   });
 });

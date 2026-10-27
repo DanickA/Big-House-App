@@ -22,3 +22,25 @@ export interface PagoHistorialItem {
     email: string;
   };
 }
+
+export type CategoriaGastoHogar =
+  | 'SERVICIOS'
+  | 'MERCADO'
+  | 'ASEO'
+  | 'MANTENIMIENTO'
+  | 'MASCOTAS'
+  | 'OTROS';
+
+export interface GastoHogar {
+  id: string;
+  descripcion: string;
+  monto: number;
+  fecha: string; // ISO
+  categoria: string;
+  usuario_id: string;
+  servicio_id?: string | null;
+  usuario?: {
+    id: string;
+    nombre: string;
+  } | null;
+}

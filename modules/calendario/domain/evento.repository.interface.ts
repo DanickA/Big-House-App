@@ -1,6 +1,8 @@
 import {
   Evento,
+  EventoConRelaciones,
   EventoUnificado,
+  DetallesEvento,
   SubtareaEvento,
   ParticipanteExterno,
   RecordatorioEvento,
@@ -19,7 +21,7 @@ export interface CreateEventoData {
   color: string;
   ubicacion?: string | null;
   recurrencia?: string | null;
-  detalles?: any;
+  detalles?: DetallesEvento | null;
   creador_id: string;
   participantes_ids?: string[];
   externos?: ParticipanteExterno[];
@@ -38,18 +40,18 @@ export interface UpdateEventoData {
   color?: string;
   ubicacion?: string | null;
   recurrencia?: string | null;
-  detalles?: any;
+  detalles?: DetallesEvento | null;
   participantes_ids?: string[];
   subtareas?: SubtareaEvento[];
 }
 
 export interface IEventoRepository {
-  findById(id: string): Promise<any | null>;
+  findById(id: string): Promise<EventoConRelaciones | null>;
   findEventosUnificados(mes: number, anio: number): Promise<EventoUnificado[]>;
-  create(data: CreateEventoData): Promise<any>;
-  update(id: string, data: UpdateEventoData): Promise<any>;
+  create(data: CreateEventoData): Promise<EventoConRelaciones>;
+  update(id: string, data: UpdateEventoData): Promise<EventoConRelaciones>;
   updateFechas(id: string, fechaInicio: Date, fechaFin: Date): Promise<void>;
-  cancelarLogico(id: string): Promise<any>;
+  cancelarLogico(id: string): Promise<Evento>;
   delete(id: string): Promise<void>;
-  toggleSubtarea(id: string, completado: boolean): Promise<any>;
+  toggleSubtarea(id: string, completado: boolean): Promise<SubtareaEvento>;
 }

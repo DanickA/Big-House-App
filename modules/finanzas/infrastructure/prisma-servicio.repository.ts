@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { prisma } from '@/lib/prisma';
+import { prisma, PrismaDbClient } from '@/lib/prisma';
+import { roundMoney, isValidId } from '@/modules/shared';
 import {
   IServicioRepository,
   CreateServicioData,
@@ -13,8 +13,21 @@ import {
   UltimoPagoDTO,
 } from '../domain/servicio.entity';
 
+interface LockedServicioRow {
+  id: string;
+  nombre_servicio: string;
+  numero_cuenta?: string | null;
+  numero_factura?: string | null;
+  monto: unknown;
+  fecha_vencimiento: Date;
+  periodicidad_meses: number | null;
+  dia_vencimiento: number | null;
+  estado: string;
+  responsable_id?: string | null;
+}
+
 export class PrismaServicioRepository implements IServicioRepository {
-  constructor(private readonly db: any = prisma) {}
+  constructor(private readonly db: PrismaDbClient = prisma) {}
 
   async findById(id: string): Promise<Servicio | null> {
     const s = await this.db.servicios.findUnique({
@@ -25,13 +38,13 @@ export class PrismaServicioRepository implements IServicioRepository {
         },
       },
     });
-    if (!s) return null;
+    if (!s || s.activo === false) return null;
     return {
       id: s.id,
       nombre_servicio: s.nombre_servicio,
       numero_cuenta: s.numero_cuenta,
       numero_factura: s.numero_factura,
-      monto: Number(s.monto),
+      monto: roundMoney(Number(s.monto)),
       fecha_vencimiento: s.fecha_vencimiento,
       estado: s.estado,
       periodicidad_meses: s.periodicidad_meses || 1,
@@ -42,21 +55,22 @@ export class PrismaServicioRepository implements IServicioRepository {
   }
 
   async findAndLockById(id: string): Promise<Servicio | null> {
+    if (!isValidId(id)) return null;
     // Pessimistic Locking: SELECT ... FOR UPDATE
-    const rows = await this.db.$queryRaw`
+    const rows = (await this.db.$queryRaw`
       SELECT id, nombre_servicio, monto, fecha_vencimiento, periodicidad_meses, dia_vencimiento, estado, responsable_id
       FROM servicios
-      WHERE id = ${id}::uuid
+      WHERE id = ${id}::uuid AND activo = true
       FOR UPDATE
-    `;
-    const s = (rows as any[])?.[0];
+    `) as LockedServicioRow[];
+    const s = rows?.[0];
     if (!s) return null;
     return {
       id: s.id,
       nombre_servicio: s.nombre_servicio,
       numero_cuenta: s.numero_cuenta ?? null,
       numero_factura: s.numero_factura ?? null,
-      monto: Number(s.monto || 0),
+      monto: roundMoney(Number(s.monto || 0)),
       fecha_vencimiento: s.fecha_vencimiento,
       estado: s.estado,
       periodicidad_meses: s.periodicidad_meses || 1,
@@ -85,6 +99,7 @@ export class PrismaServicioRepository implements IServicioRepository {
     const endOfTargetMonth = new Date(targetYear, targetMonth, 1, 0, 0, 0, 0);
 
     const rawServicios = await this.db.servicios.findMany({
+      where: { activo: true },
       include: {
         responsable: {
           select: { id: true, nombre: true },
@@ -96,7 +111,7 @@ export class PrismaServicioRepository implements IServicioRepository {
             },
           },
           orderBy: { fecha_pago: 'desc' },
-          take: 12,
+          take: 60,
         },
       },
       orderBy: {
@@ -113,12 +128,12 @@ export class PrismaServicioRepository implements IServicioRepository {
     let totalPorPagarMes = 0;
     let diferenciaPresupuestoGlobal = 0;
 
-    const servicios: ServicioConEstado[] = rawServicios.map((s: any) => {
-      const montoNum = Number(s.monto);
+    const servicios: ServicioConEstado[] = rawServicios.map((s) => {
+      const montoNum = roundMoney(Number(s.monto));
       const periodicidad = s.periodicidad_meses || 1;
 
-      totalPresupuestoMensual += montoNum / periodicidad;
-      totalProximosVencimientos += montoNum;
+      totalPresupuestoMensual = roundMoney(totalPresupuestoMensual + montoNum / periodicidad);
+      totalProximosVencimientos = roundMoney(totalProximosVencimientos + montoNum);
 
       const fVencRaw = new Date(s.fecha_vencimiento);
       // Preservar la fecha pura en UTC sin distorsión de huso horario local
@@ -129,21 +144,21 @@ export class PrismaServicioRepository implements IServicioRepository {
       const diffTime = fVencUTC.getTime() - hoyUTC.getTime();
       const diasRestantes = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-      const listaPagos: any[] = s.pagos_servicios || [];
+      const listaPagos = s.pagos_servicios || [];
       const ultimoPagoRaw = listaPagos[0];
 
-      const mapPagoToDTO = (pRaw: any): UltimoPagoDTO => {
-        const mPagado = Number(pRaw.monto_pagado);
+      const mapPagoToDTO = (pRaw: (typeof listaPagos)[number]): UltimoPagoDTO => {
+        const mPagado = roundMoney(Number(pRaw.monto_pagado));
         const mPresup =
           pRaw.monto_presupuestado !== null && pRaw.monto_presupuestado !== undefined
-            ? Number(pRaw.monto_presupuestado)
+            ? roundMoney(Number(pRaw.monto_presupuestado))
             : montoNum;
         return {
           id: pRaw.id,
           fecha_pago: (pRaw.fecha_pago || new Date()).toISOString(),
           monto_pagado: mPagado,
           monto_presupuestado: mPresup,
-          diferencia_presupuesto: mPagado - mPresup,
+          diferencia_presupuesto: roundMoney(mPagado - mPresup),
           comprobante_url: pRaw.comprobante_url,
           observaciones: pRaw.observaciones ?? null,
           pagado_por: pRaw.usuarios?.nombre ?? undefined,
@@ -153,7 +168,7 @@ export class PrismaServicioRepository implements IServicioRepository {
       const ultimoPago = ultimoPagoRaw ? mapPagoToDTO(ultimoPagoRaw) : null;
 
       // Buscar si hubo pago dentro del mes consultado [startOfTargetMonth, endOfTargetMonth)
-      const pagoEnMesRaw = listaPagos.find((p: any) => {
+      const pagoEnMesRaw = listaPagos.find((p) => {
         if (!p.fecha_pago) return false;
         const fp = new Date(p.fecha_pago);
         return fp >= startOfTargetMonth && fp < endOfTargetMonth;
@@ -163,10 +178,12 @@ export class PrismaServicioRepository implements IServicioRepository {
       const pagadoEnMesConsultado = !!pagoMesConsultado;
 
       if (pagoMesConsultado) {
-        totalRealPagadoMes += pagoMesConsultado.monto_pagado;
-        diferenciaPresupuestoGlobal += pagoMesConsultado.diferencia_presupuesto ?? 0;
+        totalRealPagadoMes = roundMoney(totalRealPagadoMes + pagoMesConsultado.monto_pagado);
+        diferenciaPresupuestoGlobal = roundMoney(
+          diferenciaPresupuestoGlobal + (pagoMesConsultado.diferencia_presupuesto ?? 0)
+        );
       } else {
-        totalPorPagarMes += montoNum;
+        totalPorPagarMes = roundMoney(totalPorPagarMes + montoNum);
       }
 
       let estadoVencimiento: EstadoVencimiento = 'AL_DIA';
@@ -213,14 +230,14 @@ export class PrismaServicioRepository implements IServicioRepository {
 
     const resumen: ResumenServicios = {
       totalServicios: servicios.length,
-      totalPresupuestoMensual: Math.round(totalPresupuestoMensual * 100) / 100,
-      totalProximosVencimientos: Math.round(totalProximosVencimientos * 100) / 100,
+      totalPresupuestoMensual: roundMoney(totalPresupuestoMensual),
+      totalProximosVencimientos: roundMoney(totalProximosVencimientos),
       cuentasVencidas,
       cuentasPorVencer,
       cuentasAlDia,
-      totalRealPagadoMes: Math.round(totalRealPagadoMes * 100) / 100,
-      totalPorPagarMes: Math.round(totalPorPagarMes * 100) / 100,
-      diferenciaPresupuestoGlobal: Math.round(diferenciaPresupuestoGlobal * 100) / 100,
+      totalRealPagadoMes: roundMoney(totalRealPagadoMes),
+      totalPorPagarMes: roundMoney(totalPorPagarMes),
+      diferenciaPresupuestoGlobal: roundMoney(diferenciaPresupuestoGlobal),
     };
 
     return { servicios, resumen };
@@ -230,7 +247,7 @@ export class PrismaServicioRepository implements IServicioRepository {
     const s = await this.db.servicios.create({
       data: {
         nombre_servicio: data.nombre_servicio,
-        monto: data.monto,
+        monto: roundMoney(data.monto),
         fecha_vencimiento: data.fecha_vencimiento,
         periodicidad_meses: data.periodicidad_meses ?? 1,
         dia_vencimiento: data.dia_vencimiento ?? null,
@@ -238,6 +255,7 @@ export class PrismaServicioRepository implements IServicioRepository {
         numero_factura: data.numero_factura ?? null,
         responsable_id: data.responsable_id ?? null,
         estado: data.estado ?? 'PENDIENTE',
+        activo: true,
       },
       include: {
         responsable: {
@@ -251,7 +269,7 @@ export class PrismaServicioRepository implements IServicioRepository {
       nombre_servicio: s.nombre_servicio,
       numero_cuenta: s.numero_cuenta,
       numero_factura: s.numero_factura,
-      monto: Number(s.monto),
+      monto: roundMoney(Number(s.monto)),
       fecha_vencimiento: s.fecha_vencimiento,
       estado: s.estado,
       periodicidad_meses: s.periodicidad_meses || 1,
@@ -262,9 +280,13 @@ export class PrismaServicioRepository implements IServicioRepository {
   }
 
   async update(id: string, data: UpdateServicioData): Promise<Servicio> {
+    const payload: UpdateServicioData = {
+      ...data,
+      ...(data.monto !== undefined && { monto: roundMoney(data.monto) }),
+    };
     const s = await this.db.servicios.update({
       where: { id },
-      data,
+      data: payload,
     });
 
     return {
@@ -272,7 +294,7 @@ export class PrismaServicioRepository implements IServicioRepository {
       nombre_servicio: s.nombre_servicio,
       numero_cuenta: s.numero_cuenta,
       numero_factura: s.numero_factura,
-      monto: Number(s.monto),
+      monto: roundMoney(Number(s.monto)),
       fecha_vencimiento: s.fecha_vencimiento,
       estado: s.estado,
       periodicidad_meses: s.periodicidad_meses || 1,
@@ -282,6 +304,20 @@ export class PrismaServicioRepository implements IServicioRepository {
   }
 
   async delete(id: string): Promise<void> {
+    const pagosCount =
+      typeof this.db.pagos_servicios?.count === 'function'
+        ? await this.db.pagos_servicios.count({ where: { servicio_id: id } })
+        : 0;
+
+    if (pagosCount > 0) {
+      // Baja lógica contable: preserva el historial de pagos_servicios y gastos asociados
+      await this.db.servicios.update({
+        where: { id },
+        data: { activo: false, estado: 'INACTIVO' },
+      });
+      return;
+    }
+
     await this.db.servicios.delete({
       where: { id },
     });

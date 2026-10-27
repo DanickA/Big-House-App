@@ -2,6 +2,18 @@ import { createUsuario, updateUsuario } from '@/actions/usuarios';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
+jest.mock('@/lib/auth-guard', () => ({
+  resolveSessionUser: jest.fn().mockResolvedValue({
+    ok: true,
+    user: {
+      userId: 'u-1',
+      nombre: 'Carlos Admin',
+      email: 'carlos@hogar.com',
+      rol: 'ADMIN',
+    },
+  }),
+}));
+
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     usuarios: {
@@ -28,13 +40,17 @@ describe('Usuarios Actions - PIN y Seguridad (GUI-03, GUI-09)', () => {
       const formData = new FormData();
       formData.set('nombre', 'Carlos');
       formData.set('email', 'carlos@hogar.com');
-      formData.set('password', '1234');
+      formData.set('password', 'passwordSeguro123');
       formData.set('pin', '1234');
 
       (prisma.usuarios.create as jest.Mock).mockResolvedValue({
         id: 'u-1',
         nombre: 'Carlos',
         email: 'carlos@hogar.com',
+        rol: 'MIEMBRO',
+        token_version: 1,
+        activo: true,
+        fecha_registro: new Date(),
       });
 
       const res = await createUsuario(formData);
@@ -83,6 +99,10 @@ describe('Usuarios Actions - PIN y Seguridad (GUI-03, GUI-09)', () => {
         id: 'u-1',
         nombre: 'Carlos Modificado',
         email: 'carlos.nuevo@hogar.com',
+        rol: 'ADMIN',
+        token_version: 1,
+        activo: true,
+        fecha_registro: new Date(),
       });
 
       const res = await updateUsuario('u-1', formData);
@@ -103,6 +123,10 @@ describe('Usuarios Actions - PIN y Seguridad (GUI-03, GUI-09)', () => {
       (prisma.usuarios.update as jest.Mock).mockResolvedValue({
         id: 'u-1',
         nombre: 'Carlos',
+        rol: 'ADMIN',
+        token_version: 2,
+        activo: true,
+        fecha_registro: new Date(),
       });
 
       const res = await updateUsuario('u-1', formData);

@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { prisma } from '@/lib/prisma';
+import { prisma, PrismaDbClient } from '@/lib/prisma';
+import { roundMoney } from '@/modules/shared';
 import {
   IAporteFondoRepository,
   CreateAporteFondoData,
@@ -7,7 +7,7 @@ import {
 import { AporteFondoComun } from '../domain/aporte-fondo.entity';
 
 export class PrismaAporteFondoRepository implements IAporteFondoRepository {
-  constructor(private readonly db: any = prisma) {}
+  constructor(private readonly db: PrismaDbClient = prisma) {}
 
   async findByMonth(year: number, month: number): Promise<AporteFondoComun[]> {
     const startDate = new Date(year, month - 1, 1, 0, 0, 0, 0);
@@ -16,6 +16,7 @@ export class PrismaAporteFondoRepository implements IAporteFondoRepository {
 
     const rows = await this.db.ingresos.findMany({
       where: {
+        fuente: 'FONDO_COMUN',
         fecha: {
           gte: startDate,
           lt: endDate,
@@ -34,7 +35,7 @@ export class PrismaAporteFondoRepository implements IAporteFondoRepository {
       },
     });
 
-    return rows.map((r: any) => ({
+    return rows.map((r) => ({
       id: r.id,
       usuario_id: r.usuario_id,
       usuario: r.usuarios
@@ -43,7 +44,7 @@ export class PrismaAporteFondoRepository implements IAporteFondoRepository {
             nombre: r.usuarios.nombre,
           }
         : null,
-      monto: Number(r.monto),
+      monto: roundMoney(Number(r.monto)),
       fecha: (r.fecha || new Date()).toISOString(),
       periodo_mes: periodoMes,
       descripcion: r.descripcion,
@@ -59,7 +60,7 @@ export class PrismaAporteFondoRepository implements IAporteFondoRepository {
     const r = await this.db.ingresos.create({
       data: {
         usuario_id: data.usuario_id,
-        monto: data.monto,
+        monto: roundMoney(data.monto),
         fecha: data.fecha,
         descripcion: data.descripcion.slice(0, 200),
         fuente: 'FONDO_COMUN',
@@ -84,7 +85,7 @@ export class PrismaAporteFondoRepository implements IAporteFondoRepository {
             nombre: r.usuarios.nombre,
           }
         : null,
-      monto: Number(r.monto),
+      monto: roundMoney(Number(r.monto)),
       fecha: (r.fecha || new Date()).toISOString(),
       periodo_mes: periodoMes,
       descripcion: r.descripcion,
@@ -93,6 +94,12 @@ export class PrismaAporteFondoRepository implements IAporteFondoRepository {
   }
 
   async delete(id: string): Promise<void> {
+    if (typeof this.db.ingresos.deleteMany === 'function') {
+      await this.db.ingresos.deleteMany({
+        where: { id, fuente: 'FONDO_COMUN' },
+      });
+      return;
+    }
     await this.db.ingresos.delete({
       where: { id },
     });

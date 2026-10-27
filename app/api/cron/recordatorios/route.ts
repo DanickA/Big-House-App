@@ -3,11 +3,27 @@ import { prisma } from '@/lib/prisma';
 import { Resend } from 'resend';
 import webpush from 'web-push';
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function GET(request: Request) {
   try {
-    // Validar algún token de seguridad para el cron (opcional)
+    const cronSecret = process.env.CRON_SECRET;
     const authHeader = request.headers.get('authorization');
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+
+    // En producción es mandatorio que CRON_SECRET esté configurado y coincida
+    if (process.env.NODE_ENV === 'production' && !cronSecret) {
+      console.error('[Cron] CRON_SECRET no está configurado en el entorno de producción.');
+      return new NextResponse('Unauthorized: CRON_SECRET required in production', { status: 401 });
+    }
+
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
@@ -94,7 +110,7 @@ export async function GET(request: Request) {
               from: process.env.RESEND_FROM_EMAIL || 'BigHouse App <no-reply@resend.dev>',
               to: usuario.email,
               subject: `Recordatorio: ${evento.titulo}`,
-              html: `<p>Hola ${usuario.nombre}, te recordamos que tienes el evento <b>${evento.titulo}</b> programado.</p>`,
+              html: `<p>Hola ${escapeHtml(usuario.nombre || 'Habitante')}, te recordamos que tienes el evento <b>${escapeHtml(evento.titulo)}</b> programado.</p>`,
             });
           }
           enviadoExitosamente = true;

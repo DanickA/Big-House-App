@@ -8,7 +8,29 @@ import {
 import { prisma } from '@/lib/prisma';
 import { TipoPlantilla, EstadoEvento } from '@prisma/client';
 
-// Mockeamos prisma y next/cache
+// Mockeamos auth-guard, prisma, google-calendar-sync y next/cache
+jest.mock('@/lib/auth-guard', () => ({
+  resolveSessionUser: jest.fn().mockResolvedValue({
+    ok: true,
+    user: {
+      userId: 'uuid-1',
+      nombre: 'Test User',
+      email: 'test@example.com',
+      rol: 'ADMIN',
+    },
+  }),
+}));
+
+jest.mock('@/lib/google-calendar-sync', () => ({
+  pushEventoAGoogleCalendar: jest.fn().mockResolvedValue({ synced: false }),
+  deleteEventoEnGoogleCalendar: jest.fn().mockResolvedValue({ deleted: false }),
+}));
+
+jest.mock('@/actions/google-calendar', () => ({
+  pushEventoAGoogleCalendar: jest.fn().mockResolvedValue({ synced: false }),
+  deleteEventoEnGoogleCalendar: jest.fn().mockResolvedValue({ deleted: false }),
+}));
+
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     eventos: {
@@ -29,11 +51,6 @@ jest.mock('@/lib/prisma', () => ({
 
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
-}));
-
-jest.mock('@/actions/google-calendar', () => ({
-  pushEventoAGoogleCalendar: jest.fn().mockResolvedValue({ synced: false }),
-  deleteEventoEnGoogleCalendar: jest.fn().mockResolvedValue({ deleted: false }),
 }));
 
 describe('Calendario Actions', () => {
@@ -324,7 +341,7 @@ describe('Calendario Actions', () => {
 
   describe('Eliminación física y cancelación con reporte de Google Calendar', () => {
     it('eliminarEventoFisico debe retornar googleDeleted: true cuando el evento tiene google_event_id y se borra exitosamente de Google', async () => {
-      const { deleteEventoEnGoogleCalendar } = require('@/actions/google-calendar');
+      const { deleteEventoEnGoogleCalendar } = require('@/lib/google-calendar-sync');
       (deleteEventoEnGoogleCalendar as jest.Mock).mockResolvedValueOnce({ deleted: true });
 
       (prisma.eventos.findUnique as jest.Mock).mockResolvedValue({
@@ -344,7 +361,7 @@ describe('Calendario Actions', () => {
     });
 
     it('eliminarEventoFisico debe retornar googleDeleted: false si el evento es solo local (sin google_event_id)', async () => {
-      const { deleteEventoEnGoogleCalendar } = require('@/actions/google-calendar');
+      const { deleteEventoEnGoogleCalendar } = require('@/lib/google-calendar-sync');
 
       (prisma.eventos.findUnique as jest.Mock).mockResolvedValue({
         id: 'evento-local-1',
@@ -363,7 +380,7 @@ describe('Calendario Actions', () => {
     });
 
     it('eliminarEventoFisico debe retornar googleDeleted: false si la eliminación en Google Calendar falla', async () => {
-      const { deleteEventoEnGoogleCalendar } = require('@/actions/google-calendar');
+      const { deleteEventoEnGoogleCalendar } = require('@/lib/google-calendar-sync');
       (deleteEventoEnGoogleCalendar as jest.Mock).mockResolvedValueOnce({ deleted: false });
 
       (prisma.eventos.findUnique as jest.Mock).mockResolvedValue({

@@ -30,7 +30,7 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
   const [shake, setShake] = useState(false);
 
   const pinInputRef = useRef<HTMLInputElement>(null);
-  const expectedPinLength = 4; // Longitud estándar Apple HIG de 4 dígitos
+  const expectedPinLength = miembroSeleccionado?.pinLongitud || 4;
 
   // Recordar el último usuario para vista directa de desbloqueo de perfil
   useEffect(() => {
@@ -316,14 +316,20 @@ export default function LoginForm({ initialMiembros }: LoginFormProps) {
                           value={pinOClave}
                           onChange={handlePinInputChange}
                           disabled={procesando}
-                          aria-label="PIN de acceso de 4 dígitos"
+                          aria-label={`PIN de acceso de ${expectedPinLength} dígitos`}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         />
 
-                        {/* 4 Casillas Discretas Estilo Apple HIG */}
+                        {/* Casillas Discretas Estilo Apple HIG (Dinámicas 4-6 dígitos) */}
                         <div
                           onClick={() => pinInputRef.current?.focus()}
-                          className="grid grid-cols-4 gap-3 cursor-pointer py-1"
+                          className={`grid ${
+                            expectedPinLength === 5
+                              ? 'grid-cols-5'
+                              : expectedPinLength === 6
+                              ? 'grid-cols-6'
+                              : 'grid-cols-4'
+                          } gap-3 cursor-pointer py-1`}
                         >
                           {Array.from({ length: expectedPinLength }).map((_, i) => {
                             const isFilled = i < pinOClave.length;

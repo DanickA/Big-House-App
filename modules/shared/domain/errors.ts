@@ -65,11 +65,19 @@ export function toActionResponse<T>(result: Result<T, AppError | Error>): Action
 
   const error = result.error;
   if (error instanceof AppError) {
+    const safeDetails: Record<string, unknown> = {};
+    if (error.details) {
+      for (const [k, v] of Object.entries(error.details)) {
+        if (k !== 'original' && k !== 'stack' && k !== 'cause') {
+          safeDetails[k] = v;
+        }
+      }
+    }
     return {
       success: false,
       error: error.message,
       code: error.code,
-      ...(error.details || {}),
+      ...safeDetails,
     };
   }
 

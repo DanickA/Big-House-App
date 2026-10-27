@@ -1,5 +1,5 @@
 import { IEventoRepository } from '../../domain/evento.repository.interface';
-import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
+import { Result, ok, err, AppError, ValidationError, UnexpectedError, isValidId } from '@/modules/shared';
 import { defaultEventoRepository } from '../../infrastructure/prisma-evento.repository';
 
 export class EliminarEventoFisicoUseCase {
@@ -7,7 +7,11 @@ export class EliminarEventoFisicoUseCase {
 
   async execute(id: string): Promise<Result<void, AppError>> {
     try {
-      if (id.startsWith('planta-') || id.startsWith('servicio-')) {
+      if (!isValidId(id)) {
+        return err(new ValidationError('Identificador de evento inválido'));
+      }
+      const cleanId = id.trim();
+      if (cleanId.startsWith('planta-') || cleanId.startsWith('servicio-')) {
         return err(
           new ValidationError(
             'Este evento automático se gestiona desde su módulo correspondiente'
@@ -15,7 +19,7 @@ export class EliminarEventoFisicoUseCase {
         );
       }
 
-      await this.repo.delete(id);
+      await this.repo.delete(cleanId);
       return ok(undefined);
     } catch (error: any) {
       if (error instanceof AppError) return err(error);

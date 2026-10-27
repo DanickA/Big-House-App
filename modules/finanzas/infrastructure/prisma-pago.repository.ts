@@ -1,14 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { prisma } from '@/lib/prisma';
+import { prisma, PrismaDbClient } from '@/lib/prisma';
+import { roundMoney } from '@/modules/shared';
 import {
   IPagoRepository,
   CreatePagoData,
   CreateGastoData,
 } from '../domain/pago.repository.interface';
-import { PagoServicio, PagoHistorialItem } from '../domain/pago.entity';
+import { PagoServicio, PagoHistorialItem, GastoHogar } from '../domain/pago.entity';
 
 export class PrismaPagoRepository implements IPagoRepository {
-  constructor(private readonly db: any = prisma) {}
+  constructor(private readonly db: PrismaDbClient = prisma) {}
 
   async findRecentDuplicate(
     servicioId: string,
@@ -19,7 +19,7 @@ export class PrismaPagoRepository implements IPagoRepository {
     const pagoDuplicado = await this.db.pagos_servicios.findFirst({
       where: {
         servicio_id: servicioId,
-        monto_pagado: monto,
+        monto_pagado: roundMoney(monto),
         fecha_pago: {
           gte: ventanaAtras,
         },
@@ -29,31 +29,30 @@ export class PrismaPagoRepository implements IPagoRepository {
   }
 
   async createPago(data: CreatePagoData): Promise<PagoServicio> {
-    const createPayload: Record<string, any> = {
-      servicio_id: data.servicio_id,
-      usuario_id: data.usuario_id,
-      monto_pagado: data.monto_pagado,
-      fecha_pago: data.fecha_pago,
-      comprobante_url: data.comprobante_url ?? null,
-      observaciones: data.observaciones ?? null,
-    };
-
-    if (data.monto_presupuestado !== undefined && data.monto_presupuestado !== null) {
-      createPayload.monto_presupuestado = data.monto_presupuestado;
-    }
-
+    const montoPagado = roundMoney(data.monto_pagado);
     const p = await this.db.pagos_servicios.create({
-      data: createPayload,
+      data: {
+        servicio_id: data.servicio_id,
+        usuario_id: data.usuario_id,
+        monto_pagado: montoPagado,
+        ...(data.monto_presupuestado !== undefined &&
+          data.monto_presupuestado !== null && {
+            monto_presupuestado: roundMoney(data.monto_presupuestado),
+          }),
+        fecha_pago: data.fecha_pago,
+        comprobante_url: data.comprobante_url ?? null,
+        observaciones: data.observaciones ?? null,
+      },
     });
 
     return {
       id: p.id,
       servicio_id: p.servicio_id,
       usuario_id: p.usuario_id,
-      monto_pagado: Number(p.monto_pagado),
+      monto_pagado: roundMoney(Number(p.monto_pagado)),
       monto_presupuestado:
         p.monto_presupuestado !== undefined && p.monto_presupuestado !== null
-          ? Number(p.monto_presupuestado)
+          ? roundMoney(Number(p.monto_presupuestado))
           : data.monto_presupuestado ?? null,
       fecha_pago: p.fecha_pago,
       comprobante_url: p.comprobante_url,
@@ -65,7 +64,7 @@ export class PrismaPagoRepository implements IPagoRepository {
     await this.db.gastos.create({
       data: {
         descripcion: data.descripcion.slice(0, 200),
-        monto: data.monto,
+        monto: roundMoney(data.monto),
         fecha: data.fecha,
         categoria: data.categoria,
         usuario_id: data.usuario_id,
@@ -96,13 +95,13 @@ export class PrismaPagoRepository implements IPagoRepository {
       },
     });
 
-    return historial.map((p: any) => {
-      const montoPagado = Number(p.monto_pagado);
+    return historial.map((p) => {
+      const montoPagado = roundMoney(Number(p.monto_pagado));
       const montoPresupuestado =
         p.monto_presupuestado !== null && p.monto_presupuestado !== undefined
-          ? Number(p.monto_presupuestado)
+          ? roundMoney(Number(p.monto_presupuestado))
           : p.servicios?.monto !== undefined
-          ? Number(p.servicios.monto)
+          ? roundMoney(Number(p.servicios.monto))
           : null;
 
       return {
@@ -110,7 +109,7 @@ export class PrismaPagoRepository implements IPagoRepository {
         monto_pagado: montoPagado,
         monto_presupuestado: montoPresupuestado,
         diferencia_presupuesto:
-          montoPresupuestado !== null ? montoPagado - montoPresupuestado : 0,
+          montoPresupuestado !== null ? roundMoney(montoPagado - montoPresupuestado) : 0,
         fecha_pago: (p.fecha_pago || new Date()).toISOString(),
         comprobante_url: p.comprobante_url,
         observaciones: p.observaciones,
@@ -119,6 +118,53 @@ export class PrismaPagoRepository implements IPagoRepository {
           email: p.usuarios.email,
         },
       };
+    });
+  }
+
+  async findGastosByMonth(year: number, month: number): Promise<GastoHogar[]> {
+    const startDate = new Date(year, month - 1, 1, 0, 0, 0, 0);
+    const endDate = new Date(year, month, 1, 0, 0, 0, 0);
+
+    const rows = await this.db.gastos.findMany({
+      where: {
+        fecha: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      include: {
+        usuarios: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
+      },
+      orderBy: {
+        fecha: 'desc',
+      },
+    });
+
+    return rows.map((g) => ({
+      id: g.id,
+      descripcion: g.descripcion,
+      monto: roundMoney(Number(g.monto)),
+      fecha: (g.fecha || new Date()).toISOString(),
+      categoria: g.categoria,
+      usuario_id: g.usuario_id,
+      servicio_id: g.servicio_id ?? null,
+      usuario: g.usuarios
+        ? {
+            id: g.usuarios.id,
+            nombre: g.usuarios.nombre,
+          }
+        : null,
+    }));
+  }
+
+  async deleteGasto(id: string): Promise<void> {
+    await this.db.gastos.delete({
+      where: { id },
     });
   }
 }

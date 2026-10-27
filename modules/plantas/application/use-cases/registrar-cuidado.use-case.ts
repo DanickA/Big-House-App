@@ -1,6 +1,14 @@
 import { ICuidadoRepository } from '../../domain/cuidado.repository.interface';
 import { HistorialCuidado } from '../../domain/planta.entity';
-import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
+import {
+  Result,
+  ok,
+  err,
+  AppError,
+  ValidationError,
+  UnexpectedError,
+  isValidId,
+} from '@/modules/shared';
 import { defaultCuidadoRepository } from '../../infrastructure/prisma-cuidado.repository';
 
 export interface RegistrarCuidadoDTO {
@@ -26,53 +34,71 @@ export class RegistrarCuidadoUseCase {
 
   async execute(dto: RegistrarCuidadoDTO): Promise<Result<RegistrarCuidadoResultData, AppError>> {
     try {
-      if (!dto.plantaId) {
+      if (!isValidId(dto.plantaId)) {
         return err(new ValidationError('Identificador de planta requerido'));
       }
-      if (!dto.usuarioId) {
+      if (!isValidId(dto.usuarioId)) {
         return err(new ValidationError('Usuario no autenticado'));
       }
 
+      const plantaId = dto.plantaId.trim();
+      const usuarioId = dto.usuarioId.trim();
       const tipoTarea = dto.tipoTarea || 'RIEGO';
-      let tarea = await this.repo.findTarea(dto.plantaId, tipoTarea);
+      let tarea = await this.repo.findTarea(plantaId, tipoTarea);
 
       if (!tarea) {
         const proximaFecha = new Date();
         proximaFecha.setHours(0, 0, 0, 0);
         proximaFecha.setDate(proximaFecha.getDate() + 7);
 
-        tarea = await this.repo.createTarea(dto.plantaId, tipoTarea, 7, proximaFecha);
+        tarea = await this.repo.createTarea(plantaId, tipoTarea, 7, proximaFecha);
       }
 
       const fechaAnterior = tarea.proxima_fecha;
 
+      let nuevaProximaFecha: Date | undefined;
       if (tipoTarea === 'RIEGO') {
-        const nuevaProximaFecha = new Date();
+        nuevaProximaFecha = new Date();
         nuevaProximaFecha.setHours(0, 0, 0, 0);
         nuevaProximaFecha.setDate(nuevaProximaFecha.getDate() + (tarea.frecuencia_dias || 7));
-
-        await this.repo.updateTareaProximaFecha(tarea.id, nuevaProximaFecha);
       }
 
-      const nuevoHistorial = await this.repo.createHistorial(
-        tarea.id,
-        dto.usuarioId,
-        dto.observaciones || null
-      );
+      let nuevoHistorial: HistorialCuidado;
+      if (typeof this.repo.registrarCuidadoAtomico === 'function') {
+        nuevoHistorial = await this.repo.registrarCuidadoAtomico(
+          tarea.id,
+          usuarioId,
+          dto.observaciones || null,
+          nuevaProximaFecha
+        );
+      } else {
+        if (nuevaProximaFecha) {
+          await this.repo.updateTareaProximaFecha(tarea.id, nuevaProximaFecha);
+        }
+        nuevoHistorial = await this.repo.createHistorial(
+          tarea.id,
+          usuarioId,
+          dto.observaciones || null
+        );
+      }
 
       return ok({
         data: nuevoHistorial,
         meta: {
           historialId: nuevoHistorial.id,
           tareaId: tarea.id,
-          plantaId: dto.plantaId,
+          plantaId,
           tipoTarea,
           fechaAnterior,
         },
       });
     } catch (error: any) {
       if (error instanceof AppError) return err(error);
-      return err(new UnexpectedError('No se pudo registrar la acción de cuidado', { original: error?.message }));
+      return err(
+        new UnexpectedError('No se pudo registrar la acción de cuidado', {
+          original: error?.message,
+        })
+      );
     }
   }
 }

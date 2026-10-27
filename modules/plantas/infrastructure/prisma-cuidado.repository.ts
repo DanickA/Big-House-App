@@ -1,9 +1,9 @@
-import { prisma } from '@/lib/prisma';
+import { prisma, PrismaDbClient } from '@/lib/prisma';
 import { ICuidadoRepository } from '../domain/cuidado.repository.interface';
 import { TareaCuidado, HistorialCuidado } from '../domain/planta.entity';
 
 export class PrismaCuidadoRepository implements ICuidadoRepository {
-  constructor(private readonly db: any = prisma) {}
+  constructor(private readonly db: PrismaDbClient = prisma) {}
 
   async findTarea(plantaId: string, tipoTarea: string): Promise<TareaCuidado | null> {
     const t = await this.db.tareas_cuidado.findFirst({
@@ -80,6 +80,43 @@ export class PrismaCuidadoRepository implements ICuidadoRepository {
     };
   }
 
+  async registrarCuidadoAtomico(
+    tareaId: string,
+    usuarioId: string,
+    observaciones?: string | null,
+    nuevaProximaFecha?: Date
+  ): Promise<HistorialCuidado> {
+    const maybeTx = (this.db as { $transaction?: (p: Promise<unknown>[]) => Promise<unknown[]> })
+      .$transaction;
+    if (nuevaProximaFecha && typeof maybeTx === 'function') {
+      const [h] = (await maybeTx.call(this.db, [
+        this.db.historial_cuidado.create({
+          data: {
+            tarea_id: tareaId,
+            usuario_id: usuarioId,
+            observaciones: observaciones || null,
+          },
+        }),
+        this.db.tareas_cuidado.update({
+          where: { id: tareaId },
+          data: { proxima_fecha: nuevaProximaFecha },
+        }),
+      ])) as [HistorialCuidado];
+      return {
+        id: h.id,
+        tarea_id: h.tarea_id,
+        usuario_id: h.usuario_id,
+        fecha_realizada: h.fecha_realizada,
+        observaciones: h.observaciones,
+      };
+    }
+
+    if (nuevaProximaFecha) {
+      await this.updateTareaProximaFecha(tareaId, nuevaProximaFecha);
+    }
+    return this.createHistorial(tareaId, usuarioId, observaciones);
+  }
+
   async findHistorialByPlanta(plantaId: string): Promise<HistorialCuidado[]> {
     const list = await this.db.historial_cuidado.findMany({
       where: {
@@ -100,7 +137,7 @@ export class PrismaCuidadoRepository implements ICuidadoRepository {
       },
     });
 
-    return list.map((h: any) => ({
+    return list.map((h) => ({
       id: h.id,
       tarea_id: h.tarea_id,
       usuario_id: h.usuario_id,
@@ -133,7 +170,7 @@ export class PrismaCuidadoRepository implements ICuidadoRepository {
     tareaId: string,
     excludeHistorialId?: string
   ): Promise<HistorialCuidado | null> {
-    const whereClause: any = { tarea_id: tareaId };
+    const whereClause: { tarea_id: string; id?: { not: string } } = { tarea_id: tareaId };
     if (excludeHistorialId && excludeHistorialId.trim().length > 0) {
       whereClause.id = { not: excludeHistorialId.trim() };
     }
@@ -157,7 +194,9 @@ export class PrismaCuidadoRepository implements ICuidadoRepository {
     tareaId: string,
     nuevaProximaFecha: Date
   ): Promise<void> {
-    await this.db.$transaction([
+    const maybeTx = (this.db as { $transaction?: (p: Promise<unknown>[]) => Promise<unknown[]> })
+      .$transaction;
+    const ops = [
       this.db.historial_cuidado.delete({
         where: { id: historialId },
       }),
@@ -165,7 +204,12 @@ export class PrismaCuidadoRepository implements ICuidadoRepository {
         where: { id: tareaId },
         data: { proxima_fecha: nuevaProximaFecha },
       }),
-    ]);
+    ];
+    if (typeof maybeTx === 'function') {
+      await maybeTx.call(this.db, ops);
+      return;
+    }
+    await Promise.all(ops);
   }
 }
 

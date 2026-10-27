@@ -35,7 +35,7 @@ export default function PlantasView({ initialPlantas }: PlantasViewProps) {
     'plantas-list',
     async () => {
       const res = await getPlantas();
-      return res.success && res.data ? res.data : initialPlantas;
+      return res.success ? res.data : initialPlantas;
     },
     {
       fallbackData: initialPlantas,

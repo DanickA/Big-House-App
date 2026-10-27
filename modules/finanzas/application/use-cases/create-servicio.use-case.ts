@@ -1,6 +1,17 @@
 import { IServicioRepository } from '../../domain/servicio.repository.interface';
 import { Servicio } from '../../domain/servicio.entity';
-import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
+import { CreateServicioSchema } from '../schemas';
+import {
+  Result,
+  ok,
+  err,
+  AppError,
+  ValidationError,
+  UnexpectedError,
+  isValidId,
+  roundMoney,
+  parseLocalDate,
+} from '@/modules/shared';
 import { defaultServicioRepository } from '../../infrastructure/prisma-servicio.repository';
 
 export interface CreateServicioDTO {
@@ -24,7 +35,7 @@ export class CreateServicioUseCase {
         return err(new ValidationError('El nombre del servicio es obligatorio'));
       }
 
-      const monto = dto.monto;
+      const monto = roundMoney(dto.monto);
       if (isNaN(monto) || monto <= 0) {
         return err(new ValidationError('Ingresa un monto válido mayor a 0'));
       }
@@ -33,17 +44,44 @@ export class CreateServicioUseCase {
         return err(new ValidationError('Selecciona una fecha de vencimiento inicial'));
       }
 
-      const [year, month, day] = dto.fecha_vencimiento_raw.split('-').map(Number);
-      const fecha_vencimiento = new Date(year, month - 1, day);
-      fecha_vencimiento.setHours(0, 0, 0, 0);
+      if (dto.responsable_id && dto.responsable_id.trim() !== '' && !isValidId(dto.responsable_id)) {
+        return err(new ValidationError('Identificador de responsable inválido'));
+      }
 
-      const dia_vencimiento_parsed = dto.dia_vencimiento_raw ? parseInt(dto.dia_vencimiento_raw, 10) : day;
+      const fecha_vencimiento = parseLocalDate(dto.fecha_vencimiento_raw);
+      if (isNaN(fecha_vencimiento.getTime())) {
+        return err(new ValidationError('Fecha de vencimiento inválida'));
+      }
+
+      const day = fecha_vencimiento.getDate();
+      const dia_vencimiento_parsed = dto.dia_vencimiento_raw
+        ? parseInt(dto.dia_vencimiento_raw, 10)
+        : day;
       const dia_vencimiento =
         isNaN(dia_vencimiento_parsed) || dia_vencimiento_parsed < 1 || dia_vencimiento_parsed > 31
           ? day
           : dia_vencimiento_parsed;
 
-      const periodicidad = dto.periodicidad_meses && dto.periodicidad_meses >= 1 ? dto.periodicidad_meses : 1;
+      const periodicidad =
+        dto.periodicidad_meses && dto.periodicidad_meses >= 1 ? dto.periodicidad_meses : 1;
+
+      const parsedSchema = CreateServicioSchema.safeParse({
+        nombre_servicio,
+        monto,
+        fecha_vencimiento: dto.fecha_vencimiento_raw,
+        periodicidad_meses: periodicidad,
+        dia_vencimiento,
+        numero_cuenta: dto.numero_cuenta,
+        numero_factura: dto.numero_factura,
+        responsable_id: dto.responsable_id,
+      });
+      if (!parsedSchema.success) {
+        return err(
+          new ValidationError(
+            parsedSchema.error.issues[0]?.message || 'Datos de servicio inválidos'
+          )
+        );
+      }
 
       const nuevoServicio = await this.repo.create({
         nombre_servicio,

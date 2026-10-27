@@ -13,10 +13,14 @@ import {
   getFondoComunMes,
   registrarAporteFondo,
   deleteAporteFondo,
+  getGastosMes,
+  registrarGastoGeneral,
+  deleteGastoGeneral,
   ServicioConEstado,
   ResumenServicios,
   ResumenFondoComunMes,
   PagoHistorialItem,
+  GastoHogar,
 } from '@/actions/pagos';
 import {
   AlertCircle,
@@ -48,6 +52,7 @@ interface FinanzasViewProps {
   initialServicios: ServicioConEstado[];
   initialResumen: ResumenServicios;
   initialFondoComun?: ResumenFondoComunMes;
+  initialGastos?: GastoHogar[];
   initialHabitantes?: HabitanteOption[];
   currentUserId?: string;
 }
@@ -118,6 +123,7 @@ export default function FinanzasView({
   initialServicios,
   initialResumen,
   initialFondoComun,
+  initialGastos = [],
   initialHabitantes = [],
   currentUserId,
 }: FinanzasViewProps) {
@@ -189,19 +195,28 @@ export default function FinanzasView({
     extra?: string;
   } | null>(null);
 
+  // Estado Gastos Generales del Hogar (F-19)
+  const [gastoDescripcion, setGastoDescripcion] = useState<string>('');
+  const [gastoMonto, setGastoMonto] = useState<string>('');
+  const [gastoCategoria, setGastoCategoria] = useState<string>('GENERAL');
+
   const esMesInicial = periodoMes === getCurrentPeriodoMes();
 
   const { data, mutate } = useSWR(
     ['finanzas-mes', periodoMes],
     async () => {
-      const [resServ, resFondo] = await Promise.all([
+      const [resServ, resFondo, resGastos] = await Promise.all([
         getServicios(periodoMes),
         getFondoComunMes(periodoMes),
+        typeof getGastosMes === 'function'
+          ? getGastosMes(periodoMes)
+          : Promise.resolve({ success: true as const, gastos: initialGastos, totalGastosMes: 0 }),
       ]);
       return {
         servicios: resServ.success ? resServ.servicios : initialServicios,
         resumen: resServ.success ? resServ.resumen : initialResumen,
         fondo: resFondo.success && resFondo.data ? resFondo.data : initialFondoComun,
+        gastos: resGastos && resGastos.success ? resGastos.gastos : initialGastos,
       };
     },
     {
@@ -210,6 +225,7 @@ export default function FinanzasView({
             servicios: initialServicios,
             resumen: initialResumen,
             fondo: initialFondoComun,
+            gastos: initialGastos,
           }
         : undefined,
       revalidateOnFocus: false,
@@ -218,6 +234,9 @@ export default function FinanzasView({
   );
 
   const servicios = data?.servicios ?? initialServicios;
+  const gastosMes: GastoHogar[] = (data?.gastos ?? initialGastos).filter(
+    (g: GastoHogar) => !g.servicio_id
+  );
   const fondo = data?.fondo ??
     initialFondoComun ?? {
       periodoMes,
@@ -244,7 +263,7 @@ export default function FinanzasView({
     getHistorialPagos(servicioActivo.id)
       .then((res) => {
         if (cancelado) return;
-        if (res.success && Array.isArray(res.data)) {
+        if (res.success) {
           setHistorialServicio(res.data);
         } else {
           setHistorialServicio([]);
@@ -445,6 +464,45 @@ export default function FinanzasView({
         await mutate();
       } else {
         notificarError(res.error || 'No se pudo eliminar el aporte');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleRegistrarGastoGeneral(e: React.FormEvent) {
+    e.preventDefault();
+    if (!gastoDescripcion.trim() || !gastoMonto || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.set('descripcion', gastoDescripcion.trim());
+      fd.set('monto', gastoMonto);
+      fd.set('categoria', gastoCategoria);
+      const res = await registrarGastoGeneral(fd);
+      if (res.success) {
+        notificarExito('Gasto general registrado');
+        setGastoDescripcion('');
+        setGastoMonto('');
+        await mutate();
+      } else {
+        notificarError(res.error || 'No se pudo registrar el gasto');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleEliminarGastoGeneral(gastoId: string) {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const res = await deleteGastoGeneral(gastoId);
+      if (res.success) {
+        notificarExito('Gasto eliminado');
+        await mutate();
+      } else {
+        notificarError(res.error || 'No se pudo eliminar el gasto');
       }
     } finally {
       setIsSubmitting(false);
@@ -949,6 +1007,89 @@ export default function FinanzasView({
               <Plus size={18} />
               <span>Subir mi aporte de {mesLabelCorto}</span>
             </button>
+
+            {/* Gastos Generales del Hogar (F-19) */}
+            <section className="space-y-2.5 pt-2">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-semibold text-label-secondary uppercase tracking-wider">
+                  Gastos Generales del Hogar ({gastosMes.length})
+                </h3>
+                <span className="text-[11px] font-semibold text-label-secondary">
+                  {formatCOP(gastosMes.reduce((acc, g) => acc + g.monto, 0))}
+                </span>
+              </div>
+
+              <form
+                onSubmit={handleRegistrarGastoGeneral}
+                className="p-3.5 rounded-2xl bg-secondary border border-separator space-y-2.5"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={gastoDescripcion}
+                    onChange={(e) => setGastoDescripcion(e.target.value)}
+                    placeholder="Ej. Detergente, bombillos..."
+                    className="sm:col-span-2 px-3 py-2 rounded-xl bg-tertiary border border-separator text-xs text-label-primary placeholder:text-label-tertiary"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    step="any"
+                    value={gastoMonto}
+                    onChange={(e) => setGastoMonto(e.target.value)}
+                    placeholder="Monto ($)"
+                    className="px-3 py-2 rounded-xl bg-tertiary border border-separator text-xs text-label-primary placeholder:text-label-tertiary"
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <select
+                    value={gastoCategoria}
+                    onChange={(e) => setGastoCategoria(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-xl bg-tertiary border border-separator text-xs text-label-secondary"
+                  >
+                    <option value="GENERAL">General</option>
+                    <option value="ASEO">Aseo / Limpieza</option>
+                    <option value="MANTENIMIENTO">Mantenimiento</option>
+                    <option value="MERCADO">Mercado común</option>
+                  </select>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !gastoDescripcion.trim() || !gastoMonto}
+                    className="px-3.5 py-1.5 rounded-xl bg-terracotta text-white text-xs font-semibold disabled:opacity-50"
+                  >
+                    Registrar gasto
+                  </button>
+                </div>
+              </form>
+
+              {gastosMes.length > 0 && (
+                <div className="rounded-2xl bg-secondary border border-separator divide-y divide-[var(--separator)] overflow-hidden">
+                  {gastosMes.map((g) => (
+                    <div
+                      key={g.id}
+                      className="px-4 py-2.5 flex items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-semibold text-label-primary truncate">
+                          {g.descripcion} · {formatCOP(g.monto)}
+                        </p>
+                        <p className="text-label-secondary truncate">
+                          {g.categoria} · {g.usuario?.nombre || 'Habitante'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleEliminarGastoGeneral(g.id)}
+                        className="p-1.5 rounded-lg text-label-tertiary hover:text-terracotta transition-colors"
+                        title="Eliminar gasto"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         )}
       </div>

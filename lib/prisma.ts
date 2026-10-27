@@ -1,6 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+
+export type PrismaDbClient = PrismaClient | Prisma.TransactionClient;
 
 function getNormalizedConnectionString(): string | undefined {
   const url = process.env.DATABASE_URL;

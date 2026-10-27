@@ -2,6 +2,18 @@ import { getEventosCalendario, getProximosEventosLobby } from '@/actions/eventos
 import { GetEventosCalendarioUseCase, GetProximosEventosLobbyUseCase } from '@/modules/calendario';
 import { ok, err, UnexpectedError } from '@/modules/shared';
 
+jest.mock('@/lib/auth-guard', () => ({
+  resolveSessionUser: jest.fn().mockResolvedValue({
+    ok: true,
+    user: {
+      userId: 'uuid-1',
+      nombre: 'Test User',
+      email: 'test@example.com',
+      rol: 'ADMIN',
+    },
+  }),
+}));
+
 describe('actions/eventos Server Actions', () => {
   beforeEach(() => {
     jest.clearAllMocks();

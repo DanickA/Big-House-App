@@ -113,7 +113,7 @@ export default function PlantaCard({
     setCargandoHistorial(true);
     try {
       const res = await getHistorialByPlanta(planta.id);
-      if (res && res.success && res.data) {
+      if (res && res.success) {
         setHistorial(res.data as any[]);
       }
     } finally {

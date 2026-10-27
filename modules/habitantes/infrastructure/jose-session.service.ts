@@ -2,8 +2,14 @@ import { ISessionService, SessionPayload } from '../domain/session.service.inter
 import { createSession, getSession, destroySession } from '@/lib/session';
 
 export class JoseSessionService implements ISessionService {
-  async createSession(userId: string, nombre: string, email: string): Promise<void> {
-    await createSession(userId, nombre, email);
+  async createSession(
+    userId: string,
+    nombre: string,
+    email: string,
+    rol?: 'ADMIN' | 'MIEMBRO',
+    tokenVersion?: number
+  ): Promise<void> {
+    await createSession(userId, nombre, email, rol, tokenVersion);
   }
 
   async getSession(): Promise<SessionPayload | null> {
@@ -13,6 +19,8 @@ export class JoseSessionService implements ISessionService {
       userId: session.userId,
       nombre: session.nombre,
       email: session.email,
+      rol: session.rol,
+      tokenVersion: session.tokenVersion,
     };
   }
 

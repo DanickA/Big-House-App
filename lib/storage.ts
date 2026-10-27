@@ -1,10 +1,45 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir, unlink } from 'fs/promises';
+import crypto from 'crypto';
 import path from 'path';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_COMPROBANTE_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+
+const ALLOWED_IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
+const ALLOWED_COMPROBANTE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+
+/**
+ * Valida un archivo contra tamaño, tipo MIME y extensión permitida.
+ */
+function validateFile(
+  file: File,
+  allowedMimes: string[],
+  allowedExts: string[],
+  tipoArchivo: string
+): void {
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`El archivo de ${tipoArchivo} excede el tamaño máximo permitido de 5 MB.`);
+  }
+
+  if (!allowedMimes.includes(file.type)) {
+    throw new Error(
+      `Tipo de archivo no permitido (${file.type}). Solo se admiten: ${allowedMimes.join(', ')}.`
+    );
+  }
+
+  const ext = path.extname(file.name).toLowerCase();
+  if (!allowedExts.includes(ext)) {
+    throw new Error(
+      `Extensión de archivo no permitida (${ext}). Solo se admiten: ${allowedExts.join(', ')}.`
+    );
+  }
+}
 
 /**
  * Detecta si la aplicación se ejecuta en una plataforma serverless o en producción.
- * En estos entornos, el sistema de archivos del contenedor/lambda es de solo lectura y efímero.
  */
 export function isServerlessOrProduction(): boolean {
   return (
@@ -16,9 +51,6 @@ export function isServerlessOrProduction(): boolean {
   );
 }
 
-/**
- * Comprueba si un valor es un placeholder de configuración (ej: copiado de .env.example)
- */
 function isPlaceholder(value?: string | null): boolean {
   if (!value) return true;
   const val = value.trim().toLowerCase();
@@ -32,10 +64,6 @@ function isPlaceholder(value?: string | null): boolean {
   );
 }
 
-/**
- * Helper para configurar Cloudinary con soporte para CLOUDINARY_URL o variables individuales.
- * Retorna true únicamente si existen credenciales válidas y no de placeholder.
- */
 export function configureCloudinary(): boolean {
   const cloudinaryUrl = process.env.CLOUDINARY_URL?.trim().replace(/^["']|["']$/g, '');
   if (cloudinaryUrl && !isPlaceholder(cloudinaryUrl)) {
@@ -59,7 +87,7 @@ export function configureCloudinary(): boolean {
     !isPlaceholder(apiSecret)
   ) {
     cloudinary.config({
-      cloud_name: cloudName.toLowerCase(), // Cloudinary requiere nombres de nube en minúsculas
+      cloud_name: cloudName.toLowerCase(),
       api_key: apiKey,
       api_secret: apiSecret,
       secure: true,
@@ -70,9 +98,6 @@ export function configureCloudinary(): boolean {
   return false;
 }
 
-/**
- * Retorna el estado actual del backend de almacenamiento para diagnósticos y comprobaciones.
- */
 export function getStorageDiagnostic() {
   const isCloudinaryReady = configureCloudinary();
   const isServerless = isServerlessOrProduction();
@@ -83,11 +108,6 @@ export function getStorageDiagnostic() {
   };
 }
 
-/**
- * Valida si el almacenamiento está habilitado. Si estamos en serverless/producción
- * y Cloudinary no está configurado, lanza un error con instrucciones claras en lugar
- * de fallar con EROFS o perder archivos en discos efímeros.
- */
 function assertStorageAvailable(): void {
   if (configureCloudinary()) {
     return;
@@ -101,24 +121,23 @@ function assertStorageAvailable(): void {
     );
   }
 
-  // En desarrollo local emitimos advertencia informativa
   console.warn(
-    '[Almacenamiento Local] Advertencia: Cloudinary no está configurado. Guardando archivo en public/uploads/. ' +
-    'Este modo es exclusivo para desarrollo local offline y fallará en Vercel/serverless.'
+    '[Almacenamiento Local Seguro] Guardando archivo en directorio privado .storage/uploads/. ' +
+    'Los archivos se sirven de forma autenticada vía /api/files/.'
   );
 }
 
 /**
- * Sube una imagen a Cloudinary (producción/nube) o al disco local (desarrollo).
- * Retorna la URL pública de la imagen.
+ * Sube una imagen a Cloudinary (producción/nube) o al almacenamiento privado local (desarrollo).
+ * Valida MIME type, extensión y tamaño (máx 5MB) y usa nombres UUID no predecibles (F-24, Q-10).
  */
 export async function uploadImage(file: File): Promise<string> {
+  validateFile(file, ALLOWED_IMAGE_MIMES, ALLOWED_IMAGE_EXTS, 'imagen');
   assertStorageAvailable();
 
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  // Si Cloudinary está configurado en el entorno
   if (configureCloudinary()) {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
@@ -143,34 +162,35 @@ export async function uploadImage(file: File): Promise<string> {
     });
   }
 
-  // Fallback para desarrollo local (guardar en /public/uploads)
-  const nombreArchivo = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-  const carpetaUploads = path.join(process.cwd(), 'public', 'uploads');
+  const ext = path.extname(file.name).toLowerCase() || '.jpg';
+  const nombreArchivo = `${crypto.randomUUID()}${ext}`;
+  const carpetaUploads = path.join(process.cwd(), '.storage', 'uploads', 'plantas');
   await mkdir(carpetaUploads, { recursive: true });
   const rutaDestino = path.join(carpetaUploads, nombreArchivo);
   await writeFile(rutaDestino, buffer);
 
-  return `/uploads/${nombreArchivo}`;
+  return `/api/files/plantas/${nombreArchivo}`;
 }
 
 /**
  * Sube un comprobante (recibo, factura, soporte de pago en imagen o PDF)
- * a Cloudinary (producción/Vercel) o a public/uploads/comprobantes (desarrollo local).
- * Retorna la URL pública accesible.
+ * a Cloudinary o al almacenamiento privado local.
+ * Valida MIME type, extensión y tamaño (máx 5MB) y usa resource_type explícito (F-24, Q-10).
  */
 export async function uploadComprobante(file: File): Promise<string> {
+  validateFile(file, ALLOWED_COMPROBANTE_MIMES, ALLOWED_COMPROBANTE_EXTS, 'comprobante');
   assertStorageAvailable();
 
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  // Si Cloudinary está configurado en el entorno (Vercel / producción)
   if (configureCloudinary()) {
+    const resourceType: 'image' | 'raw' = file.type === 'application/pdf' ? 'raw' : 'image';
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: 'hogar-app/comprobantes',
-          resource_type: 'auto', // Soporta imágenes (PNG, JPG) y documentos (PDF)
+          resource_type: resourceType,
         },
         (error, result) => {
           if (error || !result) {
@@ -186,13 +206,29 @@ export async function uploadComprobante(file: File): Promise<string> {
     });
   }
 
-  // Fallback para desarrollo local (guardar en /public/uploads/comprobantes)
-  const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-  const nombreArchivo = `${Date.now()}-${safeName}`;
-  const carpetaComprobantes = path.join(process.cwd(), 'public', 'uploads', 'comprobantes');
+  const ext = path.extname(file.name).toLowerCase() || '.jpg';
+  const nombreArchivo = `${crypto.randomUUID()}${ext}`;
+  const carpetaComprobantes = path.join(process.cwd(), '.storage', 'uploads', 'comprobantes');
   await mkdir(carpetaComprobantes, { recursive: true });
   const rutaDestino = path.join(carpetaComprobantes, nombreArchivo);
   await writeFile(rutaDestino, buffer);
 
-  return `/uploads/comprobantes/${nombreArchivo}`;
+  return `/api/files/comprobantes/${nombreArchivo}`;
+}
+
+/**
+ * Elimina de forma segura un archivo almacenado localmente en .storage/uploads/ cuando se reemplaza o borra (F-24).
+ */
+export async function deleteStoredFile(fileUrl?: string | null): Promise<void> {
+  if (!fileUrl || !fileUrl.startsWith('/api/files/')) return;
+  try {
+    const relPath = fileUrl.replace(/^\/api\/files\//, '');
+    if (relPath.includes('..')) return;
+    const baseDir = path.resolve(process.cwd(), '.storage', 'uploads');
+    const targetPath = path.resolve(baseDir, relPath);
+    if (!targetPath.startsWith(baseDir + path.sep)) return;
+    await unlink(targetPath);
+  } catch {
+    // Ignorar si el archivo ya no existe
+  }
 }

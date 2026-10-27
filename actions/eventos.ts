@@ -1,5 +1,6 @@
 'use server';
 
+import { resolveSessionUser } from '@/lib/auth-guard';
 import {
   GetEventosCalendarioUseCase,
   GetProximosEventosLobbyUseCase,
@@ -16,6 +17,10 @@ export async function getEventosCalendario(
   mes: number,
   anio: number
 ): Promise<{ success: boolean; data: EventoUnificado[]; error?: string }> {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, data: [], error: auth.error };
+  }
   const result = await getEventosCalendarioUC.execute(mes, anio);
   if (!result.success) {
     return { success: false, data: [], error: result.error.message };
@@ -29,6 +34,10 @@ export async function getProximosEventosLobby(limit = 3): Promise<{
   totalEventosSemana: number;
   proximos: EventoUnificado[];
 }> {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, totalEventosSemana: 0, proximos: [] };
+  }
   const result = await getProximosEventosLobbyUC.execute(limit);
   if (!result.success) {
     return { success: false, totalEventosSemana: 0, proximos: [] };

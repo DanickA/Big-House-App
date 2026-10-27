@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { resolveSessionUser } from '@/lib/auth-guard';
-import { toActionResponse } from '@/modules/shared';
+import { toActionResponse, type ActionResponse } from '@/modules/shared';
 import {
   GetResumenPlantasLobbyUseCase,
   GetPlantasUseCase,
@@ -12,6 +12,8 @@ import {
   GetHistorialCuidadoUseCase,
   RegistrarCuidadoUseCase,
   DeshacerCuidadoUseCase,
+  type PlantaConEstado,
+  type HistorialCuidado,
 } from '@/modules/plantas';
 
 const getResumenPlantasLobbyUC = new GetResumenPlantasLobbyUseCase();
@@ -25,6 +27,10 @@ const deshacerCuidadoUC = new DeshacerCuidadoUseCase();
 
 // 1. Obtener resumen de plantas para el Lobby (con tareas de riego)
 export async function getResumenPlantasLobby() {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, totalPlantas: 0, pendientesCount: 0, plantas: [] };
+  }
   const result = await getResumenPlantasLobbyUC.execute();
   if (!result.success) {
     return { success: false, totalPlantas: 0, pendientesCount: 0, plantas: [] };
@@ -75,7 +81,11 @@ export async function createPlanta(formData: FormData) {
 }
 
 // 3. Obtener todas las plantas con cuenta regresiva calculada
-export async function getPlantas() {
+export async function getPlantas(): Promise<ActionResponse<PlantaConEstado[]>> {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
   const result = await getPlantasUC.execute();
   return toActionResponse(result);
 }
@@ -137,7 +147,11 @@ export async function deletePlanta(id: string) {
 }
 
 // 6. Obtener historial real de cuidados de una planta
-export async function getHistorialByPlanta(plantaId: string) {
+export async function getHistorialByPlanta(plantaId: string): Promise<ActionResponse<HistorialCuidado[]>> {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
   const result = await getHistorialCuidadoUC.execute(plantaId);
   return toActionResponse(result);
 }

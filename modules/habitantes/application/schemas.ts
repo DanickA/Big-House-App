@@ -23,7 +23,7 @@ export const EmailSchema = z
 export const RegistroNuevoMiembroSchema = z.object({
   nombre: z.string().trim().min(1, 'El nombre es obligatorio'),
   email: EmailSchema,
-  password: z.string().min(4, 'La contraseña debe tener al menos 4 caracteres'),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
   pin: OptionalPinSchema,
 });
 
@@ -41,13 +41,22 @@ export const LoginTradicionalSchema = z.object({
 export const CreateHabitanteSchema = z.object({
   nombre: z.string().trim().min(1, 'Nombre, correo y contraseña son obligatorios'),
   email: EmailSchema,
-  password: z.string().min(1, 'Nombre, correo y contraseña son obligatorios'),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
   pin: OptionalPinSchema,
+  rol: z.enum(['ADMIN', 'MIEMBRO']).optional(),
 });
 
 export const UpdateHabitanteSchema = z.object({
   nombre: z.string().trim().min(1, 'El nombre y el correo son obligatorios'),
   email: EmailSchema,
-  password: z.string().nullish().transform((v) => (v?.trim() ? v.trim() : null)),
+  password: z
+    .string()
+    .nullish()
+    .transform((v) => (v?.trim() ? v.trim() : null))
+    .refine((val) => val === null || val.length >= 8, {
+      message: 'La contraseña debe tener al menos 8 caracteres',
+    }),
   pin: OptionalPinSchema,
+  rol: z.enum(['ADMIN', 'MIEMBRO']).optional(),
+  activo: z.boolean().optional(),
 });

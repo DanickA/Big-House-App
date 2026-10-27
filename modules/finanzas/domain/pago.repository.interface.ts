@@ -1,4 +1,4 @@
-import { PagoServicio, PagoHistorialItem } from './pago.entity';
+import { PagoServicio, PagoHistorialItem, GastoHogar } from './pago.entity';
 
 export interface CreatePagoData {
   servicio_id: string;
@@ -24,4 +24,6 @@ export interface IPagoRepository {
   createPago(data: CreatePagoData): Promise<PagoServicio>;
   createGasto(data: CreateGastoData): Promise<void>;
   findHistorialByServicio(servicioId: string): Promise<PagoHistorialItem[]>;
+  findGastosByMonth?(year: number, month: number): Promise<GastoHogar[]>;
+  deleteGasto?(id: string): Promise<void>;
 }

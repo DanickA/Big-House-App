@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma, PrismaDbClient } from '@/lib/prisma';
 import {
   IPlantaRepository,
   CreatePlantaData,
@@ -7,7 +7,7 @@ import {
 import { Planta, PlantaConEstado } from '../domain/planta.entity';
 
 export class PrismaPlantaRepository implements IPlantaRepository {
-  constructor(private readonly db: any = prisma) {}
+  constructor(private readonly db: PrismaDbClient = prisma) {}
 
   async findById(id: string): Promise<Planta | null> {
     const p = await this.db.plantas.findUnique({
@@ -42,7 +42,7 @@ export class PrismaPlantaRepository implements IPlantaRepository {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
 
-    return plantas.map((planta: any) => {
+    return plantas.map((planta) => {
       const tareaRiego = planta.tareas_cuidado?.[0];
       let diasRestantes: number | null = null;
       let requiereRiego = false;

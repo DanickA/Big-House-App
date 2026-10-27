@@ -1,7 +1,17 @@
 import { IAporteFondoRepository } from '../../domain/aporte-fondo.repository.interface';
 import { IFileStorageService } from '../../domain/file-storage.service.interface';
 import { AporteFondoComun } from '../../domain/aporte-fondo.entity';
-import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
+import { RegistrarAporteFondoSchema } from '../schemas';
+import {
+  Result,
+  ok,
+  err,
+  AppError,
+  ValidationError,
+  UnexpectedError,
+  isValidId,
+  roundMoney,
+} from '@/modules/shared';
 import { defaultAporteFondoRepository } from '../../infrastructure/prisma-aporte-fondo.repository';
 import { defaultStorageService } from '../../infrastructure/storage-adapter.service';
 
@@ -23,13 +33,27 @@ export class RegistrarAporteFondoUseCase {
   async execute(dto: RegistrarAporteFondoDTO): Promise<Result<AporteFondoComun, AppError>> {
     try {
       const usuario_id = dto.usuario_id?.trim();
-      if (!usuario_id) {
+      if (!usuario_id || !isValidId(usuario_id)) {
         return err(new ValidationError('Selecciona el habitante que realiza el aporte'));
       }
 
-      const monto = dto.monto;
+      const monto = roundMoney(dto.monto);
       if (isNaN(monto) || monto <= 0) {
         return err(new ValidationError('Ingresa un monto de aporte válido mayor a 0'));
+      }
+
+      const parsedSchema = RegistrarAporteFondoSchema.safeParse({
+        usuario_id,
+        monto,
+        periodo_mes: dto.periodo_mes?.trim() || undefined,
+        descripcion: dto.descripcion?.trim() || undefined,
+      });
+      if (!parsedSchema.success) {
+        return err(
+          new ValidationError(
+            parsedSchema.error.issues[0]?.message || 'Datos de aporte inválidos'
+          )
+        );
       }
 
       let fecha: Date;
@@ -39,7 +63,6 @@ export class RegistrarAporteFondoUseCase {
       } else if (dto.periodo_mes && /^\d{4}-\d{2}$/.test(dto.periodo_mes)) {
         const [y, m] = dto.periodo_mes.split('-').map(Number);
         const now = new Date();
-        // Si es el mes actual usa el día de hoy; si es otro mes usa el día 1 de ese mes
         const day =
           now.getFullYear() === y && now.getMonth() + 1 === m ? now.getDate() : 1;
         fecha = new Date(y, m - 1, day, 12, 0, 0, 0);
@@ -76,7 +99,9 @@ export class RegistrarAporteFondoUseCase {
     } catch (error) {
       if (error instanceof AppError) return err(error);
       const message = error instanceof Error ? error.message : 'Error inesperado';
-      return err(new UnexpectedError('No se pudo registrar el aporte al Fondo Común', { original: message }));
+      return err(
+        new UnexpectedError('No se pudo registrar el aporte al Fondo Común', { original: message })
+      );
     }
   }
 }

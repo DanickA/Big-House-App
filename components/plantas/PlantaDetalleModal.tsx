@@ -109,7 +109,7 @@ export default function PlantaDetalleModal({
     if (!planta) return;
     setCargandoHistorial(true);
     const res = await getHistorialByPlanta(planta.id);
-    if (res.success && res.data) {
+    if (res.success) {
       setHistorial(res.data as unknown as RegistroHistorial[]);
     }
     setCargandoHistorial(false);

@@ -1,13 +1,17 @@
-import type { NextConfig } from "next";
-import os from "os";
+import type { NextConfig } from 'next';
+import os from 'os';
 
-// Detectar dinámicamente todas las interfaces IPv4 locales para permitir desarrollo local y pruebas desde red LAN/móviles
-const localIps = Object.values(os.networkInterfaces())
-  .flat()
-  .filter((i): i is os.NetworkInterfaceInfo => Boolean(i && i.family === 'IPv4'))
-  .map((i) => i.address);
+const isDev = process.env.NODE_ENV !== 'production';
 
-const allowedOriginsList = Array.from(
+// Detectar dinámicamente interfaces IPv4 locales únicamente en desarrollo para pruebas LAN/móviles
+const localIps = isDev
+  ? Object.values(os.networkInterfaces())
+      .flat()
+      .filter((i): i is os.NetworkInterfaceInfo => Boolean(i && i.family === 'IPv4'))
+      .map((i) => i.address)
+  : [];
+
+const devOriginsList = Array.from(
   new Set([
     'localhost',
     '127.0.0.1',
@@ -18,13 +22,38 @@ const allowedOriginsList = Array.from(
   ])
 );
 
+const prodAllowedOrigins = process.env.NEXT_PUBLIC_APP_ORIGIN
+  ? [process.env.NEXT_PUBLIC_APP_ORIGIN]
+  : undefined;
+
 const nextConfig: NextConfig = {
-  allowedDevOrigins: allowedOriginsList,
+  poweredByHeader: false,
+  ...(isDev ? { allowedDevOrigins: devOriginsList } : {}),
   experimental: {
     serverActions: {
-      bodySizeLimit: '10mb',
-      allowedOrigins: allowedOriginsList,
+      bodySizeLimit: '6mb',
+      ...(isDev
+        ? { allowedOrigins: devOriginsList }
+        : prodAllowedOrigins
+        ? { allowedOrigins: prodAllowedOrigins }
+        : {}),
     },
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
   },
 };
 

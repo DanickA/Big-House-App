@@ -1,7 +1,8 @@
 import { IHabitanteRepository } from '../../domain/habitante.repository.interface';
 import { IPasswordHasher } from '../../domain/password-hasher.service.interface';
 import { ISessionService } from '../../domain/session.service.interface';
-import { Result, ok, err, AppError, ValidationError, ConflictError, UnexpectedError } from '@/modules/shared';
+import { RegistroNuevoMiembroSchema } from '../schemas';
+import { Result, ok, err, AppError, ValidationError, ConflictError, UnauthorizedError, UnexpectedError } from '@/modules/shared';
 import { defaultHabitanteRepository } from '../../infrastructure/prisma-habitante.repository';
 import { defaultPasswordHasher } from '../../infrastructure/bcrypt-password-hasher.service';
 import { defaultSessionService } from '../../infrastructure/jose-session.service';
@@ -20,7 +21,7 @@ export class RegistroNuevoMiembroUseCase {
     private readonly sessionService: ISessionService = defaultSessionService
   ) {}
 
-  async execute(dto: RegistroNuevoMiembroDTO): Promise<Result<{ id: string; nombre: string; email: string }, AppError>> {
+  async execute(dto: RegistroNuevoMiembroDTO): Promise<Result<{ id: string; nombre: string; email: string; rol: string }, AppError>> {
     try {
       const nombre = dto.nombre?.trim();
       const email = dto.email?.toLowerCase().trim();
@@ -31,12 +32,25 @@ export class RegistroNuevoMiembroUseCase {
         return err(new ValidationError('Nombre, correo y contraseña son obligatorios'));
       }
 
-      if (password.length < 4) {
-        return err(new ValidationError('La contraseña debe tener al menos 4 caracteres'));
+      const parsed = RegistroNuevoMiembroSchema.safeParse({
+        nombre,
+        email,
+        password,
+        pin,
+      });
+      if (!parsed.success) {
+        return err(
+          new ValidationError(parsed.error.issues[0]?.message || 'Datos de registro inválidos')
+        );
       }
 
-      if (pin && (pin.length < 4 || pin.length > 6 || !/^\d+$/.test(pin))) {
-        return err(new ValidationError('El PIN debe contener entre 4 y 6 dígitos numéricos'));
+      const totalUsuarios = await this.repo.count();
+      if (totalUsuarios > 0) {
+        return err(
+          new UnauthorizedError(
+            'El registro público está deshabilitado. Solo un administrador del hogar puede agregar nuevos miembros.'
+          )
+        );
       }
 
       const usuarioExistente = await this.repo.findByEmail(email);
@@ -54,14 +68,24 @@ export class RegistroNuevoMiembroUseCase {
         password_hash,
         pin_hash,
         pin_longitud,
+        rol: 'ADMIN',
+        token_version: 1,
+        activo: true,
       });
 
-      await this.sessionService.createSession(nuevoUsuario.id, nuevoUsuario.nombre, nuevoUsuario.email);
+      await this.sessionService.createSession(
+        nuevoUsuario.id,
+        nuevoUsuario.nombre,
+        nuevoUsuario.email,
+        nuevoUsuario.rol,
+        nuevoUsuario.token_version
+      );
 
       return ok({
         id: nuevoUsuario.id,
         nombre: nuevoUsuario.nombre,
         email: nuevoUsuario.email,
+        rol: nuevoUsuario.rol,
       });
     } catch (error: any) {
       if (error instanceof AppError) return err(error);

@@ -1,6 +1,7 @@
 import { IPlantaRepository } from '../../domain/planta.repository.interface';
 import { IImageStorageService } from '../../domain/image-storage.service.interface';
 import { Planta } from '../../domain/planta.entity';
+import { CreatePlantaSchema } from '../schemas';
 import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
 import { defaultPlantaRepository } from '../../infrastructure/prisma-planta.repository';
 import { defaultImageStorageService } from '../../infrastructure/storage-image-adapter.service';
@@ -30,6 +31,24 @@ export class CreatePlantaUseCase {
 
       if (!nombre_comun || !ubicacion) {
         return err(new ValidationError('Ingresa el nombre y la ubicación de la planta'));
+      }
+
+      const parsed = CreatePlantaSchema.safeParse({
+        nombre_comun,
+        ubicacion,
+        especie: dto.especie,
+        frecuencia_riego: dto.frecuencia_riego && dto.frecuencia_riego > 0 ? dto.frecuencia_riego : 7,
+        nivel_luz: dto.nivel_luz,
+        nivel_agua: dto.nivel_agua,
+        estado_salud: dto.estado_salud,
+        notas_cuidado: dto.notas_cuidado,
+      });
+      if (!parsed.success) {
+        return err(
+          new ValidationError(
+            parsed.error.issues[0]?.message || 'Ingresa el nombre y la ubicación de la planta'
+          )
+        );
       }
 
       let foto_url: string | null = null;

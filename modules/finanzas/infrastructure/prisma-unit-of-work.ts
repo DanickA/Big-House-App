@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { IUnitOfWork } from '@/modules/shared';
-import { prisma } from '@/lib/prisma';
+import { prisma, PrismaDbClient } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 
 export class PrismaUnitOfWork implements IUnitOfWork {
-  constructor(private readonly db: any = prisma) {}
+  constructor(private readonly db: PrismaClient = prisma) {}
 
-  async run<T>(work: (txContext?: any) => Promise<T>): Promise<T> {
-    return this.db.$transaction(async (tx: any) => {
+  async run<T>(work: (txContext: PrismaDbClient) => Promise<T>): Promise<T> {
+    return this.db.$transaction(async (tx) => {
       return work(tx);
     });
   }

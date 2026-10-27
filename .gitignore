@@ -47,3 +47,7 @@ next-env.d.ts
 .agents/
 .claude/
 .scratch/
+
+# private and local uploads (S-07, S-14)
+/public/uploads/
+/.storage/

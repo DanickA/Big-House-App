@@ -1,6 +1,7 @@
 import { IServicioRepository } from '../../domain/servicio.repository.interface';
 import { IPagoRepository } from '../../domain/pago.repository.interface';
 import { IFileStorageService } from '../../domain/file-storage.service.interface';
+import { RegistrarPagoSchema } from '../schemas';
 import {
   IUnitOfWork,
   Result,
@@ -13,6 +14,10 @@ import {
   DuplicateError,
   UnexpectedError,
   calcularProximaFechaVencimientoPura,
+  isValidId,
+  roundMoney,
+  parseLocalDate,
+  toCalendarYMD,
 } from '@/modules/shared';
 import { defaultServicioRepository, PrismaServicioRepository } from '../../infrastructure/prisma-servicio.repository';
 import { defaultPagoRepository, PrismaPagoRepository } from '../../infrastructure/prisma-pago.repository';
@@ -47,24 +52,38 @@ export class RegistrarPagoServicioUseCase {
   async execute(dto: RegistrarPagoServicioDTO): Promise<Result<RegistrarPagoResultData, AppError>> {
     try {
       const servicio_id = dto.servicio_id?.trim();
-      if (!servicio_id) {
+      if (!servicio_id || !isValidId(servicio_id)) {
         return err(new ValidationError('Identificador del servicio requerido'));
       }
 
-      const monto_pagado = dto.monto_pagado;
+      const monto_pagado = roundMoney(dto.monto_pagado);
       if (isNaN(monto_pagado) || monto_pagado <= 0) {
         return err(new ValidationError('Ingresa un monto pagado válido'));
       }
 
-      const usuario_id = dto.usuario_id;
-      if (!usuario_id) {
+      const usuario_id = dto.usuario_id?.trim();
+      if (!usuario_id || !isValidId(usuario_id)) {
         return err(new ValidationError('Usuario no autenticado'));
+      }
+
+      const parsedSchema = RegistrarPagoSchema.safeParse({
+        servicio_id,
+        monto_pagado,
+        fecha_pago: dto.fecha_pago_raw ?? null,
+        observaciones: dto.observaciones ?? null,
+        fecha_vencimiento_esperada: dto.fecha_vencimiento_esperada ?? null,
+      });
+      if (!parsedSchema.success) {
+        return err(
+          new ValidationError(
+            parsedSchema.error.issues[0]?.message || 'Datos de pago inválidos'
+          )
+        );
       }
 
       let fecha_pago: Date;
       if (dto.fecha_pago_raw) {
-        const [y, m, d] = dto.fecha_pago_raw.split('-').map(Number);
-        fecha_pago = new Date(y, m - 1, d);
+        fecha_pago = parseLocalDate(dto.fecha_pago_raw);
       } else {
         fecha_pago = new Date();
       }
@@ -95,18 +114,12 @@ export class RegistrarPagoServicioUseCase {
           throw new NotFoundError('El servicio especificado no existe');
         }
 
-        // 2. Control de Concurrencia Optimista por Ciclo de Factura
+        // 2. Control de Concurrencia Optimista por Ciclo de Factura (F-01: comparación calendario exacta)
         if (dto.fecha_vencimiento_esperada) {
-          const fechaEsperada = new Date(dto.fecha_vencimiento_esperada);
           const fechaActual = new Date(servicio.fecha_vencimiento);
-          const ymdEsperada = `${fechaEsperada.getUTCFullYear()}-${fechaEsperada.getUTCMonth()}-${fechaEsperada.getUTCDate()}`;
-          const ymdActual = `${fechaActual.getUTCFullYear()}-${fechaActual.getUTCMonth()}-${fechaActual.getUTCDate()}`;
-
-          // Un cambio de ciclo real tras un pago avanza la fecha de vencimiento al menos 28 días (~1 mes).
-          // Para evitar falsos positivos provocados por desfases de zona horaria local vs UTC (de pocas horas),
-          // consideramos válido si coinciden en YMD UTC o si la diferencia absoluta es menor a 24 horas.
-          const diffMs = Math.abs(fechaEsperada.getTime() - fechaActual.getTime());
-          const esMismoCiclo = ymdEsperada === ymdActual || diffMs < 24 * 60 * 60 * 1000;
+          const ymdEsperada = toCalendarYMD(dto.fecha_vencimiento_esperada);
+          const ymdActual = toCalendarYMD(fechaActual);
+          const esMismoCiclo = ymdEsperada === ymdActual;
 
           if (!esMismoCiclo) {
             throw new ConcurrencyError(
@@ -127,7 +140,7 @@ export class RegistrarPagoServicioUseCase {
           );
         }
 
-        const montoPresupuestadoSnapshot = Number(servicio.monto || 0);
+        const montoPresupuestadoSnapshot = roundMoney(Number(servicio.monto || 0));
 
         // 4. Insertar pago conservando el snapshot del presupuesto estimado
         const nuevoPago = await txPagoRepo.createPago({
@@ -174,14 +187,17 @@ export class RegistrarPagoServicioUseCase {
           proximoVencimiento: servicioActualizado.fecha_vencimiento.toISOString(),
           montoPresupuestado: montoPresupuestadoSnapshot,
           diferenciaPresupuesto:
-            montoPresupuestadoSnapshot > 0 ? monto_pagado - montoPresupuestadoSnapshot : 0,
+            montoPresupuestadoSnapshot > 0
+              ? roundMoney(monto_pagado - montoPresupuestadoSnapshot)
+              : 0,
         };
       });
 
       return ok(resultado);
     } catch (error) {
       if (error instanceof AppError) return err(error);
-      const message = error instanceof Error ? error.message : 'Error al procesar la transacción de pago';
+      const message =
+        error instanceof Error ? error.message : 'Error al procesar la transacción de pago';
       return err(new UnexpectedError(message));
     }
   }

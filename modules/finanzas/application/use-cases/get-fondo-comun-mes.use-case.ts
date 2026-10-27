@@ -1,6 +1,6 @@
 import { IAporteFondoRepository } from '../../domain/aporte-fondo.repository.interface';
 import { ResumenFondoComunMes, ResumenHabitanteFondo } from '../../domain/aporte-fondo.entity';
-import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
+import { Result, ok, err, AppError, ValidationError, UnexpectedError, roundMoney } from '@/modules/shared';
 import { defaultAporteFondoRepository } from '../../infrastructure/prisma-aporte-fondo.repository';
 
 export class GetFondoComunMesUseCase {
@@ -27,7 +27,9 @@ export class GetFondoComunMesUseCase {
       const mesFormateado = `${year}-${String(month).padStart(2, '0')}`;
       const aportes = await this.repo.findByMonth(year, month);
 
-      const presupuestoMesRecaudado = aportes.reduce((acc, item) => acc + item.monto, 0);
+      const presupuestoMesRecaudado = roundMoney(
+        aportes.reduce((acc, item) => acc + item.monto, 0)
+      );
 
       const mapaPorHabitante = new Map<string, ResumenHabitanteFondo>();
       for (const ap of aportes) {
@@ -37,14 +39,13 @@ export class GetFondoComunMesUseCase {
           mapaPorHabitante.set(ap.usuario_id, {
             usuario_id: ap.usuario_id,
             nombre,
-            totalAportado: ap.monto,
+            totalAportado: roundMoney(ap.monto),
             cantidadAportes: 1,
             ultimoAporte: ap,
           });
         } else {
-          current.totalAportado += ap.monto;
+          current.totalAportado = roundMoney(current.totalAportado + ap.monto);
           current.cantidadAportes += 1;
-          // Como vienen ordenados por fecha descendente, el primero es el más reciente
           if (!current.ultimoAporte) {
             current.ultimoAporte = ap;
           }
@@ -53,13 +54,15 @@ export class GetFondoComunMesUseCase {
 
       return ok({
         periodoMes: mesFormateado,
-        presupuestoMesRecaudado: Math.round(presupuestoMesRecaudado * 100) / 100,
+        presupuestoMesRecaudado,
         aportes,
         porHabitante: Array.from(mapaPorHabitante.values()),
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado';
-      return err(new UnexpectedError('No se pudo obtener el Fondo Común del mes', { original: message }));
+      return err(
+        new UnexpectedError('No se pudo obtener el Fondo Común del mes', { original: message })
+      );
     }
   }
 }

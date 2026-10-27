@@ -1,10 +1,7 @@
-import { IFileStorageService } from '../domain/file-storage.service.interface';
-import { uploadComprobante } from '@/lib/storage';
+import {
+  UnifiedStorageAdapterService,
+  defaultUnifiedStorageService,
+} from '@/modules/shared/infrastructure/unified-storage-adapter.service';
 
-export class StorageAdapterService implements IFileStorageService {
-  async uploadComprobante(file: File): Promise<string> {
-    return uploadComprobante(file);
-  }
-}
-
-export const defaultStorageService = new StorageAdapterService();
+export { UnifiedStorageAdapterService as StorageAdapterService };
+export const defaultStorageService = defaultUnifiedStorageService;

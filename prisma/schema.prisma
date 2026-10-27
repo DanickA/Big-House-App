@@ -75,6 +75,7 @@ model servicios {
   periodicidad_meses Int?              @default(1)
   dia_vencimiento    Int?
   responsable_id     String?           @db.Uuid
+  activo             Boolean           @default(true)
   responsable        usuarios?         @relation("ResponsableServicio", fields: [responsable_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "fk_responsable_servicio")
   gastos             gastos[]
   pagos_servicios    pagos_servicios[]
@@ -82,6 +83,7 @@ model servicios {
   @@index([fecha_vencimiento])
   @@index([estado])
   @@index([responsable_id])
+  @@index([activo])
 }
 
 model tareas_cuidado {
@@ -106,6 +108,9 @@ model usuarios {
   fecha_registro        DateTime?            @default(now()) @db.Timestamp(6)
   pin_hash              String?              @db.VarChar(255)
   pin_longitud          Int?                 @default(4)
+  rol                   RolUsuario           @default(MIEMBRO)
+  token_version         Int                  @default(1)
+  activo                Boolean              @default(true)
   gastos                gastos[]
   historial_cuidado     historial_cuidado[]
   ingresos              ingresos[]
@@ -134,6 +139,11 @@ model pagos_servicios {
   @@index([servicio_id])
   @@index([usuario_id])
   @@index([fecha_pago])
+}
+
+enum RolUsuario {
+  ADMIN
+  MIEMBRO
 }
 
 enum TipoPlantilla {

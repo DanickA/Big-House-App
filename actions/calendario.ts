@@ -45,6 +45,10 @@ const eliminarEventoFisicoUC = new EliminarEventoFisicoUseCase();
 const toggleSubtareaUC = new ToggleSubtareaUseCase();
 
 export async function obtenerEventosMes(fechaInicio: Date, fechaFin: Date) {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { success: false, error: auth.error, code: auth.code };
+  }
   try {
     const eventos = await prisma.eventos.findMany({
       where: {
@@ -70,7 +74,7 @@ export async function obtenerEventosMes(fechaInicio: Date, fechaFin: Date) {
 import {
   pushEventoAGoogleCalendar,
   deleteEventoEnGoogleCalendar,
-} from '@/actions/google-calendar';
+} from '@/lib/google-calendar-sync';
 
 export async function crearEvento(data: EventoData) {
   const auth = await resolveSessionUser();
@@ -116,6 +120,17 @@ export async function actualizarEvento(
     return { success: false, error: auth.error, code: auth.code };
   }
 
+  if (auth.user.rol !== 'ADMIN') {
+    const previo = await prisma.eventos?.findUnique?.({ where: { id } });
+    if (previo?.creador_id && previo.creador_id !== auth.user.userId) {
+      return {
+        success: false,
+        error: 'Solo el creador del evento o un administrador puede modificarlo.',
+        code: 'FORBIDDEN',
+      };
+    }
+  }
+
   const result = await actualizarEventoUC.execute(id, data, opcionRecurrencia);
 
   let googleSynced = false;
@@ -147,6 +162,14 @@ export async function cancelarEventoLogico(id: string) {
   }
 
   const previo = await prisma.eventos?.findUnique?.({ where: { id } });
+  if (auth.user.rol !== 'ADMIN' && previo?.creador_id && previo.creador_id !== auth.user.userId) {
+    return {
+      success: false,
+      error: 'Solo el creador del evento o un administrador puede cancelarlo.',
+      code: 'FORBIDDEN',
+      googleDeleted: false,
+    };
+  }
   const result = await cancelarEventoLogicoUC.execute(id);
 
   let googleDeleted = false;
@@ -179,6 +202,14 @@ export async function eliminarEventoFisico(id: string) {
   }
 
   const previo = await prisma.eventos?.findUnique?.({ where: { id } });
+  if (auth.user.rol !== 'ADMIN' && previo?.creador_id && previo.creador_id !== auth.user.userId) {
+    return {
+      success: false,
+      error: 'Solo el creador del evento o un administrador puede eliminarlo.',
+      code: 'FORBIDDEN',
+      googleDeleted: false,
+    };
+  }
   const result = await eliminarEventoFisicoUC.execute(id);
 
   let googleDeleted = false;

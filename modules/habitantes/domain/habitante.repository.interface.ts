@@ -1,4 +1,4 @@
-import { Habitante, HabitanteSelectorItem, HabitanteListItem } from './habitante.entity';
+import { Habitante, HabitanteSelectorItem, HabitanteListItem, RolUsuario } from './habitante.entity';
 
 export interface CreateHabitanteData {
   nombre: string;
@@ -6,6 +6,9 @@ export interface CreateHabitanteData {
   password_hash: string;
   pin_hash?: string | null;
   pin_longitud?: number | null;
+  rol?: RolUsuario;
+  token_version?: number;
+  activo?: boolean;
 }
 
 export interface UpdateHabitanteData {
@@ -14,12 +17,17 @@ export interface UpdateHabitanteData {
   password_hash?: string;
   pin_hash?: string | null;
   pin_longitud?: number | null;
+  rol?: RolUsuario;
+  token_version?: number;
+  activo?: boolean;
+  incrementTokenVersion?: boolean;
 }
 
 export interface IHabitanteRepository {
   findById(id: string): Promise<Habitante | null>;
   findByEmail(email: string): Promise<Habitante | null>;
   findAll(): Promise<Habitante[]>;
+  count(): Promise<number>;
   findForSelector(): Promise<HabitanteSelectorItem[]>;
   findAllWithDetails(): Promise<HabitanteListItem[]>;
   create(data: CreateHabitanteData): Promise<Habitante>;

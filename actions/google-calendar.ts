@@ -6,6 +6,11 @@ import { prisma } from '@/lib/prisma';
 import { resolveSessionUser } from '@/lib/auth-guard';
 import { getOAuth2Client } from '@/lib/google-auth';
 import { TipoPlantilla, EstadoEvento } from '@prisma/client';
+import {
+  getAuthenticatedCalendarClient,
+  pushEventoAGoogleCalendar as pushEventoInternal,
+  deleteEventoEnGoogleCalendar as deleteEventoInternal,
+} from '@/lib/google-calendar-sync';
 
 export type EstadoConexionGoogle = {
   conectada: boolean;
@@ -18,43 +23,6 @@ function toDateOnlyString(d: Date): string {
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
-}
-
-async function getAuthenticatedCalendarClient(usuarioId: string) {
-  if (!prisma?.conexiones_google?.findUnique) return null;
-
-  const conexion = await prisma.conexiones_google.findUnique({
-    where: { usuario_id: usuarioId },
-  });
-
-  if (!conexion) return null;
-
-  const oauth2Client = getOAuth2Client();
-  oauth2Client.setCredentials({
-    access_token: conexion.access_token,
-    refresh_token: conexion.refresh_token,
-  });
-
-  oauth2Client.on('tokens', async (newTokens) => {
-    try {
-      await prisma.conexiones_google.update({
-        where: { usuario_id: usuarioId },
-        data: {
-          access_token: newTokens.access_token ?? conexion.access_token,
-          ...(newTokens.refresh_token ? { refresh_token: newTokens.refresh_token } : {}),
-          ...(newTokens.expiry_date ? { token_expira: new Date(newTokens.expiry_date) } : {}),
-        },
-      });
-    } catch (err) {
-      console.error('Error al actualizar tokens refrescados de Google:', err);
-    }
-  });
-
-  const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-  return {
-    calendar,
-    calendarId: conexion.calendar_id || 'primary',
-  };
 }
 
 /**
@@ -96,14 +64,12 @@ export async function sincronizarEventosGoogle(
   anio?: number
 ) {
   try {
-    let usuarioId = targetUsuarioId;
-    if (!usuarioId) {
-      const auth = await resolveSessionUser();
-      if (!auth.ok) {
-        return { success: false, error: auth.error };
-      }
-      usuarioId = auth.user.userId;
+    const auth = await resolveSessionUser();
+    if (!auth.ok) {
+      return { success: false, error: auth.error };
     }
+    const usuarioId =
+      auth.user.rol === 'ADMIN' && targetUsuarioId ? targetUsuarioId : auth.user.userId;
 
     const clientCtx = await getAuthenticatedCalendarClient(usuarioId);
     if (!clientCtx) {
@@ -114,15 +80,21 @@ export async function sincronizarEventosGoogle(
 
     let timeMin: string;
     let timeMax: string;
+    let windowStart: Date | null = null;
+    let windowEnd: Date | null = null;
 
     if (mes && anio) {
-      // Ventana centrada en el mes consultado (-15 días antes del inicio y +45 días tras el fin)
-      timeMin = new Date(anio, mes - 1, -15, 0, 0, 0).toISOString();
-      timeMax = new Date(anio, mes, 45, 23, 59, 59).toISOString();
+      // Ventana centrada en el mes consultado (-15 días antes del inicio y +45 días tras el fin) (F-07)
+      const startOfMonth = new Date(anio, mes - 1, 1, 0, 0, 0);
+      const endOfMonth = new Date(anio, mes, 0, 23, 59, 59);
+      windowStart = new Date(startOfMonth.getTime() - 15 * 86_400_000);
+      windowEnd = new Date(endOfMonth.getTime() + 45 * 86_400_000);
+      timeMin = windowStart.toISOString();
+      timeMax = windowEnd.toISOString();
     } else {
       const ahora = new Date();
-      timeMin = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      timeMax = new Date(ahora.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString();
+      timeMin = new Date(ahora.getTime() - 30 * 86_400_000).toISOString();
+      timeMax = new Date(ahora.getTime() + 90 * 86_400_000).toISOString();
     }
 
     // 1. Sincronización de Salida (Push): Exportar eventos locales pendientes hacia Google Calendar
@@ -131,11 +103,11 @@ export async function sincronizarEventosGoogle(
         creador_id: usuarioId,
         google_event_id: null,
         estado: EstadoEvento.ACTIVO,
-        ...(mes && anio
+        ...(windowStart && windowEnd
           ? {
               fecha_inicio: {
-                gte: new Date(anio, mes - 1, -15, 0, 0, 0),
-                lte: new Date(anio, mes, 45, 23, 59, 59),
+                gte: windowStart,
+                lte: windowEnd,
               },
             }
           : {}),
@@ -196,31 +168,64 @@ export async function sincronizarEventosGoogle(
         }
       }
 
-      await prisma.eventos.upsert({
+      const tituloRemoto = item.summary || '(Sin título de Google)';
+      const existentePorGoogleId = await prisma.eventos.findUnique({
         where: { google_event_id: item.id },
-        update: {
-          titulo: item.summary || '(Sin título de Google)',
-          descripcion: item.description || null,
-          fecha_inicio: inicio,
-          fecha_fin: fin,
-          todo_el_dia: todoElDia,
-          ubicacion: item.location || null,
-          estado: EstadoEvento.ACTIVO,
-        },
-        create: {
-          titulo: item.summary || '(Sin título de Google)',
-          descripcion: item.description || null,
-          fecha_inicio: inicio,
-          fecha_fin: fin,
-          todo_el_dia: todoElDia,
-          ubicacion: item.location || null,
-          tipo_plantilla: TipoPlantilla.EVENTO,
-          estado: EstadoEvento.ACTIVO,
-          color: '#54749d',
-          creador_id: usuarioId,
-          google_event_id: item.id,
-        },
       });
+
+      if (existentePorGoogleId) {
+        // Preservar estado local (ej. CANCELADO/COMPLETADO) y metadatos locales si Google no los provee
+        await prisma.eventos.update({
+          where: { id: existentePorGoogleId.id },
+          data: {
+            titulo: item.summary || existentePorGoogleId.titulo,
+            descripcion:
+              item.description !== undefined
+                ? item.description || existentePorGoogleId.descripcion
+                : existentePorGoogleId.descripcion,
+            fecha_inicio: inicio,
+            fecha_fin: fin,
+            todo_el_dia: todoElDia,
+            ubicacion:
+              item.location !== undefined
+                ? item.location || existentePorGoogleId.ubicacion
+                : existentePorGoogleId.ubicacion,
+          },
+        });
+      } else {
+        // Evitar duplicados si ya existe un evento local idéntico aún no vinculado
+        const duplicadoLocal = await prisma.eventos.findFirst({
+          where: {
+            creador_id: usuarioId,
+            google_event_id: null,
+            titulo: tituloRemoto,
+            fecha_inicio: inicio,
+          },
+        });
+
+        if (duplicadoLocal) {
+          await prisma.eventos.update({
+            where: { id: duplicadoLocal.id },
+            data: { google_event_id: item.id },
+          });
+        } else {
+          await prisma.eventos.create({
+            data: {
+              titulo: tituloRemoto,
+              descripcion: item.description || null,
+              fecha_inicio: inicio,
+              fecha_fin: fin,
+              todo_el_dia: todoElDia,
+              ubicacion: item.location || null,
+              tipo_plantilla: TipoPlantilla.EVENTO,
+              estado: EstadoEvento.ACTIVO,
+              color: '#54749d',
+              creador_id: usuarioId,
+              google_event_id: item.id,
+            },
+          });
+        }
+      }
 
       sincronizados++;
     }
@@ -254,77 +259,13 @@ export async function sincronizarEventosGoogle(
 export async function pushEventoAGoogleCalendar(
   usuarioId: string,
   eventoId: string
-): Promise<{ synced: boolean; googleEventId?: string | null; requiresReconnect?: boolean }> {
-  try {
-    const clientCtx = await getAuthenticatedCalendarClient(usuarioId);
-    if (!clientCtx) {
-      return { synced: false };
-    }
-
-    const evento = await prisma.eventos?.findUnique?.({
-      where: { id: eventoId },
-    });
-
-    if (!evento || !evento.fecha_inicio) {
-      return { synced: false };
-    }
-
-    const { calendar, calendarId } = clientCtx;
-    const inicio = new Date(evento.fecha_inicio);
-    const fin = evento.fecha_fin ? new Date(evento.fecha_fin) : new Date(inicio.getTime() + 3600000);
-
-    let startPayload: { date?: string; dateTime?: string };
-    let endPayload: { date?: string; dateTime?: string };
-
-    if (evento.todo_el_dia) {
-      const startDateStr = toDateOnlyString(inicio);
-      const endExclusive = new Date(fin.getFullYear(), fin.getMonth(), fin.getDate() + 1);
-      const endDateStr = toDateOnlyString(endExclusive);
-      startPayload = { date: startDateStr };
-      endPayload = { date: endDateStr };
-    } else {
-      startPayload = { dateTime: inicio.toISOString() };
-      endPayload = { dateTime: fin.toISOString() };
-    }
-
-    const requestBody = {
-      summary: evento.titulo,
-      description: evento.descripcion || undefined,
-      location: evento.ubicacion || undefined,
-      start: startPayload,
-      end: endPayload,
-    };
-
-    if (evento.google_event_id) {
-      await calendar.events.patch({
-        calendarId,
-        eventId: evento.google_event_id,
-        requestBody,
-      });
-      return { synced: true, googleEventId: evento.google_event_id };
-    } else {
-      const inserted = await calendar.events.insert({
-        calendarId,
-        requestBody,
-      });
-      const newGoogleId = inserted.data.id || null;
-      if (newGoogleId) {
-        await prisma.eventos.update({
-          where: { id: eventoId },
-          data: { google_event_id: newGoogleId },
-        });
-      }
-      return { synced: true, googleEventId: newGoogleId };
-    }
-  } catch (error: any) {
-    const msg = String(error?.message || '');
-    if (msg.includes('Insufficient Permission') || error?.code === 403) {
-      console.warn('Permisos de escritura insuficientes en Google Calendar. Reconexión requerida.');
-      return { synced: false, requiresReconnect: true };
-    }
-    console.error('Error al exportar evento a Google Calendar:', error);
-    return { synced: false };
+): Promise<{ synced: boolean; googleEventId?: string | null; requiresReconnect?: boolean; error?: string }> {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { synced: false, error: auth.error };
   }
+  const targetId = auth.user.rol === 'ADMIN' && usuarioId ? usuarioId : auth.user.userId;
+  return await pushEventoInternal(targetId, eventoId);
 }
 
 /**
@@ -333,26 +274,13 @@ export async function pushEventoAGoogleCalendar(
 export async function deleteEventoEnGoogleCalendar(
   usuarioId: string,
   googleEventId?: string | null
-): Promise<{ deleted: boolean }> {
-  try {
-    if (!googleEventId) return { deleted: false };
-
-    const clientCtx = await getAuthenticatedCalendarClient(usuarioId);
-    if (!clientCtx) return { deleted: false };
-
-    const { calendar, calendarId } = clientCtx;
-    await calendar.events.delete({
-      calendarId,
-      eventId: googleEventId,
-    });
-    return { deleted: true };
-  } catch (error: any) {
-    if (error?.code === 404 || error?.code === 410) {
-      return { deleted: true };
-    }
-    console.error('Error al eliminar evento en Google Calendar:', error);
-    return { deleted: false };
+): Promise<{ deleted: boolean; error?: string }> {
+  const auth = await resolveSessionUser();
+  if (!auth.ok) {
+    return { deleted: false, error: auth.error };
   }
+  const targetId = auth.user.rol === 'ADMIN' && usuarioId ? usuarioId : auth.user.userId;
+  return await deleteEventoInternal(targetId, googleEventId);
 }
 
 /**

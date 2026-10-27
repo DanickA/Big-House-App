@@ -1,6 +1,29 @@
-import { TipoPlantilla, EstadoEvento, CanalRecordatorio } from '@prisma/client';
+// Enumeraciones puras de Dominio desacopladas de infraestructura (@prisma/client) (A-01)
+export const TipoPlantilla = {
+  EVENTO: 'EVENTO',
+  TAREA: 'TAREA',
+  MANTENIMIENTO: 'MANTENIMIENTO',
+  VISITAS: 'VISITAS',
+  COMPRAS: 'COMPRAS',
+  MASCOTAS: 'MASCOTAS',
+  CUMPLEANOS: 'CUMPLEANOS',
+  CITA_MEDICA: 'CITA_MEDICA',
+  MERCADO: 'MERCADO',
+} as const;
+export type TipoPlantilla = (typeof TipoPlantilla)[keyof typeof TipoPlantilla];
 
-export { TipoPlantilla, EstadoEvento, CanalRecordatorio };
+export const EstadoEvento = {
+  ACTIVO: 'ACTIVO',
+  CANCELADO: 'CANCELADO',
+  COMPLETADO: 'COMPLETADO',
+} as const;
+export type EstadoEvento = (typeof EstadoEvento)[keyof typeof EstadoEvento];
+
+export const CanalRecordatorio = {
+  PUSH: 'PUSH',
+  EMAIL: 'EMAIL',
+} as const;
+export type CanalRecordatorio = (typeof CanalRecordatorio)[keyof typeof CanalRecordatorio];
 
 export type OpcionRecurrenciaEdicion = 'SOLO_ESTE' | 'ESTE_Y_FUTUROS' | 'SIN_RECURRENCIA';
 
@@ -63,7 +86,7 @@ export interface DetallesEvento
     Partial<DetallesMascotas>,
     Partial<DetallesMantenimiento>,
     Partial<DetallesMercado> {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface SubtareaEvento {
@@ -74,13 +97,17 @@ export interface SubtareaEvento {
 }
 
 export interface ParticipanteExterno {
+  id?: string;
   nombre: string;
-  contacto?: string;
+  contacto?: string | null;
 }
 
 export interface RecordatorioEvento {
+  id?: string;
   tipo_canal: CanalRecordatorio;
   minutos_anticipacion: number;
+  fecha_programada?: Date;
+  enviado?: boolean;
 }
 
 export interface Evento {
@@ -98,6 +125,15 @@ export interface Evento {
   detalles: DetallesEvento | null;
   creador_id: string;
   google_event_id?: string | null;
+}
+
+export interface EventoConRelaciones extends Evento {
+  fecha_creacion?: Date | null;
+  creador?: { id?: string; nombre: string } | null;
+  participantes?: { id: string; nombre?: string }[];
+  externos?: ParticipanteExterno[];
+  subtareas?: SubtareaEvento[];
+  recordatorios?: RecordatorioEvento[];
 }
 
 export interface EventoUnificado {

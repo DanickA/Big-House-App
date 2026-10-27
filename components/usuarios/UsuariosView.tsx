@@ -67,7 +67,7 @@ export default function UsuariosView({ initialUsuarios }: UsuariosViewProps) {
     'usuarios-list',
     async () => {
       const res = await getUsuarios();
-      return res.success && res.data
+      return res.success
         ? (res.data as unknown as UsuarioItem[])
         : initialUsuarios;
     },

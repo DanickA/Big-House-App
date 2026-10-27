@@ -1,12 +1,13 @@
-import { getServicios, getFondoComunMes } from '@/actions/pagos';
+import { getServicios, getFondoComunMes, getGastosMes } from '@/actions/pagos';
 import { getUsuarios } from '@/actions/usuarios';
 import { getSession } from '@/lib/session';
 import FinanzasView from '@/components/pagos/FinanzasView';
 
 export default async function FinanzasPage() {
-  const [resServicios, resFondo, resUsuarios, session] = await Promise.all([
+  const [resServicios, resFondo, resGastos, resUsuarios, session] = await Promise.all([
     getServicios(),
     getFondoComunMes(),
+    getGastosMes(),
     getUsuarios(),
     getSession(),
   ]);
@@ -27,20 +28,21 @@ export default async function FinanzasPage() {
       };
 
   const initialFondoComun = resFondo.success ? resFondo.data : undefined;
-  const initialHabitantes =
-    resUsuarios.success && Array.isArray(resUsuarios.data)
-      ? resUsuarios.data.map((u: { id: string; nombre: string; email?: string }) => ({
-          id: u.id,
-          nombre: u.nombre,
-          email: u.email,
-        }))
-      : [];
+  const initialGastos = resGastos.success ? resGastos.gastos : [];
+  const initialHabitantes = resUsuarios.success
+    ? resUsuarios.data.map((u) => ({
+        id: u.id,
+        nombre: u.nombre,
+        email: u.email,
+      }))
+    : [];
 
   return (
     <FinanzasView
       initialServicios={initialServicios}
       initialResumen={initialResumen}
       initialFondoComun={initialFondoComun}
+      initialGastos={initialGastos}
       initialHabitantes={initialHabitantes}
       currentUserId={session?.userId}
     />

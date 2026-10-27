@@ -1,6 +1,18 @@
 import { registrarCuidado, deshacerCuidado, getResumenPlantasLobby, createPlanta } from '@/actions/plantas';
 import { prisma } from '@/lib/prisma';
 
+jest.mock('@/lib/auth-guard', () => ({
+  resolveSessionUser: jest.fn().mockResolvedValue({
+    ok: true,
+    user: {
+      userId: 'uuid-1',
+      nombre: 'Test User',
+      email: 'test@example.com',
+      rol: 'ADMIN',
+    },
+  }),
+}));
+
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     plantas: {

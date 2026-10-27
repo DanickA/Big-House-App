@@ -1,7 +1,8 @@
 import { IHabitanteRepository, UpdateHabitanteData } from '../../domain/habitante.repository.interface';
 import { IPasswordHasher } from '../../domain/password-hasher.service.interface';
 import { Habitante } from '../../domain/habitante.entity';
-import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
+import { UpdateHabitanteSchema } from '../schemas';
+import { Result, ok, err, AppError, ValidationError, UnexpectedError, isValidId } from '@/modules/shared';
 import { defaultHabitanteRepository } from '../../infrastructure/prisma-habitante.repository';
 import { defaultPasswordHasher } from '../../infrastructure/bcrypt-password-hasher.service';
 
@@ -11,6 +12,8 @@ export interface UpdateHabitanteDTO {
   email: string;
   password?: string | null;
   pin?: string | null;
+  rol?: 'ADMIN' | 'MIEMBRO';
+  activo?: boolean;
 }
 
 export class UpdateHabitanteUseCase {
@@ -21,7 +24,10 @@ export class UpdateHabitanteUseCase {
 
   async execute(dto: UpdateHabitanteDTO): Promise<Result<Habitante, AppError>> {
     try {
-      const id = dto.id;
+      if (!isValidId(dto.id)) {
+        return err(new ValidationError('Identificador de habitante inválido'));
+      }
+      const id = dto.id.trim();
       const nombre = dto.nombre?.trim();
       const email = dto.email?.toLowerCase().trim();
       const password = dto.password;
@@ -31,8 +37,18 @@ export class UpdateHabitanteUseCase {
         return err(new ValidationError('El nombre y el correo son obligatorios'));
       }
 
-      if (pin && pin.trim().length > 0 && (pin.length < 4 || pin.length > 6 || !/^\d+$/.test(pin))) {
-        return err(new ValidationError('El PIN debe contener entre 4 y 6 dígitos numéricos'));
+      const parsed = UpdateHabitanteSchema.safeParse({
+        nombre,
+        email,
+        password,
+        pin,
+        rol: dto.rol,
+        activo: dto.activo,
+      });
+      if (!parsed.success) {
+        return err(
+          new ValidationError(parsed.error.issues[0]?.message || 'Datos de habitante inválidos')
+        );
       }
 
       const dataToUpdate: UpdateHabitanteData = {
@@ -40,8 +56,22 @@ export class UpdateHabitanteUseCase {
         email,
       };
 
+      if (dto.rol) {
+        dataToUpdate.rol = dto.rol;
+      }
+
+      if (dto.activo !== undefined) {
+        dataToUpdate.activo = dto.activo;
+      }
+
+      let credencialesCambiadas = false;
+
       if (password && password.trim().length > 0) {
-        dataToUpdate.password_hash = await this.hasher.hash(password);
+        if (password.trim().length < 8) {
+          return err(new ValidationError('La contraseña debe tener al menos 8 caracteres'));
+        }
+        dataToUpdate.password_hash = await this.hasher.hash(password.trim());
+        credencialesCambiadas = true;
       }
 
       if (pin !== null && pin !== undefined) {
@@ -53,10 +83,21 @@ export class UpdateHabitanteUseCase {
           dataToUpdate.pin_hash = null;
           dataToUpdate.pin_longitud = null;
         }
+        credencialesCambiadas = true;
+      }
+
+      if (credencialesCambiadas) {
+        dataToUpdate.incrementTokenVersion = true;
       }
 
       const usuarioActualizado = await this.repo.update(id, dataToUpdate);
-      return ok(usuarioActualizado);
+
+      // Omitir hashes en la respuesta
+      return ok({
+        ...usuarioActualizado,
+        password_hash: '',
+        pin_hash: null,
+      });
     } catch (error: any) {
       if (error instanceof AppError) return err(error);
       return err(

@@ -7,6 +7,7 @@ import {
   IHabitanteRepository,
   IPasswordHasher,
   ISessionService,
+  SessionPayload,
   Habitante,
   CreateHabitanteData,
   UpdateHabitanteData,
@@ -32,11 +33,14 @@ class InMemoryHabitanteRepository implements IHabitanteRepository {
     return Array.from(this.habitantes.values());
   }
 
+  async count(): Promise<number> {
+    return this.habitantes.size;
+  }
+
   async findForSelector(): Promise<HabitanteSelectorItem[]> {
     return Array.from(this.habitantes.values()).map((h) => ({
       id: h.id,
       nombre: h.nombre,
-      email: h.email,
       tienePin: !!h.pin_hash,
       pinLongitud: h.pin_longitud || 4,
     }));
@@ -47,6 +51,8 @@ class InMemoryHabitanteRepository implements IHabitanteRepository {
       id: h.id,
       nombre: h.nombre,
       email: h.email,
+      rol: h.rol || 'MIEMBRO',
+      activo: h.activo ?? true,
       tienePin: !!h.pin_hash,
       pinLongitud: h.pin_longitud || 4,
       fecha_registro: h.fecha_registro,
@@ -62,6 +68,9 @@ class InMemoryHabitanteRepository implements IHabitanteRepository {
       password_hash: data.password_hash,
       pin_hash: data.pin_hash ?? null,
       pin_longitud: data.pin_longitud ?? null,
+      rol: data.rol ?? 'ADMIN',
+      token_version: data.token_version ?? 1,
+      activo: data.activo ?? true,
       fecha_registro: new Date(),
     };
     this.habitantes.set(id, habitante);
@@ -78,6 +87,11 @@ class InMemoryHabitanteRepository implements IHabitanteRepository {
       password_hash: data.password_hash ?? existing.password_hash,
       pin_hash: data.pin_hash !== undefined ? data.pin_hash : existing.pin_hash,
       pin_longitud: data.pin_longitud !== undefined ? data.pin_longitud : existing.pin_longitud,
+      rol: data.rol ?? existing.rol,
+      activo: data.activo !== undefined ? data.activo : existing.activo,
+      token_version: data.incrementTokenVersion
+        ? existing.token_version + 1
+        : data.token_version ?? existing.token_version,
     };
     this.habitantes.set(id, updated);
     return updated;
@@ -99,13 +113,19 @@ class MockPasswordHasher implements IPasswordHasher {
 }
 
 class MockSessionService implements ISessionService {
-  public currentSession: { userId: string; nombre: string; email: string } | null = null;
+  public currentSession: SessionPayload | null = null;
 
-  async createSession(userId: string, nombre: string, email: string): Promise<void> {
-    this.currentSession = { userId, nombre, email };
+  async createSession(
+    userId: string,
+    nombre: string,
+    email: string,
+    rol?: 'ADMIN' | 'MIEMBRO',
+    tokenVersion?: number
+  ): Promise<void> {
+    this.currentSession = { userId, nombre, email, rol, tokenVersion };
   }
 
-  async getSession() {
+  async getSession(): Promise<SessionPayload | null> {
     return this.currentSession;
   }
 
@@ -126,7 +146,7 @@ describe('Habitantes Module - Clean Architecture Use Cases', () => {
   });
 
   describe('Registro y Login', () => {
-    it('debe registrar un nuevo habitante e iniciar sesión automáticamente', async () => {
+    it('debe registrar al primer habitante como ADMIN e iniciar sesión automáticamente', async () => {
       const useCase = new RegistroNuevoMiembroUseCase(repo, hasher, sessionService);
       const res = await useCase.execute({
         nombre: 'Ana',
@@ -139,11 +159,13 @@ describe('Habitantes Module - Clean Architecture Use Cases', () => {
       if (res.success) {
         expect(res.data.nombre).toBe('Ana');
         expect(res.data.email).toBe('ana@hogar.com');
+        expect(res.data.rol).toBe('ADMIN');
       }
       expect(sessionService.currentSession?.email).toBe('ana@hogar.com');
+      expect(sessionService.currentSession?.rol).toBe('ADMIN');
     });
 
-    it('debe rechazar registro con correo duplicado', async () => {
+    it('debe rechazar registro público cuando ya existe un habitante (solo admin invita)', async () => {
       const useCase = new RegistroNuevoMiembroUseCase(repo, hasher, sessionService);
       await useCase.execute({
         nombre: 'Ana',
@@ -153,13 +175,13 @@ describe('Habitantes Module - Clean Architecture Use Cases', () => {
 
       const resDuplicado = await useCase.execute({
         nombre: 'Ana 2',
-        email: 'ana@hogar.com',
-        password: 'otraPassword',
+        email: 'ana2@hogar.com',
+        password: 'otraPasswordSegura',
       });
 
       expect(resDuplicado.success).toBe(false);
       if (!resDuplicado.success) {
-        expect(resDuplicado.error.code).toBe('CONFLICT');
+        expect(resDuplicado.error.code).toBe('UNAUTHORIZED');
       }
     });
 
@@ -246,7 +268,7 @@ describe('Habitantes Module - Clean Architecture Use Cases', () => {
         id: habitante.id,
         nombre: 'Usuario Sin Pin',
         email: 'conpin@hogar.com',
-        password: 'new-password',
+        password: 'new-password-segura',
         pin: '',
       });
 

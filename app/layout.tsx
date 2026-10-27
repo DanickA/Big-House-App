@@ -8,6 +8,7 @@ import InactivityTimer from "@/components/auth/InactivityTimer";
 import RegisterServiceWorker from "@/components/pwa/RegisterServiceWorker";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -76,6 +77,7 @@ export default async function RootLayout({
           <main className="flex-1 pb-[calc(49px+env(safe-area-inset-bottom,0px)+2.75rem)] lg:pb-0">{children}</main>
           <BottomTabBar />
           <InstallPrompt />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

@@ -14,7 +14,7 @@ export default async function CalendarioPage() {
   ]);
 
   const initialEventos = eventosRes.success ? eventosRes.data : [];
-  const miembros = usuariosRes.success && usuariosRes.data
+  const miembros = usuariosRes.success
     ? usuariosRes.data.map((u) => ({ id: u.id, nombre: u.nombre, email: u.email }))
     : [];
 

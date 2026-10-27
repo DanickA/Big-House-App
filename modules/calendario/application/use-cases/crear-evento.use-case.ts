@@ -7,7 +7,9 @@ import {
   SubtareaEvento,
   RecordatorioEvento,
   DetallesEvento,
+  EventoConRelaciones,
 } from '../../domain/evento.entity';
+import { CrearEventoSchema } from '../schemas';
 import { Result, ok, err, AppError, ValidationError, UnexpectedError } from '@/modules/shared';
 import { defaultEventoRepository } from '../../infrastructure/prisma-evento.repository';
 
@@ -33,10 +35,19 @@ export interface CrearEventoDTO {
 export class CrearEventoUseCase {
   constructor(private readonly repo: IEventoRepository = defaultEventoRepository) {}
 
-  async execute(data: CrearEventoDTO): Promise<Result<any, AppError>> {
+  async execute(data: CrearEventoDTO): Promise<Result<EventoConRelaciones, AppError>> {
     try {
       if (!data.titulo || !data.titulo.trim()) {
         return err(new ValidationError('El título del evento es obligatorio'));
+      }
+
+      const parsedSchema = CrearEventoSchema.safeParse({
+        ...data,
+        fecha_inicio: new Date(data.fecha_inicio),
+        fecha_fin: new Date(data.fecha_fin),
+      });
+      if (!parsedSchema.success) {
+        return err(new ValidationError(parsedSchema.error.issues[0]?.message || 'Datos de evento inválidos'));
       }
 
       if (data.fecha_fin < data.fecha_inicio) {
